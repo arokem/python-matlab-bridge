@@ -18,7 +18,7 @@ You must then start the MATLAB server:
 which will return True once connected.
 
 You can then run any local MATLAB function contained within a .m file of the same name. For example, to call the function jk in jk.m:
-    %% MATLAB
+    $ %% MATLAB
     function lol = jk(args)
         arg1 = args.arg1;
         arg2 = args.arg2;
