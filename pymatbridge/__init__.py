@@ -26,7 +26,7 @@ class Matlab(object):
     def start(self):
         # Start the MATLAB server
         print "Starting MATLAB"
-        os.system('nohup %s -nodesktop -nosplash -nodisplay -r "cd matlab,webserver(%s),exit" -logfile ./logs/matlablog_%s.txt > ./logs/nohup_%s.txt 2>&1 &' % (self.matlab, self.port, self.id, self.id))
+        os.system('nohup %s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/nohup_%s.txt 2>&1 &' % (self.matlab, self.port, self.id, self.id))
         while not self.is_connected():
             print "...still starting up..."
             time.sleep(1)

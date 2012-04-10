@@ -1,4 +1,4 @@
-from matlab import Matlab
+from pymatbridge import Matlab
 
 # Initialise MATLAB
 mlab = Matlab(port=5000)

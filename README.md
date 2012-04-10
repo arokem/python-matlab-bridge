@@ -8,6 +8,7 @@ Unlike other interfaces, MATLAB only has to start once. All communication is don
 
 Initialize the Matlab class. You must pass in your matlab executable, e.g.
 
+    from pymatbridge import Matlab
     mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab')
 
 By default the host is localhost and the port is 4000. This can be changed, e.g.
