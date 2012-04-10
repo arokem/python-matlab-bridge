@@ -43,4 +43,8 @@ You can shut down the MATLAB server by calling
 
 NB: you can call MATLAB code before the server starts by adding code to the ./matlab/startup.m file.
 
+# Example
+
+An example MATLAB function and usage from Python is shown in test.py and test.m
+
 Max Jaderberg 2012
