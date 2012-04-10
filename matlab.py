@@ -3,21 +3,45 @@
 # Part of Python-MATLAB-bridge
 # Max Jaderberg 2012
 ###############################################
-import urllib2, urllib, os, json
+import urllib2, urllib, os, json, time
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
 class Matlab(object):
     eval_func = 'web_feval.m'
     running = False
+    matlab = None
+    host = None
+    port = None
+    server = None
+    id = None
 
-    def __init__(self, server='http://localhost', port=None, app_name='djmatlab'):
-        self.server = '%s%s' % (server, ':%s' % port if port else '')
-        self.app_name = app_name
+    def __init__(self, matlab='/Applications/MATLAB_R2011a.app/bin/matlab', host='localhost', port=4000, id='python-matlab-bridge'):
+        self.matlab = matlab
+        self.host = host
+        self.port = port
+        self.server = 'http://%s:%s' % (self.host, str(self.port))
+        self.id = id
+
+    def start(self):
+        # Start the MATLAB server
+        print "Starting MATLAB"
+        os.system('nohup %s -nodesktop -nosplash -nodisplay -r "cd matlab,webserver(%s),exit" -logfile ./logs/matlablog_%s.txt > ./logs/nohup_%s.txt 2>&1 &' % (self.matlab, self.port, self.id, self.id))
+        while not self.is_connected():
+            print "...still starting up..."
+            time.sleep(1)
+        print "MATLAB started and connected!"
+        return True
+
+    def stop(self):
+        # Stop the MATLAB server
+        os.system('killall MATLAB')
+        print "MATLAB closed"
+        return True
 
     def is_connected(self):
         try:
-            resp = self._open_page('test_connect.m', {'app_name': self.app_name})
+            resp = self._open_page('test_connect.m', {'id': self.id})
             if resp['message']:
                 return True
         except urllib2.URLError:
@@ -34,6 +58,8 @@ class Matlab(object):
         return False
 
     def run(self, func_path, func_args=None, maxtime=None):
+        if self.running:
+            time.sleep(0.5)
         page_args = {
             'func_path': func_path,
         }
