@@ -48,4 +48,9 @@ NB: you can call MATLAB code before the server starts by adding code to the ./ma
 
 An example MATLAB function and usage from Python is shown in test.py and test.m
 
+# TODO
+
+- MATLAB error handling.
+- Multiple simultaneous connections.
+
 Max Jaderberg 2012
