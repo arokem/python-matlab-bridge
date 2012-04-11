@@ -1,7 +1,7 @@
 from pymatbridge import Matlab
 
 # Initialise MATLAB
-mlab = Matlab(port=5000)
+mlab = Matlab(port=4000)
 # Start the server
 mlab.start()
 # Run a test function: just adds 1 to the argument a

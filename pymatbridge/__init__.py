@@ -3,6 +3,7 @@
 # Part of Python-MATLAB-bridge
 # Max Jaderberg 2012
 ###############################################
+from httplib import BadStatusLine
 import urllib2, urllib, os, json, time
 from multiprocessing import Process
 
@@ -44,11 +45,13 @@ class Matlab(object):
 
     def stop(self):
         # Stop the MATLAB server
-        self.server_process.terminate()
-        self.server_process.join()
-        while self.server_process.is_alive():
-            time.sleep(0.25)
-        os.system('killall MATLAB')
+        try:
+            try:
+                resp = self._open_page('exit_server.m', {'id': self.id})
+            except BadStatusLine:
+                pass
+        except urllib2.URLError:
+            pass
         print "MATLAB closed"
         return True
 
