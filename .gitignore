@@ -18,3 +18,8 @@
 ADME.markdown
 
 *.pyc
+
+logs/*
+pymatbridge/logs/bashlog_python-matlab-bridge.txt
+
+pymatbridge/logs/matlablog_python-matlab-bridge.txt
