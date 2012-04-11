@@ -4,6 +4,7 @@
 # Max Jaderberg 2012
 ###############################################
 import urllib2, urllib, os, json, time
+from multiprocessing import Process
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
@@ -15,6 +16,7 @@ class Matlab(object):
     port = None
     server = None
     id = None
+    server_process = Process()
 
     def __init__(self, matlab='/Applications/MATLAB_R2011a.app/bin/matlab', host='localhost', port=4000, id='python-matlab-bridge'):
         self.matlab = matlab
@@ -24,17 +26,28 @@ class Matlab(object):
         self.id = id
 
     def start(self):
+        def _run_matlab_server():
+            os.system('%s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.matlab, self.port, self.id, self.id))
+            return True
         # Start the MATLAB server
         print "Starting MATLAB"
-        os.system('nohup %s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/nohup_%s.txt 2>&1 &' % (self.matlab, self.port, self.id, self.id))
+        self.server_process = Process(target=_run_matlab_server)
+        self.server_process.daemon = True
+        self.server_process.start()
         while not self.is_connected():
             print "...still starting up..."
             time.sleep(1)
         print "MATLAB started and connected!"
         return True
 
+
+
     def stop(self):
         # Stop the MATLAB server
+        self.server_process.terminate()
+        self.server_process.join()
+        while self.server_process.is_alive():
+            time.sleep(0.25)
         os.system('killall MATLAB')
         print "MATLAB closed"
         return True
