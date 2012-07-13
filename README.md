@@ -33,7 +33,7 @@ You can then run any local MATLAB function contained within a .m file of the sam
 
 by calling:
 
-    res = mlab.run('path/to/jk.m', {'arg1': 3, 'arg2', 5})
+    res = mlab.run('path/to/jk.m', {'arg1': 3, 'arg2': 5})
     print res['result']
 
 which will print 8.
