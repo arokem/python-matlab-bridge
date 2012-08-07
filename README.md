@@ -2,6 +2,8 @@
 
 A simple interface to allow Python to call MATLAB functions.
 
+***AT PRESENT THIS DOES NOT WORK ON WINDOWS***
+
 Unlike other interfaces, MATLAB only has to start once. All communication is done over a TCP server (credit to D.Kroon University of Twente for the TCP server).
 
 ## Usage
