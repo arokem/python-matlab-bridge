@@ -1,7 +1,7 @@
 % Max Jaderberg 2011
 
 function json_response = web_feval(headers, config)
-%WEB_FEVAL Returns a json object of the result of calling the funciton
+%WEB_FEVAL Returns a json object of the result of calling the function
 %   This allows you to run any local matlab file. To be used with webserver.m. 
 %   HTTP POST to /web_feval.m with the following parameters:
 %       func_path: a string which is the path to the .m file you want to
