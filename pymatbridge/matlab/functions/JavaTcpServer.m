@@ -26,12 +26,9 @@ switch(action)
         TCP.port = data;
         TCP.serverSocket=serverSocket;
         GlobalserverSocket=serverSocket;
-        TCP.stopwindow=stopwindow();
     case 'accept'
         while(true),
             try socket = TCP.serverSocket.accept;  break; catch, end
-            drawnow
-            if(~ishandle(TCP.stopwindow)), TCP.socket=-1; return, end
         end
         TCP.socket = socket;
         TCP.remoteHost = char(socket.getInetAddress);
@@ -66,12 +63,3 @@ switch(action)
 	case 'close'
         TCP.serverSocket.close;
 end
-
-function handle_figure=stopwindow()
-handle_figure=figure;
-set(handle_figure,'Units','Pixels');
-w=get(handle_figure,'Position'); 
-set(handle_figure,'Position',[w(1) w(2) 200 100]);
-set(handle_figure,'Resize','off')
-uicontrol('Style', 'text','String','Close Window to Shutdown Server','Position', [0 0 200 100]);
-

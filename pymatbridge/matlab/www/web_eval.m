@@ -40,8 +40,12 @@ try
     diary(diary_file);
     evalin('base', code); 
     diary;
+    figdir = [tempdir 'MatlabFigures/'];
+    mkdir(figdir);
+    fig_files = make_figs(figdir);
     response.success = 'true';
     response.content.code = code;
+    response.content.figures = fig_files;
     [~, stdout] = system(['cat ' diary_file]);
     delete(diary_file)
     response.content.stdout = stdout; 

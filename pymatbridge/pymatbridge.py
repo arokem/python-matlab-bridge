@@ -44,7 +44,7 @@ class Matlab(object):
 
     def start(self):
         def _run_matlab_server():
-            os.system('%s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.matlab, self.port, self.id, self.id))
+            os.system('%s -nodesktop -nosplash -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.matlab, self.port, self.id, self.id))
             return True
         # Start the MATLAB server
         print "Starting MATLAB"
