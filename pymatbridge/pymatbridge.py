@@ -10,7 +10,7 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 
 import numpy as np
 from httplib import BadStatusLine
-import urllib2, urllib, os, json, time
+import urllib2, urllib, os, json, time, socket
 from multiprocessing import Process
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
@@ -27,10 +27,31 @@ class Matlab(object):
     id = None
     server_process = Process()
 
-    def __init__(self, matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
-                 host='localhost', port=4000, id='python-matlab-bridge'):
+    def __init__(self, matlab='matlab', host='localhost', port=None,
+                 id='python-matlab-bridge', log=False):
         """
-        Initialize this thing
+        Initialize this thing.
+
+        Parameters
+        ----------
+
+        matlab : str
+            A string that woul start matlab at the terminal. Per default, this
+            is set to 'matlab', so that you can alias in your bash setup
+
+        host : str
+            If you want something else than 'localhost', blame yourself
+
+        port : integer
+            This is the number of the port. The default (None), gets a random
+            free port
+
+        id : str
+            An identifier for this instance of the pymatbridge
+
+        log : bool
+            Whether to save a log file in some known location.
+            
         """
 
         self.feval = 'web_feval.m'
@@ -38,16 +59,27 @@ class Matlab(object):
             
         self.matlab = matlab
         self.host = host
+        if self.port is None:
+            sock = socket.socket()
+            sock.bind(('', 0))
+            port = sock.getsockname()[1]
         self.port = port
         self.server = 'http://%s:%s' % (self.host, str(self.port))
         self.id = id
+        self.log = log
 
     def start(self):
         def _run_matlab_server():
-            os.system('%s -nodesktop -nosplash -r "cd pymatbridge/matlab,webserver(%s),exit" -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.matlab, self.port, self.id, self.id))
+            cmd_str = '%s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit"'%(self.matlab, self.port)
+
+            if self.log:
+                cmd_str += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.id, self.id)
+
+            os.system(cmd_str)
             return True
+
         # Start the MATLAB server
-        print "Starting MATLAB"
+        print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
         self.server_process = Process(target=_run_matlab_server)
         self.server_process.daemon = True
         self.server_process.start()
@@ -56,7 +88,6 @@ class Matlab(object):
             time.sleep(1)
         print "MATLAB started and connected!"
         return True
-
 
 
     def stop(self):
