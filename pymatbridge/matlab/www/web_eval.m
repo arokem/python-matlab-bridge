@@ -36,12 +36,19 @@ end
 code = headers.Content.code;
 
 try
-    run_m_code(code);
+    diary_file = [tempdir 'diary.txt'];
+    diary(diary_file);
+    evalin('base', code); 
+    diary;
     response.success = 'true';
     response.content.code = code;
-catch
+    [~, stdout] = system(['cat ' diary_file]);
+    delete(diary_file)
+    response.content.stdout = stdout; 
+catch ME   
     response.success = 'false';
-    response.message = 'Failed to complete request';
+    response.content.stdout = ME.message;
+    respone.content.code = code; 
 end
 
 json_response = mat2json(response);

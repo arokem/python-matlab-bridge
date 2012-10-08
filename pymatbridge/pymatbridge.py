@@ -8,7 +8,7 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 
 """
 
-
+import numpy as np
 from httplib import BadStatusLine
 import urllib2, urllib, os, json, time
 from multiprocessing import Process
@@ -28,19 +28,13 @@ class Matlab(object):
     server_process = Process()
 
     def __init__(self, matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
-                 host='localhost', port=4000, id='python-matlab-bridge',
-                 eval_func=None):
+                 host='localhost', port=4000, id='python-matlab-bridge'):
         """
         Initialize this thing
         """
-        # For now, we default to use function calls, but ultimately, we will want
-        # to start this with 'web_eval.m'
-        if eval_func is None:
-            self.eval_func = 'web_feval.m'
-            self.run = self.run_func
-        else:
-            self.eval_func = eval_func
-            self.run = self.run_code
+
+        self.feval = 'web_feval.m'
+        self.eval = 'web_eval.m'
             
         self.matlab = matlab
         self.host = host
@@ -58,7 +52,7 @@ class Matlab(object):
         self.server_process.daemon = True
         self.server_process.start()
         while not self.is_connected():
-            print "...still starting up..."
+            np.disp(".", linefeed=False)
             time.sleep(1)
         print "MATLAB started and connected!"
         return True
@@ -88,7 +82,7 @@ class Matlab(object):
 
     def is_function_processor_working(self):
         try:
-            result = self.run('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
+            result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
             if result['success'] == 'true':
                 return True
         except urllib2.URLError:
@@ -104,9 +98,9 @@ class Matlab(object):
         if func_args:
             page_args['arguments'] = json.dumps(func_args)
         if maxtime:
-            result = self._open_page(self.eval_func, page_args, maxtime)
+            result = self._open_page(self.feval, page_args, maxtime)
         else:
-            result = self._open_page(self.eval_func, page_args)
+            result = self._open_page(self.feval, page_args)
         return result
 
 
@@ -120,9 +114,9 @@ class Matlab(object):
             time.sleep(0.5)
             
         if maxtime:
-            result = self._open_page(self.eval_func, dict(code=code), maxtime)
+            result = self._open_page(self.eval, dict(code=code), maxtime)
         else:
-            result = self._open_page(self.eval_func, dict(code=code))
+            result = self._open_page(self.eval, dict(code=code))
 
         return result
         
@@ -135,6 +129,8 @@ class Matlab(object):
                                timeout)
         
         self.running = False
-        return json.loads(page.read())
+        read_page = page.read()
+        # Deal with escape characters: json needs an additional '\': 
+        return json.loads(read_page.replace("\n","\\n"))
 
 
