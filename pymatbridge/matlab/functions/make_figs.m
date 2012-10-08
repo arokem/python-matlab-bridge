@@ -10,12 +10,12 @@ for fig=1:length(figHandles)
     % We will put all of these in the temp dir with an identifying root, so
     % that we can grab all of them into the cell (and they will be deleted
     % immediately after being rendered).
-    filename = [figdir, 'MatlabFig', num2str(fig)];
+    filename = [figdir, 'MatlabFig', sprintf('%03d', fig)];
     saveas(h, [filename, '.png']);
     % Once you've saved it, close it, so it doesn't get dragged into the
     % scope of other cells
     close(h);
-    fig_files = [fig_files filename];
+    fig_files = [fig_files filename '.png'];
 end
 
 end 
