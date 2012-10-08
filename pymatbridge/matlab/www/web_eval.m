@@ -39,7 +39,7 @@ try
     diary_file = [tempdir 'diary.txt'];
     diary(diary_file);
     evalin('base', code); 
-    diary;
+    diary('off');
     figdir = [tempdir 'MatlabFigures/'];
     mkdir(figdir);
     fig_files = make_figs(figdir);
@@ -50,6 +50,7 @@ try
     delete(diary_file)
     response.content.stdout = stdout; 
 catch ME   
+    diary('off');
     response.success = 'false';
     response.content.stdout = ME.message;
     respone.content.code = code; 

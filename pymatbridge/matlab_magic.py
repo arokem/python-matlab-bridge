@@ -6,33 +6,31 @@ matlab_magic
 Magic command interface for interactive work with Matlab(R) via the pymatbridge
 
 
-Usage
-=====
-
-
-
 Note
 ====
 Thanks to Max Jaderberg for his work on pymatbridge.
 
 """
 
+import sys, os
+import tempfile
+from glob import glob
+from shutil import rmtree
+from getopt import getopt
+
 import numpy as np
+import pymatbridge as pymat
 
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, cell_magic, line_magic,
                                 line_cell_magic, needs_local_scope)
 from IPython.testing.skipdoctest import skip_doctest
-from IPython.core.magic_arguments import (
-    argument, magic_arguments, parse_argstring
-)
+from IPython.core.magic_arguments import (argument, magic_arguments,
+                                          parse_argstring)
 from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
 
-import pymatbridge as pymat
 
-def matlab_converter(matlab_object):
     
-
 class MatlabInterperterError(RuntimeError):
     """
     Some error occurs while matlab is running
@@ -52,9 +50,23 @@ class MatlabInterperterError(RuntimeError):
         def __str__(self):
             return unicode_to_str(unicode(self), 'utf-8')
 
+def pyconverter(val):
+    """
+
+    """
+
+    pass
+
+def matlab_converter(val):
+    """
+
+    """
+
+    pass
+
 
 @magics_class
-class MatlabMagics(Magics)
+class MatlabMagics(Magics):
     """
     A set of magics for interactive work with Matlab(R).
     """
@@ -85,11 +97,11 @@ class MatlabMagics(Magics)
         self.cache_display_data = cache_display_data
 
         self.Matlab = pymat.Matlab()
+        self.Matlab.start()
 
         self.pyconverter = pyconverter
         self.matlab_converter = matlab_converter        
 
-    
     def eval(self, line):
         """
         Parse and evaluate a single line of matlab
@@ -97,12 +109,10 @@ class MatlabMagics(Magics)
         run_dict = self.Matlab.run_code(line)
 
         if run_dict['success'] == 'false':
-            raise MatlabInterperterError(line, run_dict['message'])        
+            raise MatlabInterperterError(line, run_dict['content']['stdout'])
 
         # This is the matlab stdout: 
-        text_result = run_dict['content']['stdout']
-
-        return text_result, result
+        return run_dict
         
     @magic_arguments()
     @argument(
@@ -155,18 +165,43 @@ class MatlabMagics(Magics)
                     val = local_ns[input]
                 except KeyError:
                     val = self.shell.user_ns[input]
-                self.eval('%s=%s'%(input, self.pyconverter(val)))
+                self.eval('%s=%s;'%(input, self.pyconverter(val)))
 
+        text_output = ''
+        imgfiles = []
+        
         if line_mode:
             for line in code.split(';'):
-                text_result = self.eval(line)
-                text_output += text_result
-            if text_result:
-                return_output = False
+                result_dict = self.eval(line)
+                text_output += result_dict['content']['stdout']
+                imgfiles.append(result_dict['content']['figures'])
         else:
-            for line in code.split('\n'):
-                text_result = self.eval(code)
-                text_output += text_result
+            result_dict = self.eval(code)
+            text_output += result_dict['content']['stdout']
+            imgfiles.append(result_dict['content']['figures'])
+
+        display_data = []
+        if text_output:
+            display_data.append(('MatlabMagic.matlab',
+                                 {'text/plain':text_output}))
+        # If there are no images, we still want this variable, so that the test
+        # on its length doesn't fail:
+        imgdir = [] 
+        for imgf in imgfiles:
+            if len(imgf):
+                # Store the path to the directory so that you can delete it
+                # later on:
+                imgdir = os.path.split(imgf)[0]
+                image = open(imgf, 'rb').read() 
+                display_data.append(('MatlabMagic.matlab',
+                                     {'image/png': image}))
+
+        for tag, disp_d in display_data:
+            publish_display_data(tag, disp_d)
+
+        # Delete the temporary png files created by matlab:
+        if len(imgdir):
+            rmtree(imgdir)
         
 
 _loaded = False
@@ -176,4 +211,4 @@ def load_ipython_extension(ip):
     if not _loaded:
         ip.register_magics(MatlabMagics)
         _loaded = True
-
+        
