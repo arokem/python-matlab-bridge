@@ -171,10 +171,9 @@ class MatlabMagics(Magics):
         imgfiles = []
         
         if line_mode:
-            for line in code.split(';'):
-                result_dict = self.eval(line)
-                text_output += result_dict['content']['stdout']
-                imgfiles.append(result_dict['content']['figures'])
+            result_dict = self.eval(line)
+            text_output += result_dict['content']['stdout']
+            imgfiles.append(result_dict['content']['figures'])
         else:
             result_dict = self.eval(code)
             text_output += result_dict['content']['stdout']
