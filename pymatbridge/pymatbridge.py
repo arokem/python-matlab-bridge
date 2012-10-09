@@ -54,9 +54,12 @@ class Matlab(object):
             
         """
 
+        # These are the matlab functions that post requests to the webserever
+        # through the methods of this class:
         self.feval = 'web_feval.m'
         self.eval = 'web_eval.m'
-            
+        self.get_var = 'web_get_variable.m'
+
         self.matlab = matlab
         self.host = host
         if self.port is None:
@@ -122,7 +125,7 @@ class Matlab(object):
 
     def run_func(self, func_path, func_args=None, maxtime=None):
         if self.running:
-            time.sleep(0.5)
+            time.sleep(0.05)
         page_args = {
             'func_path': func_path,
         }
@@ -142,7 +145,7 @@ class Matlab(object):
 
         """
         if self.running:
-            time.sleep(0.5)
+            time.sleep(0.05)
             
         if maxtime:
             result = self._open_page(self.eval, dict(code=code), maxtime)
@@ -150,8 +153,19 @@ class Matlab(object):
             result = self._open_page(self.eval, dict(code=code))
 
         return result
-        
 
+    def get_variable(self, varname, maxtime=None):
+        if self.running:
+            time.sleep(0.05)
+            
+        if maxtime:
+            result = self._open_page(self.get_var, dict(varname=varname),
+                                     maxtime)
+        else:
+            result = self._open_page(self.get_var, dict(varname=varname))
+
+        return result['var']
+        
         
     def _open_page(self, page_name, arguments={}, timeout=10):
         self.running = True

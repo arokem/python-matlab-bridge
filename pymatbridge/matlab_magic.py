@@ -50,20 +50,15 @@ class MatlabInterperterError(RuntimeError):
         def __str__(self):
             return unicode_to_str(unicode(self), 'utf-8')
 
-def pyconverter(val):
+
+def matlab_converter(matlab, key):
     """
 
+    Reach into the matlab namespace and get me the value of the variable
+    
     """
-
-    pass
-
-def matlab_converter(val):
-    """
-
-    """
-
-    pass
-
+    exec('this=np.array(%s)'%matlab.get_variable(key))
+    return this
 
 @magics_class
 class MatlabMagics(Magics):
@@ -202,7 +197,12 @@ class MatlabMagics(Magics):
         if len(imgdir):
             rmtree(imgdir)
         
+        if args.output:
+            for output in ','.join(args.output).split(','):
+                self.shell.push({output:self.matlab_converter(self.Matlab,
+                                                              output)})
 
+            
 _loaded = False
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
