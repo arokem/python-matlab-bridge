@@ -86,5 +86,5 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['pymatbridge']
-PACKAGE_DATA = {}
+PACKAGE_DATA = {"pymatbridge": ["matlab/*.m", "matlab/functions/*.m", "matlab/www/*.m"]}
 REQUIRES = []

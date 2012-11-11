@@ -73,8 +73,11 @@ class Matlab(object):
 
     def start(self):
         def _run_matlab_server():
-            cmd_str = '%s -nodesktop -nosplash -nodisplay -r "cd pymatbridge/matlab,webserver(%s),exit"'%(self.matlab, self.port)
-
+            cmd_str = '%s -nodesktop -nosplash -nodisplay -r "'%self.matlab
+            cmd_str += "addpath(genpath("
+            cmd_str += "'%s'"%MATLAB_FOLDER
+            cmd_str += ')), webserver(%s),exit"'%self.port
+            
             if self.log:
                 cmd_str += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.id, self.id)
 
