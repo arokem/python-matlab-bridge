@@ -52,9 +52,6 @@ end
 % Use Default Server Port, if user input not available
 if(nargin<1), port=4000; end
 
-% Add sub-functions to Matlab Search Path
-add_function_paths();
-
 % Open a TCP Server Port
 TCP=JavaTcpServer('initialize',[],port,config);
 
@@ -112,7 +109,6 @@ while(true)
     % or execute matlab code, which generates the file
     switch(ext)
         case {'.m'}
-            addpath(pathstr)
             fhandle = str2func(name);
             try
             html=feval(fhandle,request,config);
@@ -122,7 +118,6 @@ while(true)
                     ME.message '</font></body></html>'];
                 fprintf(ME.message);
             end
-            rmpath(pathstr)
             header=make_html_http_header(html,found);
             response=header2text(header);
         case {'.html','.htm'}
@@ -152,18 +147,6 @@ while(true)
     JavaTcpServer('write',TCP,int8(html),config);
 end
 JavaTcpServer('close',TCP);
-
-
-function add_function_paths()
-try
-    functionname='webserver.m';
-    functiondir=which(functionname);
-    functiondir=functiondir(1:end-length(functionname));
-    addpath([functiondir '/functions'])
-catch me
-    disp(me.message);
-end
-
 
 
 
