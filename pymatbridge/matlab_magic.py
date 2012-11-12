@@ -66,6 +66,7 @@ class MatlabMagics(Magics):
     A set of magics for interactive work with Matlab(R).
     """
     def __init__(self, shell,
+                 matlab='matlab',
                  matlab_converter=matlab_converter,
                  pyconverter=np.asarray,
                  cache_display_data=False):
@@ -74,6 +75,10 @@ class MatlabMagics(Magics):
         ----------
 
         shell : IPython shell
+
+        matlab : str
+            The system call to start a matlab session. Allows you to choose a
+            particular version of matlab if you want
 
         pyconverter : callable
             To be called on matlab variables returning into the ipython
@@ -91,7 +96,7 @@ class MatlabMagics(Magics):
         super(MatlabMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.Matlab = pymat.Matlab()
+        self.Matlab = pymat.Matlab(matlab)
         self.Matlab.start()
 
         self.pyconverter = pyconverter
@@ -204,10 +209,11 @@ class MatlabMagics(Magics):
 
             
 _loaded = False
-def load_ipython_extension(ip):
+def load_ipython_extension(ip, **kwargs):
     """Load the extension in IPython."""
     global _loaded
     if not _loaded:
-        ip.register_magics(MatlabMagics)
+        this_magics=MatlabMagics(ip, **kwargs)
+        ip.register_magics(this_magics)
         _loaded = True
         
