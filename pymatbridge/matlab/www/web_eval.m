@@ -40,9 +40,10 @@ try
     diary(diary_file);
     evalin('base', code); 
     diary('off');
-    figdir = [tempdir 'MatlabFigures/'];
-    mkdir(figdir);
-    fig_files = make_figs(figdir);
+    datadir = [tempdir 'MatlabData/'];
+    response.content.datadir = datadir;
+    mkdir(datadir);
+    fig_files = make_figs(datadir);    
     response.success = 'true';
     response.content.code = code;
     response.content.figures = fig_files;

@@ -19,8 +19,12 @@ from shutil import rmtree
 from getopt import getopt
 
 import numpy as np
-import pymatbridge as pymat
-
+try:
+    has_io = True
+    import scipy.io as sio
+except ImportError:
+    has_io = False
+    
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, cell_magic, line_magic,
                                 line_cell_magic, needs_local_scope)
@@ -29,6 +33,7 @@ from IPython.core.magic_arguments import (argument, magic_arguments,
                                           parse_argstring)
 from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
 
+import pymatbridge as pymat
 
     
 class MatlabInterperterError(RuntimeError):
@@ -57,8 +62,9 @@ def matlab_converter(matlab, key):
     Reach into the matlab namespace and get me the value of the variable
     
     """
-    exec('this=np.array(%s)'%matlab.get_variable(key))
-    return this
+    tempdir = tempfile.gettempdir()
+    matlab.run_code("save('%s/%s.mat','%s')"%(tempdir, key, key))
+    return sio.loadmat('%s/%s.mat'%(tempdir, key), squeeze_me=True)[key]
 
 @magics_class
 class MatlabMagics(Magics):
@@ -160,37 +166,46 @@ class MatlabMagics(Magics):
 
 
         if args.input:
-            for input in ','.join(args.input).split(','):
-                try:
-                    val = local_ns[input]
-                except KeyError:
-                    val = self.shell.user_ns[input]
-                self.eval('%s=%s;'%(input, self.pyconverter(val)))
+            if has_io:
+                for input in ','.join(args.input).split(','):
+                    try:
+                        val = local_ns[input]
+                    except KeyError:
+                        val = self.shell.user_ns[input]
+                    # We save these input arguments into a .mat file:
+                    tempdir = tempfile.gettempdir() 
+                    sio.savemat('%s/%s.mat'%(tempdir, input),
+                                eval("dict(%s=val)"%input), oned_as='row')
 
+                    #Which is then read in by the Matlab session
+                    self.eval("load('%s/%s.mat');"%(tempdir, input))
+
+            else:
+                e_s = "Must have scipy.io import-able to perform i/o"
+                e_s += "operations with the Matlab session"
+                
+            
         text_output = ''
         imgfiles = []
         
         if line_mode:
             result_dict = self.eval(line)
-            text_output += result_dict['content']['stdout']
-            imgfiles.append(result_dict['content']['figures'])
         else:
             result_dict = self.eval(code)
-            text_output += result_dict['content']['stdout']
-            imgfiles.append(result_dict['content']['figures'])
 
+        text_output += result_dict['content']['stdout']
+        imgfiles.append(result_dict['content']['figures'])
+        data_dir = result_dict['content']['datadir']
+        
         display_data = []
         if text_output:
             display_data.append(('MatlabMagic.matlab',
                                  {'text/plain':text_output}))
-        # If there are no images, we still want this variable, so that the test
-        # on its length doesn't fail:
-        imgdir = [] 
+
         for imgf in imgfiles:
             if len(imgf):
                 # Store the path to the directory so that you can delete it
                 # later on:
-                imgdir = os.path.split(imgf)[0]
                 image = open(imgf, 'rb').read() 
                 display_data.append(('MatlabMagic.matlab',
                                      {'image/png': image}))
@@ -198,9 +213,9 @@ class MatlabMagics(Magics):
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d)
 
-        # Delete the temporary png files created by matlab:
-        if len(imgdir):
-            rmtree(imgdir)
+        # Delete the temporary data files created by matlab:
+        if len(data_dir):
+            rmtree(data_dir)
         
         if args.output:
             for output in ','.join(args.output).split(','):
