@@ -73,6 +73,7 @@ class MatlabMagics(Magics):
     """
     def __init__(self, shell,
                  matlab='matlab',
+                 maxtime=None,
                  matlab_converter=matlab_converter,
                  pyconverter=np.asarray,
                  cache_display_data=False):
@@ -86,6 +87,10 @@ class MatlabMagics(Magics):
             The system call to start a matlab session. Allows you to choose a
             particular version of matlab if you want
 
+        maxtime : float
+           The maximal time to wait for responses for matlab (in seconds).
+           Default: 10 seconds.
+           
         pyconverter : callable
             To be called on matlab variables returning into the ipython
             namespace
@@ -104,6 +109,8 @@ class MatlabMagics(Magics):
 
         self.Matlab = pymat.Matlab(matlab)
         self.Matlab.start()
+        
+        self.maxtime = maxtime
 
         self.pyconverter = pyconverter
         self.matlab_converter = matlab_converter        
@@ -112,7 +119,7 @@ class MatlabMagics(Magics):
         """
         Parse and evaluate a single line of matlab
         """
-        run_dict = self.Matlab.run_code(line)
+        run_dict = self.Matlab.run_code(line, maxtime=self.maxtime)
 
         if run_dict['success'] == 'false':
             raise MatlabInterperterError(line, run_dict['content']['stdout'])

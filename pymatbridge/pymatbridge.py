@@ -28,7 +28,7 @@ class Matlab(object):
     server_process = Process()
 
     def __init__(self, matlab='matlab', host='localhost', port=None,
-                 id='python-matlab-bridge', log=False):
+                 id='python-matlab-bridge', log=False, maxtime=None):
         """
         Initialize this thing.
 
@@ -51,6 +51,10 @@ class Matlab(object):
 
         log : bool
             Whether to save a log file in some known location.
+
+        maxtime : float
+           The maximal time to wait for a response from matlab (optional,
+           Default is 
             
         """
 
@@ -70,6 +74,7 @@ class Matlab(object):
         self.server = 'http://%s:%s' % (self.host, str(self.port))
         self.id = id
         self.log = log
+        self.maxtime = maxtime
 
     def start(self):
         def _run_matlab_server():
