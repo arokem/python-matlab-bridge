@@ -20,10 +20,13 @@ from getopt import getopt
 
 import numpy as np
 try:
-    has_io = True
+    import tables
     import scipy.io as sio
+    has_io = True
 except ImportError:
     has_io = False
+    no_io_str = "Must have pytables and scipy.io to perform i/o"
+    no_io_str += "operations with the Matlab session"
     
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, cell_magic, line_magic,
@@ -56,6 +59,15 @@ class MatlabInterperterError(RuntimeError):
             return unicode_to_str(unicode(self), 'utf-8')
 
 
+def loadmat(fname):
+    """
+    Use pytables to read a variable from a v7.3 mat file
+    """
+
+    f = tables.File('matfile.mat')
+    return f.root.data.read()
+
+
 def matlab_converter(matlab, key):
     """
 
@@ -63,8 +75,14 @@ def matlab_converter(matlab, key):
     
     """
     tempdir = tempfile.gettempdir()
-    matlab.run_code("save('%s/%s.mat','%s')"%(tempdir, key, key))
-    return sio.loadmat('%s/%s.mat'%(tempdir, key), squeeze_me=True)[key]
+    # We save as hdf5 in the matlab session, so that we can grab large
+    # variables:
+    matlab.run_code("save('%s/%s.mat','%s','-v7.3')"%(tempdir, key, key),
+                    maxtime=matlab.maxtime)
+    
+    return loadmat('%s/%s.mat'%(tempdir, key))
+
+
 
 @magics_class
 class MatlabMagics(Magics):
@@ -107,11 +125,8 @@ class MatlabMagics(Magics):
         super(MatlabMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.Matlab = pymat.Matlab(matlab)
+        self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
-        
-        self.maxtime = maxtime
-
         self.pyconverter = pyconverter
         self.matlab_converter = matlab_converter        
 
@@ -119,7 +134,7 @@ class MatlabMagics(Magics):
         """
         Parse and evaluate a single line of matlab
         """
-        run_dict = self.Matlab.run_code(line, maxtime=self.maxtime)
+        run_dict = self.Matlab.run_code(line, maxtime=self.Matlab.maxtime)
 
         if run_dict['success'] == 'false':
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
@@ -188,9 +203,7 @@ class MatlabMagics(Magics):
                     self.eval("load('%s/%s.mat');"%(tempdir, input))
 
             else:
-                e_s = "Must have scipy.io import-able to perform i/o"
-                e_s += "operations with the Matlab session"
-                
+                raise RuntimeError(no_io_str)
             
         text_output = ''
         imgfiles = []
@@ -225,10 +238,13 @@ class MatlabMagics(Magics):
             rmtree(data_dir)
         
         if args.output:
-            for output in ','.join(args.output).split(','):
-                self.shell.push({output:self.matlab_converter(self.Matlab,
+            if has_io:
+                for output in ','.join(args.output).split(','):
+                    self.shell.push({output:self.matlab_converter(self.Matlab,
                                                               output)})
-
+            else:
+                raise RuntimeError(no_io_str)
+                
             
 _loaded = False
 def load_ipython_extension(ip, **kwargs):

@@ -158,7 +158,7 @@ class Matlab(object):
         if maxtime:
             result = self._open_page(self.eval, dict(code=code), maxtime)
         else:
-            result = self._open_page(self.eval, dict(code=code))
+            result = self._open_page(self.eval, dict(code=code), self.maxtime)
 
         return result
 
@@ -170,7 +170,8 @@ class Matlab(object):
             result = self._open_page(self.get_var, dict(varname=varname),
                                      maxtime)
         else:
-            result = self._open_page(self.get_var, dict(varname=varname))
+            result = self._open_page(self.get_var, dict(varname=varname),
+                                     self.maxtime)
 
         return result['var']
         
@@ -183,7 +184,11 @@ class Matlab(object):
         
         self.running = False
         read_page = page.read()
-        # Deal with escape characters: json needs an additional '\': 
-        return json.loads(read_page.replace("\n","\\n"))
+        # Deal with escape characters: json needs an additional '\':
+        # Kill backspaces (why does Matlab even put these there!?): 
+        read_page = read_page.replace("\x08", "")
+        # Keep new-lines:
+        read_page = read_page.replace("\n","\\n")
+        return json.loads(read_page)
 
 
