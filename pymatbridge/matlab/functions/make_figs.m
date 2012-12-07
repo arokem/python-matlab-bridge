@@ -3,7 +3,7 @@ function fig_files = make_figs(figdir)
 % that was just executed):
 figHandles = get(0, 'children');
 
-fig_files = [];
+fig_files = {};
 
 for fig=1:length(figHandles)
     h = figHandles(fig);
@@ -15,7 +15,7 @@ for fig=1:length(figHandles)
     % Once you've saved it, close it, so it doesn't get dragged into the
     % scope of other cells
     close(h);
-    fig_files = [fig_files filename '.png'];
+    fig_files{fig} = [filename '.png'];
 end
 
 end 

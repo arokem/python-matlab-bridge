@@ -206,7 +206,7 @@ class MatlabMagics(Magics):
                 raise RuntimeError(no_io_str)
             
         text_output = ''
-        imgfiles = []
+        #imgfiles = []
         
         if line_mode:
             result_dict = self.eval(line)
@@ -214,7 +214,8 @@ class MatlabMagics(Magics):
             result_dict = self.eval(code)
 
         text_output += result_dict['content']['stdout']
-        imgfiles.append(result_dict['content']['figures'])
+        # Figures get saved by matlab in reverse order...
+        imgfiles = result_dict['content']['figures'][::-1]
         data_dir = result_dict['content']['datadir']
         
         display_data = []
