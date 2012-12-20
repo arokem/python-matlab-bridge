@@ -64,8 +64,8 @@ def loadmat(fname):
     Use pytables to read a variable from a v7.3 mat file
     """
 
-    f = tables.File('matfile.mat')
-    return f.root.data.read()
+    f = tables.File(fname)
+    return f.root.__getattr__(f.root.__members__[0])
 
 
 def matlab_converter(matlab, key):
