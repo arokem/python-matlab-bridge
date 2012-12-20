@@ -9,10 +9,18 @@ for i=1:length(request_lines)
     switch(lower(type))
         case 'get'
             header.Get.Filename=request_words{i}{2};
-            header.Get.Protocol=request_words{i}{3};
+            if (numel(request_words{i}) > 2)
+                header.Get.Protocol=request_words{i}{3};
+            else
+                header.Get.Protocol = 'none_given'
+            end
         case 'post'
             header.Post.Filename=request_words{i}{2};
-            header.Post.Protocol=request_words{i}{3};
+            if (numel(request_words{i}) > 2)
+                header.Post.Protocol=request_words{i}{3};
+            else
+                header.Post.Protocol = 'none_given'
+            end
         case 'host:'
             header.Host=rmvp(line(7:end));
         case 'user-agent:'
