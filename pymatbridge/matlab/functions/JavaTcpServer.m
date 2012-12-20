@@ -53,10 +53,15 @@ switch(action)
     case 'write'
         if(~isa(data,'int8')), error('TCP:input','Data must be of type int8'); end
         try
-            DataOutputStream(TCP.outputStream).write(data,0,length(data));
+			% in older versions of matlab, this gives an error about
+			% static constructors;
+            %DataOutputStream(TCP.outputStream).write(data,0,length(data));
+			dostr = DataOutputStream(TCP.outputStream);
+			dostr.write(data,0,length(data));
         catch
         end
 		try
+			% this might also barf if you change it to flush(), I believe.
 			DataOutputStream(TCP.outputStream).flush;
 		catch
 		end
