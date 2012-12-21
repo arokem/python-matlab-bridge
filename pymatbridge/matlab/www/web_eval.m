@@ -47,7 +47,7 @@ try
     response.success = 'true';
     response.content.code = code;
     response.content.figures = fig_files;
-    [~, stdout] = system(['cat ' diary_file]);
+    [ignore_status, stdout] = system(['cat ' diary_file]);
     delete(diary_file)
     response.content.stdout = stdout; 
 catch ME   
