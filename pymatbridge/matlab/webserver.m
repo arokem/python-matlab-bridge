@@ -1,4 +1,4 @@
-function webserver(port,config)
+function webserver(varargin);
 % RUN javaaddpath('mongo-2.7.2.jar')
 % This function WEBSERVER, is a HTTP webserver for HTML code and images
 % and also allows execution of Matlab code through the web.
@@ -35,25 +35,49 @@ function webserver(port,config)
 % Config of the HTTP server
 close all;
 
-defaultoptions=struct('www_folder','www','temp_folder','www/temp','verbose',true,'defaultfile','/index.html','mtime1',0.8,'mtime2',3);
+% make file locations relative to 'here', the directory
+% containing webserver.m
+my_filename = mfilename('fullpath');
+my_dir = fileparts(my_filename);
 
-if(~exist('config','var')), config=defaultoptions;
-else
-    tags = fieldnames(defaultoptions);
-    for i=1:length(tags),
-        if(~isfield(config,tags{i})), config.(tags{i})=defaultoptions.(tags{i}); end
-    end
-    if(length(tags)~=length(fieldnames(config))),
-        warning('image_registration:unknownoption','unknown options found');
-    end
+% more flexible input parsing
+p = inputParser;
+
+p.addOptional('port',4000,@(x)(isnumeric(x) && isscalar(x) && (x > 999) && (floor(x) == x)));
+
+p.addOptional('www_folder',fullfile(my_dir,'www'),@ischar);
+p.addOptional('temp_folder',fullfile(my_dir,'www','temp'),@ischar);
+p.addOptional('verbose',true,@islogical);
+p.addOptional('defaultfile',[filesep(),'index.html'],@ischar);
+% these are not publicized:
+p.addOptional('mtime1',0.8,@(x)(isnumeric(x) && isscalar(x) && x > 0));
+p.addOptional('mtime2',3.0,@(x)(isnumeric(x) && isscalar(x) && x > 0));
+
+% parse it
+p.parse(varargin{:});
+
+% get results
+config = p.Results;
+port = config.port;
+
+fprintf(2,'the pwd is %s\n',pwd());
+
+% check the www folder
+if (isempty(dir(config.www_folder)))
+	warning('webserver:directoryNotFound','directory %s was not found',config.www_folder);
+	% proceed, but probably something will barf.
 end
 
-
-% Use Default Server Port, if user input not available
-if(nargin<1), port=4000; end
+% make the temp_folder
+if (isempty(dir(config.temp_folder)))
+	warning('webserver:directoryNotFound','directory %s was not found; will mkdir.',config.temp_folder);
+	try
+		mkdir(config.temp_folder);
+	end
+end
 
 % Open a TCP Server Port
-TCP=JavaTcpServer('initialize',[],port,config);
+TCP = JavaTcpServer('initialize',[],port,config);
 
 if(config.verbose)
     disp(['Webserver Available on http://localhost:' num2str(port) '/']);
@@ -123,7 +147,7 @@ while(true)
         case {'.html','.htm'}
             fid = fopen(fullfilename, 'r');
             html = fread(fid, inf, 'int8')';
-			fclose(fid);
+						fclose(fid);
             header=make_html_http_header(html,found);
             response=header2text(header);
         case {'.jpg','.png','.gif','.ico'}
@@ -146,11 +170,7 @@ while(true)
     JavaTcpServer('write',TCP,int8(response),config);
     JavaTcpServer('write',TCP,int8(html),config);
 end
+
 JavaTcpServer('close',TCP);
 
-
-
-
-
-
-
+end %function
