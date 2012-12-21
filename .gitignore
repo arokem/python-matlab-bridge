@@ -15,6 +15,12 @@
 
 .DS_Store
 
+.tags
+
+.mat_tags
+
+rebuildTags.sh
+
 ADME.markdown
 
 *.pyc

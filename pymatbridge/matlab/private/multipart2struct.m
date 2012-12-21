@@ -35,8 +35,10 @@ switch(subdata.ContentType)
     otherwise
         subdata.ContentData=subrequestdata(w(i)+1:end);
         [pathstr,name,ext] = fileparts(subdata.Filename);
-        filename=['/' char(round(rand(1,32)*9)+48)];
-        fullfilename=[config.temp_folder filename ext];
+
+				% [NULL,filename] = fileparts(tempname());  % more conventional;
+        filename = char(round(rand(1,32)*9)+48);
+        fullfilename = fullfile(config.temp_folder,[filename ext]);
         fid = fopen(fullfilename,'w'); fwrite(fid,subdata.ContentData,'int8'); fclose(fid);
         subdata.Filename=fullfilename;
 end
