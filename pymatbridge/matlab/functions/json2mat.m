@@ -1,6 +1,5 @@
 function M=json2mat(J)
-
-%JSON2MAT converts a javscript data object (JSON) into a Matlab structure
+% JSON2MAT: converts a javscript data object (JSON) into a Matlab structure
 %         using s recursive approach. J can also be a file name.
 %
 %Example: lala=json2mat('{lele:2,lili:4,lolo:[1,2,{lulu:5,bubu:[[1,2],[3,4],[5,6]]}]}') 
@@ -104,7 +103,8 @@ indOpen=[indOpen,ones(length(indOpen),1)];
 indClose=strfind(x,tagClose)';
 indClose=[indClose,-ones(length(indClose),1)];
 indOpenClose=[indOpen;indClose];
-[~,Ind]=sort(indOpenClose(:,1));
+[NULL,Ind]=sort(indOpenClose(:,1));
+clear NULL;
 indOpenClose=indOpenClose(Ind,:);
 n=size(indOpenClose,1);
 for i=2:n % add one for open, take one for close
