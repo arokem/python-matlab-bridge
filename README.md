@@ -7,9 +7,6 @@ This implementation also includes an [ipython](http://ipython.org) matlab_magic
 extension, which provides a much simplified interface for weaving python and
 Matlab code together.  
 
-
-***AT PRESENT THIS DOES NOT WORK ON WINDOWS***
-
 ## Usage
 
 For examples, check out the `.ipynb` files
