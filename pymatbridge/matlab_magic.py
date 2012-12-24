@@ -17,6 +17,7 @@ import tempfile
 from glob import glob
 from shutil import rmtree
 from getopt import getopt
+from urllib2 import URLError
 
 import numpy as np
 try:
@@ -207,11 +208,20 @@ class MatlabMagics(Magics):
             
         text_output = ''
         #imgfiles = []
+
+        try:
+            if line_mode:
+                e_s = "There was an error running the code:\n %s"%line
+                result_dict = self.eval(line)
+            else:
+                e_s = "There was an error running the code:\n %s"%code
+                result_dict = self.eval(code)
+        except URLError:
+            e_s += "\n-----------------------"
+            e_s += "\nAre you sure Matlab is started?"
+            raise RuntimeError(e_s)
+            
         
-        if line_mode:
-            result_dict = self.eval(line)
-        else:
-            result_dict = self.eval(code)
 
         text_output += result_dict['content']['stdout']
         # Figures get saved by matlab in reverse order...
@@ -252,7 +262,16 @@ def load_ipython_extension(ip, **kwargs):
     """Load the extension in IPython."""
     global _loaded
     if not _loaded:
+        global this_magics
         this_magics=MatlabMagics(ip, **kwargs)
         ip.register_magics(this_magics)
         _loaded = True
+        
+def unload_ipython_extension(ip, **kwargs):
+    global _loaded
+    if _loaded:
+        global this_magics
+        this_magics.Matlab.stop()
+
+        
         
