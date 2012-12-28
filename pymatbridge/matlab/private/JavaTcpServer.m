@@ -10,18 +10,18 @@ switch(action)
     case 'initialize'
         try
             serverSocket = ServerSocket(data);
-        catch 
+        catch
             try
                 GlobalserverSocket.close;
                 serverSocket = ServerSocket(data);
             catch
                 error('JavaTcpServer:initialize', ['Failed to Open Server Port. ' ...
-                    'Reasons: "port is still open by Matlab for instance due ' ... 
+                    'Reasons: "port is still open by Matlab for instance due ' ...
                     'to an previous crash", "Blocked by Firewall application",  ' ...
                     '"Port open in another Application", "No rights to open the port"']);
             end
         end
-        
+
         serverSocket.setSoTimeout(timeout);
         TCP.port = data;
         TCP.serverSocket=serverSocket;

@@ -131,6 +131,16 @@ class MatlabMagics(Magics):
         self.pyconverter = pyconverter
         self.matlab_converter = matlab_converter        
 
+    def __del__(self):
+        """shut down the Matlab server when the object dies.
+
+        2FIX: this seems to not be called when ipython terminates. bleah.
+        """
+        try:
+            self.Matlab.stop()
+        except:
+            raise
+
     def eval(self, line):
         """
         Parse and evaluate a single line of matlab
@@ -271,4 +281,3 @@ def unload_ipython_extension(ip):
         magic = ip.magics_manager.registry.pop('MatlabMagics')
         magic.Matlab.stop()
 
-    

@@ -77,7 +77,7 @@ if(isfield(header,'ContentLength'))
                 header.ContentType.Boundary=['-' header.ContentType.Boundary];
                 pos=strfind(str,header.ContentType.Boundary);
             end
-            
+
             for i=1:(length(pos)-1)
                 pstart=pos(i)+length(header.ContentType.Boundary);
                 pend=pos(i+1)-3; % Remove "13 10" End-line characters

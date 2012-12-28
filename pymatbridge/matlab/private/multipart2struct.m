@@ -29,7 +29,7 @@ while(true)
     end
 end
 w=find(subrequestdata==10);
-switch(subdata.ContentType) 
+switch(subdata.ContentType)
     case ''
         subdata.ContentData=char(subrequestdata(w(i)+1:end));
     otherwise
