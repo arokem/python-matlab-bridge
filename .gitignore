@@ -27,3 +27,4 @@ build
 .mat_tags
 .py_tags
 rebuildTags.sh
+pymatbridge/matlab/www/log/
