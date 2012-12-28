@@ -91,6 +91,7 @@ class Matlab(object):
 
         # Start the MATLAB server
         print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
+        print " visit http://%s:%s/exit_server.m to shut down same" % (self.host, str(self.port))
         self.server_process = Process(target=_run_matlab_server)
         self.server_process.daemon = True
         self.server_process.start()

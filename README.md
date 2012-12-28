@@ -7,9 +7,16 @@ This implementation also includes an [ipython](http://ipython.org) matlab_magic
 extension, which provides a much simplified interface for weaving python and
 Matlab code together.  
 
+
+***AT PRESENT THIS MAY NOT WORK ON WINDOWS; BETA TESTERS WANTED ***
+
 ## Usage
 
 For examples, check out the `.ipynb` files
+
+## Installation
+
+todo
 
 ### API: 
 
@@ -51,7 +58,7 @@ which will print 8.
 
 Or you can run some arbitrary matlab code:
 
-   res = mlab.run_code('a=10; b=a+3')
+    res = mlab.run_code('a=10; b=a+3')
 
 You can shut down the MATLAB server by calling
 
@@ -64,9 +71,9 @@ NB: you can call MATLAB code before the server starts by adding code to the ./ma
 
 This can be used in an ipython session in the following manner:
 
-     import pymatbridge as pymat
-     ip = get_ipython()
-     pymat.load_ipython_extension(ip)
+    import pymatbridge as pymat
+    ip = get_ipython()
+    pymat.load_ipython_extension(ip)
 
 These lines will automatically start the matlab session for you. Then, you can
 simply decorate a line/cell with the '%matlab' or '%%matlab' decorator and
@@ -78,6 +85,12 @@ write matlab code:
     grid on
     hold on
     plot(cos(a),'r')
+
+### Warnings
+
+Python communicates with Matlab via an ad-hoc webserver. This is inherently
+insecure, as the Matlab instance may be directed to perform arbitrary system
+calls. There is no sandboxing of any kind. Use this code at your own risk.
 
 # Examples
 
