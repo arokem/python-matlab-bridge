@@ -95,7 +95,7 @@ end
 
 % open the log file
 if ~isinf(log_levels.(config.log_level))
-	config.logfile = fullfile(config.log_folder,sprintf('webserver_%s.log',datestr(now(),'yyyymmddTHHMMSSFFF')));
+	config.logfile = fullfile(config.log_folder,sprintf('webserver_%d_%s.log',port,datestr(now(),'yyyymmddTHHMMSSFFF')));
 	try
 		config.log_FID = fopen(config.logfile,'w');
 		if (config.verbose)  % ack! multiple log streams!
@@ -142,17 +142,22 @@ catch
 end
 
 if (config.verbose)
-	fprintf(1,'Webserver available on http://localhost:%d/\n',port);
-	log_it(config,'info','Webserver at http://localhost:%d/',port);
+	fprintf(1,'Webserver available on http://localhost:%d/\nVisit http://localhost:%d/exit.m to shut down\n',port,port);
 end
+
+log_it(config,'info','Webserver available on http://localhost:%d/\nVisit http://localhost:%d/exit.m to shut down\n',port,port);
 
 log_it(config,'info','starting main loop')
 
+% termination conditions
 last_request = now();
 timed_out = (now() - last_request) > config.timeout;
+exit_server = false;
 
 try
-	while (~timed_out)
+	while (~(timed_out || exit_server))
+		touch_sentinel(config);
+
 		% Wait for connections of browsers
 		TCP=JavaTcpServer('accept',TCP,[],config);
 
@@ -188,7 +193,12 @@ try
 		end
 
 		% If no filename, use default
-		if(strcmp(filename,'/')), filename=config.defaultfile; end
+		if (strcmp(filename,'/')), filename=config.defaultfile; end
+
+		% put special magic here to detect exit.m
+		% so that we can properly shut down the server. 
+		% anything else is a hack.
+		exit_server = (strcmp(filename,'exit.m'));
 
 		% Make the full filename inluding path
 		fullfilename=[config.www_folder filename];
@@ -196,50 +206,58 @@ try
 
 		% Check if file asked by the browser can be opened
 		fid = fopen(fullfilename, 'r');
+		found = fid > 0;
 		if (fid<0)
 			log_it(config,'warning','could not open file %s',fullfilename);
-			filename='/404.html'; found=false;
+			filename='/404.html'; 
 			fullfilename=[config.www_folder filename]; 
 		else
-			found=true; fclose(fid);
+			fclose(fid);  % won't this barf if fid < 0? 
 		end
 
 		log_it(config,'info','writing to %s',fullfilename);
 
-		% Based on the extention asked, read a local file and parse it.
-		% or execute matlab code, which generates the file
-		switch(ext)
-		case {'.m'}
-			fhandle = str2func(name);
-			try
-				html=feval(fhandle,request,config);
-			catch ME
-				html=['<html><body><font color="#FF0000">Error in file : ' name ...
-				'.m</font><br><br><font color="#990000"> The file returned the following error: <br>' ...
-				ME.message '</font></body></html>'];
-				fprintf(ME.message);
-				log_it(config,'error','file returned error %s',ME.message);
+		if (exit_server)
+			found = true;
+			html = sprintf('<html><body><font color="#FF0000">shutting down server at %d</font><br><br></body></html>',port);
+			header = make_html_http_header(html,found);
+			response = header2text(header);
+		else
+			% Based on the extention asked, read a local file and parse it.
+			% or execute matlab code, which generates the file
+			switch(ext)
+			case {'.m'}
+				fhandle = str2func(name);
+				try
+					html=feval(fhandle,request,config);
+				catch ME
+					html=['<html><body><font color="#FF0000">Error in file : ' name ...
+					'.m</font><br><br><font color="#990000"> The file returned the following error: <br>' ...
+					ME.message '</font></body></html>'];
+					fprintf(ME.message);
+					log_it(config,'error','file returned error %s',ME.message);
+				end
+				header=make_html_http_header(html,found);
+				response=header2text(header);
+			case {'.html','.htm'}
+				fid = fopen(fullfilename, 'r');
+				html = fread(fid, inf, 'int8')';
+				fclose(fid);
+				header=make_html_http_header(html,found);
+				response=header2text(header);
+			case {'.jpg','.png','.gif','.ico'}
+				fid = fopen(fullfilename, 'r');
+				html = fread(fid, inf, 'int8')';
+				fclose(fid);
+				header=make_image_http_header(html,found);
+				response=header2text(header);
+			otherwise
+				fid = fopen(fullfilename, 'r');
+				html = fread(fid, inf, 'int8')';
+				fclose(fid);
+				header=make_bin_http_header(html,found);
+				response=header2text(header);
 			end
-			header=make_html_http_header(html,found);
-			response=header2text(header);
-		case {'.html','.htm'}
-			fid = fopen(fullfilename, 'r');
-			html = fread(fid, inf, 'int8')';
-			fclose(fid);
-			header=make_html_http_header(html,found);
-			response=header2text(header);
-		case {'.jpg','.png','.gif','.ico'}
-			fid = fopen(fullfilename, 'r');
-			html = fread(fid, inf, 'int8')';
-			fclose(fid);
-			header=make_image_http_header(html,found);
-			response=header2text(header);
-		otherwise
-			fid = fopen(fullfilename, 'r');
-			html = fread(fid, inf, 'int8')';
-			fclose(fid);
-			header=make_bin_http_header(html,found);
-			response=header2text(header);
 		end
 
 		if(config.verbose), disp(char(response)); end
