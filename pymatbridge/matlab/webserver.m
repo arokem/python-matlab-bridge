@@ -7,20 +7,23 @@ function webserver(varargin);
 %   webserver(port)
 %
 %   or
+%   WEBSERVER(port)
+%   WEBSERVER(config)
+%   WEBSERVER(port,config)
 %
-%   webserver(port,config)
-%
-%   port : A port nummer for instance 4000
-%   (optional)
+%   port : A port nummer for instance 4000; defaults to 4000
 %   config : A struct with config options
-%   config.www_folder         Folder with all html and other files, 'www';
-%   config.temp_folder        Folder to temporary store uploaded files, (default) 'www/temp';
-%   config.verbose            Display debug information, (default) true;
-%   config.defaultfile        If no file aksed display home page, (default) '/index.html';
-%   config.log_level          one of 'info','warning','error','critical','catastrophic'; less severe
-%                             messages will not be logged. (default) 'warning'
-%                             'catastrophic' means no logfile will be written.
-%   config.log_folder         where to put logs; (default) 'www/log';
+%     .www_folder         Folder with all html and other files, 'www';
+%     .temp_folder        Folder to temporary store uploaded files, (default) 'www/temp';
+%     .verbose            Display debug information, (default) true;
+%     .defaultfile        If no file aksed display home page, (default) '/index.html';
+%     .log_level          one of 'info','warning','error','critical','catastrophic'; less severe
+%                          messages will not be logged. (default) 'warning'
+%                          'catastrophic' means no logfile will be written.
+%     .log_folder         where to put logs; (default) 'www/log';
+%     .timeout            a timeout, in days. if no request is received within
+%                          this many days of the last request, the server shuts
+%                          down. default inf for backwards compatibility.
 %
 % Supports
 %   - HTML and images
@@ -34,6 +37,10 @@ function webserver(varargin);
 %
 % Exampe 2,
 %  webserver(4000,struct('verbose',false))
+%
+% nb. to prevent rampant misuse of compute cycles and ports, we write a
+% sentinel file in tempdir() of the form matlab_webserver_portnum.lock
+% and attempt to delete it when done.
 %
 % Function is written by D.Kroon University of Twente (November 2010)
 
@@ -55,8 +62,9 @@ p.addOptional('temp_folder',fullfile(my_dir,'www','temp'),@ischar);
 p.addOptional('verbose',true,@islogical);
 p.addOptional('defaultfile',[filesep(),'index.html'],@ischar);
 p.addOptional('log_level','default',...
-@(x)(ischar(x) && ismember(lower(x),{'info','warning','error','critical','catastrophic','default'})));
+	@(x)(ischar(x) && ismember(lower(x),{'info','warning','error','critical','catastrophic','default'})));
 p.addOptional('log_folder',fullfile(my_dir,'www','log'),@ischar);
+p.addOptional('timeout',inf,@(x)(isnumeric(x) && (x > 0)))
 
 % these are not publicized:
 p.addOptional('mtime1',0.8,@(x)(isnumeric(x) && isscalar(x) && x > 0));
@@ -143,8 +151,11 @@ end
 
 log_it(config,'info','starting main loop')
 
+last_request = now();
+timed_out = (now() - last_request) > config.timeout;
+
 try
-	while(true)
+	while (~timed_out)
 		% Wait for connections of browsers
 		TCP=JavaTcpServer('accept',TCP,[],config);
 
@@ -155,8 +166,10 @@ try
 
 		[TCP,requestdata]=JavaTcpServer('read',TCP,[],config);
 		if(isempty(requestdata))
+			timed_out = (now() - last_request) > config.timeout;
 			continue;
 		end
+		last_request = now();
 
 		if(config.verbose), disp(char(requestdata(1:min(1000,end)))); end
 
@@ -278,6 +291,26 @@ function cleanup(config);%FOLDUP
 
 try
 	fclose(config.log_FID);
+end
+
+try
+	fname = touch_sentinel(config);
+	delete(fname);
+end
+
+end %function%UNFOLD
+function fname = touch_sentinel(config);%FOLDUP
+
+try
+	fname = fullfile(tempdir(),sprintf('matlab_webserver_%d.lock',config.port))
+	FID = fopen(fname,'w');
+	if (FID > 0)
+		fclose(fopen(fname,'w'))
+	else
+		log_it(config,'warning','some problem touching sentinel file %s',fname);
+	end
+catch ME
+	log_it(config,'error','some uncaught error: %s',ME.message);
 end
 
 end %function%UNFOLD
