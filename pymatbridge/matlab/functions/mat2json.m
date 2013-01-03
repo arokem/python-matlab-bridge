@@ -17,7 +17,7 @@ function J=mat2json(M,F)
 switch class(M)
 	case 'struct'
 		J='{';
-		f=fields(M);
+		f=fieldnames(M);
 		for i=1:length(f)
 			J=[J,'"',f{i},'":',mat2json(M.(f{i})),','];
 		end
