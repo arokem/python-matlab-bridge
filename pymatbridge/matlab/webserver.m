@@ -225,6 +225,8 @@ try
 			html = sprintf('<html><body><font color="#FF0000">shutting down server at %d</font><br><br></body></html>',port);
 			header = make_html_http_header(html,found);
 			response = header2text(header);
+			% 2FIX: is it possible the webserver will terminate without this message
+			% being returned? do we have to be persistent?
 		else
 			% Based on the extention asked, read a local file and parse it.
 			% or execute matlab code, which generates the file
@@ -320,10 +322,10 @@ end %function%UNFOLD
 function fname = touch_sentinel(config);%FOLDUP
 
 try
-	fname = fullfile(tempdir(),sprintf('matlab_webserver_%d.lock',config.port))
+	fname = fullfile(tempdir(),sprintf('matlab_webserver_%d.lock',config.port));
 	FID = fopen(fname,'w');
 	if (FID > 0)
-		fclose(fopen(fname,'w'))
+		fclose(fopen(fname,'w'));
 	else
 		log_it(config,'warning','some problem touching sentinel file %s',fname);
 	end
