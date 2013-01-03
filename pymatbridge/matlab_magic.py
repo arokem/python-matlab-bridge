@@ -262,11 +262,12 @@ def load_ipython_extension(ip, **kwargs):
     """Load the extension in IPython."""
     global _loaded
     if not _loaded:
-         ip.register_magics(MatlabMagics(ip, **kwargs))
+        ip.register_magics(MatlabMagics(ip, **kwargs))
         _loaded = True
         
-def unload_ipython_extension(ip, **kwargs):
+def unload_ipython_extension(ip):
     global _loaded
     if _loaded:
         ip.magics_manager.registry['MatlabMagics'].Matlab.stop()
-        
+
+    
