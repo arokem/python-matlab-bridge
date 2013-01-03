@@ -155,7 +155,7 @@ timed_out = (now() - last_request) > config.timeout;
 exit_server = false;
 
 try
-	while (~(timed_out || exit_server))
+	while (~(timed_out || exit_server))%FOLDUP
 		touch_sentinel(config);
 
 		% Wait for connections of browsers
@@ -192,42 +192,46 @@ try
 			continue;
 		end
 
+		log_it(config,'info','requesting %s',filename);
+
 		% If no filename, use default
 		if (strcmp(filename,'/')), filename=config.defaultfile; end
 
 		% put special magic here to detect exit.m
 		% so that we can properly shut down the server. 
 		% anything else is a hack.
-		exit_server = (strcmp(filename,'exit.m'));
+		exit_server = (strcmp(filename,'/exit.m'));
 
-		% Make the full filename inluding path
-		fullfilename=[config.www_folder filename];
-		[pathstr,name,ext] = fileparts(fullfilename);
-
-		% Check if file asked by the browser can be opened
-		fid = fopen(fullfilename, 'r');
-		found = fid > 0;
-		if (fid<0)
-			log_it(config,'warning','could not open file %s',fullfilename);
-			filename='/404.html'; 
-			fullfilename=[config.www_folder filename]; 
-		else
-			fclose(fid);  % won't this barf if fid < 0? 
-		end
-
-		log_it(config,'info','writing to %s',fullfilename);
-
-		if (exit_server)
+		if (exit_server)%FOLDUP
 			found = true;
 			html = sprintf('<html><body><font color="#FF0000">shutting down server at %d</font><br><br></body></html>',port);
 			header = make_html_http_header(html,found);
 			response = header2text(header);
 			% 2FIX: is it possible the webserver will terminate without this message
 			% being returned? do we have to be persistent?
-		else
+		%UNFOLD
+		else%FOLDUP
+			% Make the full filename inluding path
+			fullfilename=[config.www_folder filename];
+			[pathstr,name,ext] = fileparts(fullfilename);
+
+			% Check if file asked by the browser can be opened
+			fid = fopen(fullfilename, 'r');
+			found = fid > 0;
+			if (fid<0)
+				log_it(config,'warning','could not open file %s',fullfilename);
+				filename='/404.html'; 
+				% 2FIX: if this is not found, fallback to a dynamic 404?
+				fullfilename=[config.www_folder filename]; 
+			else
+				fclose(fid);  % won't this barf if fid < 0? 
+			end
+
+			log_it(config,'info','writing to %s',fullfilename);
+
 			% Based on the extention asked, read a local file and parse it.
 			% or execute matlab code, which generates the file
-			switch(ext)
+			switch(ext)%FOLDUP
 			case {'.m'}
 				fhandle = str2func(name);
 				try
@@ -252,6 +256,13 @@ try
 				html = fread(fid, inf, 'int8')';
 				fclose(fid);
 				header=make_image_http_header(html,found);
+				% the wrong ContentTypes. bleah.
+				switch ext
+				case {'.ico'}
+					header.ContentType = 'image/vnd.microsoft.icon';
+				otherwise
+					header.ContentType = sprintf('image/%s',ext(2:end));
+				end
 				response=header2text(header);
 			otherwise
 				fid = fopen(fullfilename, 'r');
@@ -259,18 +270,19 @@ try
 				fclose(fid);
 				header=make_bin_http_header(html,found);
 				response=header2text(header);
-			end
-		end
+			end%UNFOLD
+		end%UNFOLD
 
 		if(config.verbose), disp(char(response)); end
 
-		log_it(config,'info','%s\n%s\n%s',response,html,repmat('#',1,72));
+		log_it(config,'info','%s\n%s\n%s',response,char(html),repmat('#',1,72));
 
 		% Give the generated HTML or binary code back to the browser
 		JavaTcpServer('write',TCP,int8(response),config);
 		JavaTcpServer('write',TCP,int8(html),config);
-	end
+	end%UNFOLD
 
+	% 2FIX: should closing the TCP connection be part of cleanup?
 	try
 		JavaTcpServer('close',TCP);
 	catch
