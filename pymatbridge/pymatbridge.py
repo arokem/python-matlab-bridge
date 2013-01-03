@@ -91,7 +91,7 @@ class Matlab(object):
 
         # Start the MATLAB server
         print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
-        print " visit http://%s:%s/exit_server.m to shut down same" % (self.host, str(self.port))
+        print " visit http://%s:%s/exit.m to shut down same" % (self.host, str(self.port))
         self.server_process = Process(target=_run_matlab_server)
         self.server_process.daemon = True
         self.server_process.start()
@@ -106,7 +106,7 @@ class Matlab(object):
         # Stop the MATLAB server
         try:
             try:
-                resp = self._open_page('exit_server.m', {'id': self.id})
+                resp = self._open_page('exit.m', {'id': self.id})
             except BadStatusLine:
                 pass
         except urllib2.URLError:
