@@ -187,6 +187,8 @@ class Matlab(object):
         # Deal with escape characters: json needs an additional '\':
         # Kill backspaces (why does Matlab even put these there!?): 
         read_page = read_page.replace("\x08", "")
+        # Matlab strings containing \ like dirs on windows:
+        read_page = read_page.replace("\\", "\\\\")
         # Keep new-lines:
         read_page = read_page.replace("\n","\\n")
         return json.loads(read_page)
