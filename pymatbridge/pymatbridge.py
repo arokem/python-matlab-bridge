@@ -12,6 +12,7 @@ import numpy as np
 from httplib import BadStatusLine
 import urllib2, urllib, os, json, time, socket
 from multiprocessing import Process
+import sys
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
@@ -28,7 +29,8 @@ class Matlab(object):
     server_process = Process()
 
     def __init__(self, matlab='matlab', host='localhost', port=None,
-                 id='python-matlab-bridge', log=False, maxtime=None):
+                 id='python-matlab-bridge', log=False, maxtime=None,
+                 platform=None):
         """
         Initialize this thing.
 
@@ -54,7 +56,11 @@ class Matlab(object):
 
         maxtime : float
            The maximal time to wait for a response from matlab (optional,
-           Default is 
+           Default is
+
+        platform : string
+           The OS of the machine on which this is running. Per default this
+           will be taken from sys.platform.
             
         """
 
@@ -75,6 +81,11 @@ class Matlab(object):
         self.id = id
         self.log = log
         self.maxtime = maxtime
+
+        if platform is None: 
+            self.platform = sys.platform
+        else:
+            self.platform = platform
 
     def start(self):
         def _run_matlab_server():
@@ -106,7 +117,7 @@ class Matlab(object):
         # Stop the MATLAB server
         try:
             try:
-                resp = self._open_page('exit.m', {'id': self.id})
+                resp = self._open_page('exit_server.m', {'id': self.id})
             except BadStatusLine:
                 pass
         except urllib2.URLError:
@@ -188,8 +199,10 @@ class Matlab(object):
         # Deal with escape characters: json needs an additional '\':
         # Kill backspaces (why does Matlab even put these there!?): 
         read_page = read_page.replace("\x08", "")
-        # Matlab strings containing \ like dirs on windows:
-        read_page = read_page.replace("\\", "\\\\")
+        if self.platform == 'Windows':
+            # Matlab strings containing \ for the dir names on windows:
+            read_page = read_page.replace("\\", "\\\\")
+    
         # Keep new-lines:
         read_page = read_page.replace("\n","\\n")
         return json.loads(read_page)
