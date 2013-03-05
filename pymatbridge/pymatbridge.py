@@ -56,7 +56,7 @@ class Matlab(object):
 
         maxtime : float
            The maximal time to wait for a response from matlab (optional,
-           Default is
+           Default is 10 sec)
 
         platform : string
            The OS of the machine on which this is running. Per default this
