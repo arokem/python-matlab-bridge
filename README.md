@@ -25,7 +25,7 @@ Initialize the Matlab class:
     from pymatbridge import Matlab
     mlab = Matlab()
 
-By default the matlab executable is whatever gets called when you type 'matlab'
+By default the matlab executable is whatever gets called when you type `matlab`
 in your terminal, the host is localhost and the port is a random unused port.
 
 You can specify these in the following manner: 
@@ -33,7 +33,15 @@ You can specify these in the following manner:
     mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
                     host='192.168.0.1', port=5151)
 
-You must then start the MATLAB server:
+Alternatively, if `matlab` is not recognized in the command-line, you can
+create a [symlink](http://en.wikipedia.org/wiki/Symbolic_link) to it's
+location. For example:
+
+	  ln -s /Applications/MATLAB_R2012b.app/bin/matlab ~/bin/matlab
+
+Making sure that your ~/bin directory is on your bash PATH variable.
+	  
+You can then start the MATLAB server:
 
     mlab.start()
 
