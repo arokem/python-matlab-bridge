@@ -16,7 +16,13 @@ For examples, check out the `.ipynb` files
 
 ## Installation
 
-todo
+To install from the source-code. Download the [code zip
+file](https://github.com/arokem/python-matlab-bridge/archive/master.zip). Unzip
+it somewhere on your machine and then issue:
+
+    python setup.py install
+
+This should make the python-matlab-bridge import-able.
 
 ### API: 
 
