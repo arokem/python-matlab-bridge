@@ -78,7 +78,7 @@ LONG_DESCRIPTION = long_description
 URL = "https://github.com/arokem/python-matlab-bridge"
 DOWNLOAD_URL = "https://github.com/arokem/python-matlab-bridge/archive/master.tar.gz"
 LICENSE = "BSD"
-AUTHOR = "Max Jaderberg and Ariel Rokem"
+AUTHOR = "https://github.com/arokem/python-matlab-bridge/contributors"
 AUTHOR_EMAIL = "arokem@gmail.com"
 PLATFORMS = "OS Independent"
 MAJOR = _version_major
@@ -86,5 +86,8 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['pymatbridge']
-PACKAGE_DATA = {"pymatbridge": ["matlab/*.m", "matlab/functions/*.m", "matlab/private/*.m", "matlab/www/*.m", "test/*.m", "test/*.py"]}
+PACKAGE_DATA = {"pymatbridge": ["matlab/*.m", "matlab/functions/*.m",
+                                "matlab/private/*.m", "matlab/www/*.m",
+                                "test/*.m", "test/*.py", "examples/*.ipynb"]}
+
 REQUIRES = []
