@@ -24,6 +24,20 @@ it somewhere on your machine and then issue:
 
 This should make the python-matlab-bridge import-able.
 
+Alternatively, you can get pymatbridge at the
+[cheese-shop](https://pypi.python.org/pypi/pymatbridge).
+
+This means that you can use:
+
+    easy_install pymatbridge
+
+Or
+
+    pip install pymatbridge
+
+To get things going.
+
+
 ### API: 
 
 Initialize the Matlab class:
