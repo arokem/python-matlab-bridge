@@ -20,14 +20,6 @@ class Matlab(object):
     """
     A class for communicating with a matlab session
     """        
-    running = False
-    matlab = None
-    host = None
-    port = None
-    server = None
-    id = None
-    server_process = Process()
-
     def __init__(self, matlab='matlab', host='localhost', port=None,
                  id='python-matlab-bridge', log=False, maxtime=None,
                  platform=None):
@@ -69,13 +61,13 @@ class Matlab(object):
         self.feval = 'web_feval.m'
         self.eval = 'web_eval.m'
         self.get_var = 'web_get_variable.m'
-
         self.matlab = matlab
         self.host = host
-        if self.port is None:
+        if port is None:
             sock = socket.socket()
             sock.bind(('', 0))
             port = sock.getsockname()[1]
+
         self.port = port
         self.server = 'http://%s:%s' % (self.host, str(self.port))
         self.id = id
