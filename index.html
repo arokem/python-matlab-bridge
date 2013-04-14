@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Python-matlab-bridge by arokem</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Python-matlab-bridge</h1>
+        <h2>A simple Python =&gt; MATLAB(R) interface and a matlab_magic for ipython</h2>
+        <a href="https://github.com/arokem/python-matlab-bridge" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>Python-MATLAB(R) Bridge and ipython matlab_magic</h1>
+
+<p>A python interface to call out to <a href="http://mathworks.com">Matlab(R)</a>. Original
+implementation by <a href="http://www.maxjaderberg.com/">Max Jaderberg</a>.</p>
+
+<p>This implementation also includes an <a href="http://ipython.org">ipython</a> matlab_magic
+extension, which provides a much simplified interface for weaving python and
+Matlab code together.  </p>
+
+<p><em>**AT PRESENT THIS MAY NOT WORK ON WINDOWS; BETA TESTERS WANTED *</em>*</p>
+
+<h2>Usage</h2>
+
+<p>For examples, check out the <code>.ipynb</code> files</p>
+
+<h2>Installation</h2>
+
+<p>To install from the source-code. Download the <a href="https://github.com/arokem/python-matlab-bridge/archive/master.zip">code zip
+file</a>. Unzip
+it somewhere on your machine and then issue:</p>
+
+<pre><code>python setup.py install
+</code></pre>
+
+<p>This should make the python-matlab-bridge import-able.</p>
+
+<p>Alternatively, you can get pymatbridge at the
+<a href="https://pypi.python.org/pypi/pymatbridge">cheese-shop</a>.</p>
+
+<p>This means that you can use:</p>
+
+<pre><code>easy_install pymatbridge
+</code></pre>
+
+<p>Or</p>
+
+<pre><code>pip install pymatbridge
+</code></pre>
+
+<p>To get things going.</p>
+
+<h3>API:</h3>
+
+<p>Initialize the Matlab class:</p>
+
+<pre><code>from pymatbridge import Matlab
+mlab = Matlab()
+</code></pre>
+
+<p>By default the matlab executable is whatever gets called when you type <code>matlab</code>
+in your terminal, the host is localhost and the port is a random unused port.</p>
+
+<p>You can specify these in the following manner: </p>
+
+<pre><code>mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
+                host='192.168.0.1', port=5151)
+</code></pre>
+
+<p>Alternatively, if <code>matlab</code> is not recognized in the command-line, you can
+create a <a href="http://en.wikipedia.org/wiki/Symbolic_link">symlink</a> to it's
+location. For example:</p>
+
+<pre><code>  ln -s /Applications/MATLAB_R2012b.app/bin/matlab ~/bin/matlab
+</code></pre>
+
+<p>Making sure that your ~/bin directory is on your bash PATH variable.</p>
+
+<p>You can then start the MATLAB server:</p>
+
+<pre><code>mlab.start()
+</code></pre>
+
+<p>which will return True once connected.</p>
+
+<p>You can then run any local MATLAB function contained within a .m file of the
+same name. For example, to call the function jk in jk.m:</p>
+
+<pre><code>%% MATLAB
+function lol = jk(args)
+    arg1 = args.arg1;
+    arg2 = args.arg2;
+    lol = arg1 + arg2;
+end
+</code></pre>
+
+<p>by calling:</p>
+
+<pre><code>res = mlab.run_func('path/to/jk.m', {'arg1': 3, 'arg2': 5})
+print res['result']
+</code></pre>
+
+<p>which will print 8.</p>
+
+<p>Or you can run some arbitrary matlab code:</p>
+
+<pre><code>res = mlab.run_code('a=10; b=a+3')
+</code></pre>
+
+<p>You can shut down the MATLAB server by calling</p>
+
+<pre><code>mlab.stop()
+</code></pre>
+
+<p>NB: you can call MATLAB code before the server starts by adding code to the ./matlab/startup.m file.</p>
+
+<h3>Matlab magic:</h3>
+
+<p>This can be used in an ipython session in the following manner:</p>
+
+<pre><code>import pymatbridge as pymat
+ip = get_ipython()
+pymat.load_ipython_extension(ip)
+</code></pre>
+
+<p>These lines will automatically start the matlab session for you. Then, you can
+simply decorate a line/cell with the '%matlab' or '%%matlab' decorator and
+write matlab code:</p>
+
+<pre><code>%%matlab 
+a = linspace(0.01,6*pi,100);
+plot(sin(a))
+grid on
+hold on
+plot(cos(a),'r')
+</code></pre>
+
+<h3>Warnings</h3>
+
+<p>Python communicates with Matlab via an ad-hoc webserver. This is inherently
+insecure, as the Matlab instance may be directed to perform arbitrary system
+calls. There is no sandboxing of any kind. Use this code at your own risk.</p>
+
+<h1>Examples</h1>
+
+<p>An example MATLAB function and usage from Python is shown in test.py and test.m
+and there. Example notebooks are in the '.ipynb' files. </p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/arokem/python-matlab-bridge/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/arokem/python-matlab-bridge/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/arokem/python-matlab-bridge"></a> is maintained by <a href="https://github.com/arokem">arokem</a>.</p>
+
+          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-25254402-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
