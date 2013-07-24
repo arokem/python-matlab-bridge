@@ -12,14 +12,42 @@ import numpy as np
 from httplib import BadStatusLine
 import urllib2, urllib, os, json, time, socket
 from multiprocessing import Process
+import platform
 import sys
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
+
+
+def _run_matlab_server(matlab_bin, matlab_port, matlab_log, matlab_id):
+    command = matlab_bin
+    if platform.system() == 'Windows':
+        command += ' -automation -noFigureWindows'
+    else:
+        command += ' -nodesktop -nodisplay'
+    command += ' -r "'
+    command += "addpath(genpath("
+    command += "'%s'" % MATLAB_FOLDER
+    command += ')), webserver(%s),exit"' % matlab_port
+
+    if matlab_log:
+        command += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (matlab_id, matlab_id)
+
+    os.system(command)
+    return True
+
 
 class Matlab(object):
     """
     A class for communicating with a matlab session
     """        
+    running = False
+    matlab = None
+    host = None
+    port = None
+    server = None
+    id = None
+    server_process = Process()
+
     def __init__(self, matlab='matlab', host='localhost', port=None,
                  id='python-matlab-bridge', log=False, maxtime=None,
                  platform=None):
@@ -80,22 +108,10 @@ class Matlab(object):
             self.platform = platform
 
     def start(self):
-        def _run_matlab_server():
-            cmd_str = '%s -nodesktop -nosplash -nodisplay -r "'%self.matlab
-            cmd_str += "addpath(genpath("
-            cmd_str += "'%s'"%MATLAB_FOLDER
-            cmd_str += ')), webserver(%s),exit"'%self.port
-            
-            if self.log:
-                cmd_str += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (self.id, self.id)
-
-            os.system(cmd_str)
-            return True
-
         # Start the MATLAB server
         print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
         print " visit http://%s:%s/exit.m to shut down same" % (self.host, str(self.port))
-        self.server_process = Process(target=_run_matlab_server)
+        self.server_process = Process(target=_run_matlab_server, args=(self.matlab, self.port, self.log, self.id))
         self.server_process.daemon = True
         self.server_process.start()
         while not self.is_connected():
