@@ -5,7 +5,7 @@ implementation by [Max Jaderberg](http://www.maxjaderberg.com/).
 
 This implementation also includes an [ipython](http://ipython.org) matlab_magic
 extension, which provides a much simplified interface for weaving python and
-Matlab code together.  
+Matlab code together (requires ipython > 0.13).  
 
 
 ***AT PRESENT THIS MAY NOT WORK ON WINDOWS; BETA TESTERS WANTED ***
