@@ -18,12 +18,9 @@ import sys
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
 
-def _run_matlab_server(matlab_bin, matlab_port, matlab_log, matlab_id):
+def _run_matlab_server(matlab_bin, matlab_port, matlab_log, matlab_id, matlab_startup_options):
     command = matlab_bin
-    if platform.system() == 'Windows':
-        command += ' -automation -noFigureWindows'
-    else:
-        command += ' -nodesktop -nodisplay'
+    command += ' %s ' % matlab_startup_options
     command += ' -r "'
     command += "addpath(genpath("
     command += "'%s'" % MATLAB_FOLDER
@@ -50,7 +47,7 @@ class Matlab(object):
 
     def __init__(self, matlab='matlab', host='localhost', port=None,
                  id='python-matlab-bridge', log=False, maxtime=None,
-                 platform=None):
+                 platform=None, startup_options=None):
         """
         Initialize this thing.
 
@@ -106,12 +103,19 @@ class Matlab(object):
             self.platform = sys.platform
         else:
             self.platform = platform
+    
+        if startup_options:
+            self.startup_options = startup_options
+        elif self.platform == 'Windows':
+            self.startup_options = ' -automation -noFigureWindows'
+        else:
+            self.startup_options = ' -nodesktop -nodisplay'
 
     def start(self):
         # Start the MATLAB server
         print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
         print " visit http://%s:%s/exit.m to shut down same" % (self.host, str(self.port))
-        self.server_process = Process(target=_run_matlab_server, args=(self.matlab, self.port, self.log, self.id))
+        self.server_process = Process(target=_run_matlab_server, args=(self.matlab, self.port, self.log, self.id, self.startup_options))
         self.server_process.daemon = True
         self.server_process.start()
         while not self.is_connected():
