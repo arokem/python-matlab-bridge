@@ -1,5 +1,5 @@
 function res = test_precision_sum(args)
 
-    res = args.a;
+	res = args.a + args.b;
 
-end
+end %function
