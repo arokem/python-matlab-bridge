@@ -9,9 +9,9 @@ def test_number():
 
     a = 0
     b = 0
-    for i in range(0, 20):
-        a = a/10 + rd.randint(0, 9)
-        b = b/10 + rd.randint(0, 9)
+    for i in range(0, 30):
+        a = a/10 + float(rd.randint(0, 9))
+        b = b/10 + float(rd.randint(0, 9))
         pythonSum = a + b
         matlabSum = mlab.run_func('test_precision_sum.m',{'a':a,'b':b})['result']
         npt.assert_equal(pythonSum, matlabSum, err_msg = "test_number: Not equal")
