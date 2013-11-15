@@ -35,7 +35,7 @@ def testFloat64Sum():
         val2 = np.float64(rd.random())
 
         res = mlab.run_func('test_precision_sum.m',{'val1':val1,'val2':val2})['result']
-        npt.assert_almost_equal(res, val1 + val2, decimal=4, err_msg="float64 sum error")
+        npt.assert_almost_equal(res, val1 + val2, decimal=6, err_msg="float64 sum error")
 
     stopMatlab(mlab)
 
