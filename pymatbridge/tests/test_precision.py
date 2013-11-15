@@ -22,7 +22,7 @@ def testFloat64Roundtrip():
     for i in range(0,20):
         val = np.float64(rd.random())
         res = mlab.run_func('test_precision_pass.m',{'val':val})['result']
-        npt.assert_almost_equal(res, val, decimal=4, err_msg="float64 roundtrip error")
+        npt.assert_almost_equal(res, val, decimal=8, err_msg="float64 roundtrip error")
 
     stopMatlab(mlab)
 
