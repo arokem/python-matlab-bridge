@@ -42,6 +42,7 @@ function json_response = web_feval(headers, config)
     
     if arguments_check
         arguments = json2mat(headers.Content.arguments);
+        disp(arguments);
     else
         arguments = '';
     end

@@ -3,5 +3,5 @@ function res = test_precision_pass(args)
     
     format long;
     res = args.val;
-    disp(args.val);
+
 end 
