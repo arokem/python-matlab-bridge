@@ -19,7 +19,7 @@ def stopMatlab(mlab):
 def testFloat64Roundtrip():
     mlab = connectToMatlab()
 
-    for i in range(0,20):
+    for i in range(0,10):
         val = np.float64(rd.random())
         res = mlab.run_func('test_precision_pass.m',{'val':val})['result']
         npt.assert_almost_equal(res, val, decimal=4, err_msg="float64 roundtrip error")
@@ -30,7 +30,7 @@ def testFloat64Roundtrip():
 def testFloat64Sum():
     mlab = connectToMatlab()
 
-    for i in range(0,20):
+    for i in range(0,10):
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
