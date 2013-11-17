@@ -14,6 +14,8 @@ function J=mat2json(M,F)
 %
 % Jonas Almeida, March 2010
 
+PRECISION = 10; % Keep a maximum of 10 decimal digits
+
 switch class(M)
 	case 'struct'
 		J='{';
@@ -36,7 +38,7 @@ switch class(M)
 	otherwise
 		if isnumeric(M) % notice looseness in not converting single numbers into arrays
 			if length(M(:))==1
-				J=num2str(M);
+				J=num2str(M, PRECISION);
 			else
 				s=size(M);
 				if (length(s)==2)&(s(1)<2) % horizontal or null vector
