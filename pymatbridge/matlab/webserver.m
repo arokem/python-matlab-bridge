@@ -238,7 +238,7 @@ try
 			case {'.m'}
 				fhandle = str2func(name);
 				try
-				%	html=feval(fhandle,request,config);
+				    html=feval(fhandle,request,config);
                 catch ME
 					html=['<html><body><font color="#FF0000">Error in file : ' name ...
 					'.m</font><br><br><font color="#990000"> The file returned the following error: <br>' ...
