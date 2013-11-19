@@ -24,7 +24,7 @@ def test_float64_sum():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('precision_sum.m', {'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_sum.m', {'val1':val1, 'val2':val2})['result']
         npt.assert_almost_equal(res, val1 + val2, decimal=8, err_msg="Float64 sum error")
 
     tu.stop_matlab(mlab)
@@ -38,7 +38,7 @@ def test_float64_multiply():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('precision_multiply.m', {'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_multiply.m', {'val1':val1, 'val2':val2})['result']
         npt.assert_almost_equal(res, val1 * val2, decimal=8, err_msg="Float64 multiply error")
 
     tu.stop_matlab(mlab)
@@ -52,7 +52,7 @@ def test_float64_divide():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('precision_divide.m', {'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_divide.m', {'val1':val1, 'val2':val2})['result']
         npt.assert_almost_equal(res, val1 / val2, decimal=8, err_msg="Float64 divide error")
 
     tu.stop_matlab(mlab)
