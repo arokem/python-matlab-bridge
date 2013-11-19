@@ -15,7 +15,7 @@ def test_demo_func():
     mlab.stop()
     npt.assert_(not mlab.is_connected(), msg = "Disconnection failed")
 
-# Print some strange charactes in Matlab, get them back and compare.
+# Print some strange characters in Matlab, get them back and compare.
 def test_special_character():
     mlab = pymat.Matlab()
     mlab.start()
