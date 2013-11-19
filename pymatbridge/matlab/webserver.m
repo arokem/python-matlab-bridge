@@ -237,14 +237,14 @@ try
 			switch(ext)%FOLDUP
 			case {'.m'}
 				fhandle = str2func(name);
-				try
-				    html=feval(fhandle,request,config);
+                try
+                    html=feval(fhandle,request,config);
                 catch ME
-					html=['<html><body><font color="#FF0000">Error in file : ' name ...
+                    html=['<html><body><font color="#FF0000">Error in file : ' name ...
 					'.m</font><br><br><font color="#990000"> The file returned the following error: <br>' ...
-					ME.message '</font></body></html>'];
-					fprintf(ME.message);
-					log_it(config,'error','file returned error %s',ME.message);
+                    ME.message '</font></body></html>'];
+                    fprintf(ME.message);
+                    log_it(config,'error','file returned error %s',ME.message);
 				end
 				header=make_html_http_header(html,found);
 				response=header2text(header);
