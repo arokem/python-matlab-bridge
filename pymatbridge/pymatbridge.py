@@ -217,8 +217,6 @@ class Matlab(object):
 
         # Keep new-lines:
         read_page = read_page.replace("\n","\\n")
-        print "This is the originally received page"
-        print read_page
         return json.loads(read_page)
 
 
