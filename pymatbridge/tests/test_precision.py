@@ -22,7 +22,7 @@ def testFloat64Roundtrip():
 
     for i in range(0,10):
         val = np.float64(rd.random())
-        res = mlab.run_func('test_precision_pass.m',{'val':val})['result']
+        res = mlab.run_func('precision_pass.m',{'val':val})['result']
         npt.assert_almost_equal(res, val, decimal=8, err_msg="Float64 roundtrip error")
 
     stopMatlab(mlab)
@@ -36,7 +36,7 @@ def testFloat64Sum():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('test_precision_sum.m',{'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_sum.m',{'val1':val1,'val2':val2})['result']
         npt.assert_almost_equal(res, val1 + val2, decimal=8, err_msg="Float64 sum error")
 
     stopMatlab(mlab)
@@ -50,7 +50,7 @@ def testFloat64Multiply():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('test_precision_multiply.m',{'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_multiply.m',{'val1':val1,'val2':val2})['result']
         npt.assert_almost_equal(res, val1 * val2, decimal=8, err_msg="Float64 multiply error")
 
     stopMatlab(mlab)
@@ -64,7 +64,7 @@ def testFloat64Divide():
         val1 = np.float64(rd.random())
         val2 = np.float64(rd.random())
 
-        res = mlab.run_func('test_precision_divide.m',{'val1':val1,'val2':val2})['result']
+        res = mlab.run_func('precision_divide.m',{'val1':val1,'val2':val2})['result']
         npt.assert_almost_equal(res, val1 / val2, decimal=8, err_msg="Float64 divide error")
 
     stopMatlab(mlab)
@@ -77,7 +77,7 @@ def testFloat64Sqrt():
     for i in range(0,10):
         val = np.float64(rd.random())
 
-        res = mlab.run_func('test_precision_sqrt.m',{'val':val})['result']
+        res = mlab.run_func('precision_sqrt.m',{'val':val})['result']
         npt.assert_almost_equal(res, np.sqrt(val), decimal=8, err_msg="Float64 square root error")
 
     stopMatlab(mlab)
