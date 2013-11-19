@@ -7,6 +7,8 @@ function M=json2mat(J)
 %
 % Jonas Almeida, March 2010
 
+format long;    % Avoid decimal digits loss
+
 if exist(J)==2 % if J is a filename
 	fid=fopen(J,'r');
 	J='';

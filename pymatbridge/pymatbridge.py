@@ -2,9 +2,9 @@
 pymatbridge
 ===========
 
-This is a module for communicating and running 
+This is a module for communicating and running
 
-Part of Python-MATLAB-bridge, Max Jaderberg 2012 
+Part of Python-MATLAB-bridge, Max Jaderberg 2012
 
 """
 
@@ -36,7 +36,7 @@ def _run_matlab_server(matlab_bin, matlab_port, matlab_log, matlab_id, matlab_st
 class Matlab(object):
     """
     A class for communicating with a matlab session
-    """        
+    """
     running = False
     matlab = None
     host = None
@@ -78,7 +78,7 @@ class Matlab(object):
         platform : string
            The OS of the machine on which this is running. Per default this
            will be taken from sys.platform.
-            
+
         """
 
         # These are the matlab functions that post requests to the webserever
@@ -99,11 +99,11 @@ class Matlab(object):
         self.log = log
         self.maxtime = maxtime
 
-        if platform is None: 
+        if platform is None:
             self.platform = sys.platform
         else:
             self.platform = platform
-    
+
         if startup_options:
             self.startup_options = startup_options
         elif self.platform == 'Windows':
@@ -178,7 +178,7 @@ class Matlab(object):
         """
         if self.running:
             time.sleep(0.05)
-            
+
         if maxtime:
             result = self._open_page(self.eval, dict(code=code), maxtime)
         else:
@@ -189,7 +189,7 @@ class Matlab(object):
     def get_variable(self, varname, maxtime=None):
         if self.running:
             time.sleep(0.05)
-            
+
         if maxtime:
             result = self._open_page(self.get_var, dict(varname=varname),
                                      maxtime)
@@ -198,23 +198,23 @@ class Matlab(object):
                                      self.maxtime)
 
         return result['var']
-        
-        
+
+
     def _open_page(self, page_name, arguments={}, timeout=10):
         self.running = True
         page = urllib2.urlopen('%s/%s' % (self.server, page_name),
                                urllib.urlencode(arguments),
                                timeout)
-        
+
         self.running = False
         read_page = page.read()
         # Deal with escape characters: json needs an additional '\':
-        # Kill backspaces (why does Matlab even put these there!?): 
+        # Kill backspaces (why does Matlab even put these there!?):
         read_page = read_page.replace("\x08", "")
         if self.platform == 'Windows':
             # Matlab strings containing \ for the dir names on windows:
             read_page = read_page.replace("\\", "\\\\")
-    
+
         # Keep new-lines:
         read_page = read_page.replace("\n","\\n")
         return json.loads(read_page)
