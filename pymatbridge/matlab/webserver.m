@@ -239,8 +239,9 @@ try
 				fhandle = str2func(name);
 				try
 					html=feval(fhandle,request,config);
-                    fprintf(1,html);
-				catch ME
+				    disp('hey Im here!');
+                    disp(html);
+                catch ME
 					html=['<html><body><font color="#FF0000">Error in file : ' name ...
 					'.m</font><br><br><font color="#990000"> The file returned the following error: <br>' ...
 					ME.message '</font></body></html>'];
