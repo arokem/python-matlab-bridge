@@ -36,11 +36,12 @@ end
 
 function y=extract_struct(x)
 %detag arrays first
+PRECISION = 10;
 indOC=extract_embed(x,'[',']');
 n=size(indOC,1);
 for i=n:-1:1
 	tag{i}=json2mat(x(indOC(i,1):indOC(i,2)));
-	x=[x(1:indOC(i,1)-1),'tag{',num2str(i),'}',x(indOC(i,2)+1:end)];
+	x=[x(1:indOC(i,1)-1),'tag{',num2str(i, PRECISION),'}',x(indOC(i,2)+1:end)];
 end
 
 
@@ -66,11 +67,12 @@ end
 
 function y=extract_cell(x)
 
+PRECISION = 10;
 indOC=extract_embed(x,'{','}');
 n=size(indOC,1);
 for i=n:-1:1
 	tag{i}=json2mat(x(indOC(i,1):indOC(i,2)));
-	x=[x(1:indOC(i,1)-1),'tag~<',num2str(i),'>~',x(indOC(i,2)+1:end)];
+	x=[x(1:indOC(i,1)-1),'tag~<',num2str(i, PRECISION),'>~',x(indOC(i,2)+1:end)];
 end
 indOC=extract_embed(x,'[',']');
 m=size(indOC,1);
@@ -78,7 +80,7 @@ for j=m:-1:1
 	i=n+j;
 	tag{i}=json2mat(x(indOC(i,1):indOC(i,2)));
 	try;tag{i}=cell2mat(tag{i});end
-	x=[x(1:indOC(i,1)-1),'tag{',num2str(i),'}',x(indOC(i,2)+1:end)];
+	x=[x(1:indOC(i,1)-1),'tag{',num2str(i, PRECISION),'}',x(indOC(i,2)+1:end)];
 end
 x=strrep(x,'~<','{');
 x=strrep(x,'>~','}');
