@@ -4,12 +4,21 @@ import numpy as np
 import numpy.testing as npt
 import test_utils as tu
 
-def test_array_size():
-    mlab = tu.connect_to_matlab()
+class TestArray:
+    # Start a Matlab session
+    @classmethod
+    def setup_class(cls):
+        cls.mlab = tu.connect_to_matlab()
 
-    array = np.random.random_sample((50,50)).tolist()
-    res = mlab.run_func("array_size.m",{'val':array})['result']
-    npt.assert_almost_equal(res, array, decimal=8, err_msg = "test_array_size: error")
+    # Tear down the Matlab session
+    @classmethod
+    def teardown_class(cls):
+        tu.stop_matlab(cls.mlab)
 
-    tu.stop_matlab(mlab)
+    # Pass a 50*50 array to Matlab
+    def test_array_size(self):
+        array = np.random.random_sample((50,50)).tolist()
+        res = self.mlab.run_func("array_size.m",{'val':array})['result']
+        npt.assert_almost_equal(res, array, decimal=8, err_msg = "test_array_size: error")
+
 
