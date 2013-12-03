@@ -4,12 +4,12 @@ import test_utils as tu
 
 class TestJson:
 
-    # Start a Matlab session
+    # Start a Matlab session before doing any tests
     @classmethod
     def setup_class(cls):
         cls.mlab = tu.connect_to_matlab()
 
-    # Tear down the Matlab session
+    # Tear down the Matlab session after all the tests are done
     @classmethod
     def teardown_class(cls):
         tu.stop_matlab(cls.mlab)
@@ -21,7 +21,6 @@ class TestJson:
             res = self.mlab.run_func('demo_func.m', {'a': i})['result']
             ans = i + 1
             npt.assert_equal(res, ans, err_msg = "demo_func.m test failed")
-
 
     # Print some strange characters in Matlab, get them back and compare.
     def test_special_character(self):

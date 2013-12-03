@@ -5,15 +5,17 @@ import numpy.testing as npt
 import test_utils as tu
 
 class TestArray:
-    # Start a Matlab session
+
+    # Start a Matlab session before any tests
     @classmethod
     def setup_class(cls):
         cls.mlab = tu.connect_to_matlab()
 
-    # Tear down the Matlab session
+    # Tear down the Matlab session after all the tests are done
     @classmethod
     def teardown_class(cls):
         tu.stop_matlab(cls.mlab)
+
 
     # Pass a 50*50 array to Matlab
     def test_array_size(self):
