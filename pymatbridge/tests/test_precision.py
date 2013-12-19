@@ -4,79 +4,58 @@ import numpy as np
 import numpy.testing as npt
 import test_utils as tu
 
-# Pass a 64-bit floating number through the signal path
-def test_float64_roundtrip():
-    mlab = tu.connect_to_matlab()
 
-    for i in range(0,10):
-        val = np.float64(rd.random())
-        res = mlab.run_func('precision_pass.m', {'val':val})['result']
-        npt.assert_almost_equal(res, val, decimal=8, err_msg="Float64 roundtrip error")
+class TestPrecision:
 
-    tu.stop_matlab(mlab)
+    # Start a Matlab session before running any tests
+    @classmethod
+    def setup_class(cls):
+        cls.mlab = tu.connect_to_matlab()
 
-
-# Add two 64-bit floating number in Matlab and return the sum
-def test_float64_sum():
-    mlab = tu.connect_to_matlab()
-
-    for i in range(0,10):
-        val1 = np.float64(rd.random())
-        val2 = np.float64(rd.random())
-
-        res = mlab.run_func('precision_sum.m', {'val1':val1, 'val2':val2})['result']
-        npt.assert_almost_equal(res, val1 + val2, decimal=8, err_msg="Float64 sum error")
-
-    tu.stop_matlab(mlab)
+    # Tear down the Matlab session after running all the tests
+    @classmethod
+    def teardown_class(cls):
+        tu.stop_matlab(cls.mlab)
 
 
-# Multiply two 64-bit floating number in Matlab and return the product
-def test_float64_multiply():
-    mlab = tu.connect_to_matlab()
+    # Pass a 64-bit floating number through the signal path
+    def test_float64_roundtrip(self):
+        for i in range(0,10):
+            val = np.float64(rd.random())
+            res = self.mlab.run_func('precision_pass.m', {'val':val})['result']
+            npt.assert_almost_equal(res, val, decimal=8, err_msg="Float64 roundtrip error")
 
-    for i in range(0,10):
-        val1 = np.float64(rd.random())
-        val2 = np.float64(rd.random())
+    # Add two 64-bit floating number in Matlab and return the sum
+    def test_float64_sum(self):
+        for i in range(0,10):
+            val1 = np.float64(rd.random())
+            val2 = np.float64(rd.random())
 
-        res = mlab.run_func('precision_multiply.m', {'val1':val1, 'val2':val2})['result']
-        npt.assert_almost_equal(res, val1 * val2, decimal=8, err_msg="Float64 multiply error")
+            res = self.mlab.run_func('precision_sum.m', {'val1':val1, 'val2':val2})['result']
+            npt.assert_almost_equal(res, val1 + val2, decimal=8, err_msg="Float64 sum error")
 
-    tu.stop_matlab(mlab)
+    # Multiply two 64-bit floating number in Matlab and return the product
+    def test_float64_multiply(self):
+        for i in range(0,10):
+            val1 = np.float64(rd.random())
+            val2 = np.float64(rd.random())
 
+            res = self.mlab.run_func('precision_multiply.m', {'val1':val1, 'val2':val2})['result']
+            npt.assert_almost_equal(res, val1 * val2, decimal=8, err_msg="Float64 multiply error")
 
-# Make a division in Matlab and return the results
-def test_float64_divide():
-    mlab = tu.connect_to_matlab()
+    # Make a division in Matlab and return the results
+    def test_float64_divide(self):
+        for i in range(0,10):
+            val1 = np.float64(rd.random())
+            val2 = np.float64(rd.random())
 
-    for i in range(0,10):
-        val1 = np.float64(rd.random())
-        val2 = np.float64(rd.random())
+            res = self.mlab.run_func('precision_divide.m', {'val1':val1, 'val2':val2})['result']
+            npt.assert_almost_equal(res, val1 / val2, decimal=8, err_msg="Float64 divide error")
 
-        res = mlab.run_func('precision_divide.m', {'val1':val1, 'val2':val2})['result']
-        npt.assert_almost_equal(res, val1 / val2, decimal=8, err_msg="Float64 divide error")
+    # Calculate the square root in Matlab and return the result
+    def test_float64_sqrt(self):
+        for i in range(0,10):
+            val = np.float64(rd.random())
 
-    tu.stop_matlab(mlab)
-
-
-# Calculate the square root in Matlab and return the result
-def test_float64_sqrt():
-    mlab = tu.connect_to_matlab()
-
-    for i in range(0,10):
-        val = np.float64(rd.random())
-
-        res = mlab.run_func('precision_sqrt.m', {'val':val})['result']
-        npt.assert_almost_equal(res, np.sqrt(val), decimal=8, err_msg="Float64 square root error")
-
-    tu.stop_matlab(mlab)
-
-def test_tuple():
-    pass
-
-
-def test_dict():
-    pass
-
-
-def test_array():
-    pass
+            res = self.mlab.run_func('precision_sqrt.m', {'val':val})['result']
+            npt.assert_almost_equal(res, np.sqrt(val), decimal=8, err_msg="Float64 square root error")
