@@ -7,17 +7,20 @@ def run_client():
     # Initialize client
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
-    socket.connect("ipc:///tmp/ipctest")
+    socket.connect("tcp://localhost:55555")
 
     # Generate a 72MB random array
-    array = np.random.random_sample((3000,3000)).tolist()
+    array = np.random.random_sample((2,2)).tolist()
     argument = {'val':array}
 
     # Send message and wait for a response
     message_out = json.dumps(argument)
     socket.send(message_out)
+    print "Waiting for a message back"
     message_in = socket.recv()
-    result = json.loads(message_in)['res']
+    print "Got a message"
+    print message_in
+#    result = json.loads(message_in)['res']
 
     # Check if the received message matches the original one
     if result == np.sum(array):
