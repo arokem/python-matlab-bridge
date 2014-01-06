@@ -15,7 +15,7 @@ int main (void) {
         char buffer[1024];
         zmq_recv(responder, buffer, 1024, 0);
         printf("Got a request: %s\n", buffer);
-        sleep(5);
+        sleep(1);
         char *msg_out = "World";
         zmq_send(responder, msg_out, 5, 0);
         printf("Sending out message: %s\n", msg_out);
