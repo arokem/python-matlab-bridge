@@ -12,15 +12,18 @@ void *ctx, *socket;
 static int initialized = 0;
 
 /* Initialize a ZMQ server */
-int initialize() {
+int initialize(char *socket_addr) {
     
     ctx = zmq_ctx_new();
     socket = zmq_socket(ctx, ZMQ_REP);
-    int rc = zmq_bind(socket, "ipc:///tmp/zmqmatlab");
-    assert (rc == 0);
-    initialized = 1;
-
-    return 0;
+    int rc = zmq_bind(socket, socket_addr);
+    
+    if (!rc) {
+        initialized = 1;
+        return 0;
+    } else {
+        return -1;
+    }
 }
 
 /* Waiting for a message */
@@ -43,32 +46,49 @@ int respond(char *msg_out, int len) {
 void mexFunction(int nlhs, mxArray *plhs[], 
                  int nrhs, const mxArray *prhs[]) {
 
-    /* Check the number of input/output arguments */
-    if (nlhs != 1) {
-        mexErrMsgTxt("Only 1 output argument allowed");
-    } 
-    if (nrhs > 2) {
-        mexErrMsgTxt("Only <= 2 input argument allowed");
+    /* If no input argument, print out the usage */ 
+    if (nrhs == 0) {
+        mexErrMsgTxt("Usage: messenger('init|listen|respond', extra1, extra2, ...)");
     }
 
     /* Get the input command */
-    char *command;
-    command = mxArrayToString(prhs[0]);
+    char *cmd;
+    if(!(cmd = mxArrayToString(prhs[0]))) {
+        mexErrMsgTxt("Cannot read the command");
+    }
 
     /* Initialize a new server session */
-    if (strcmp(command, "initialize") == 0) {
-        assert(initialize == 0);
+    if (strcmp(cmd, "init") == 0) {
+        char *socket_addr;
+        mxLogical *p;
         
-        if (!initialize()) {
-            plhs[0] = mxCreateString("Initialization successful"); 
+        /* Check if the input format is valid */
+        if (nrhs != 2) {
+            mexErrMsgTxt("Missing argument: socket address");
+        } 
+        if (!(socket_addr = mxArrayToString(prhs[1]))) {
+            mexErrMsgTxt("Cannot read socket address");
+        }
+
+        plhs[0] = mxCreateLogicalMatrix(1, 1);
+        p = mxGetLogicals(plhs[0]);
+        
+        if (!initialized) {
+            if (!initialize(socket_addr)) {
+                p[0] = true;
+                mexPrintf("Socket created at: %s", socket_addr);
+            } else {
+                p[0] = false;
+                mexErrMsgTxt("Socket creation failed.");
+            }
         } else {
-            plhs[0] = mxCreateString("Initialization failed");
+            mexErrMsgTxt("One socket has already been initialized.");
         }
 
         return;
  
     /* Listen over an existing socket */    
-    } else if (strcmp(command, "listen") == 0) {
+    } else if (strcmp(cmd, "listen") == 0) {
         char *recv_buffer;
 
         recv_buffer = mxCalloc(BUFLEN, sizeof(char));
@@ -76,7 +96,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         plhs[0] = mxCreateString(recv_buffer);    
 
         return;
-    } else if (strcmp(command, "respond") == 0) {
+    } else if (strcmp(cmd, "respond") == 0) {
         size_t n_el = mxGetNumberOfElements(prhs[1]);
         size_t el_sz = mxGetElementSize(prhs[1]);                
         size_t msglen = n_el*el_sz;
