@@ -6,7 +6,7 @@
 #include "zmq.h"
 
 /* Set a 1MB receiver buffer size */
-#define BUFLEN 8
+#define BUFLEN 1000000
 
 void *ctx, *socket;
 static int initialized = 0;
@@ -40,7 +40,10 @@ int listen(char *buffer, int buflen) {
 
 /* Sending out a message */
 int respond(char *msg_out, int len) {
-    assert(initialzied == 1);
+    if (!initialized) {
+        mexErrMsgTxt("Error: ZMQ session not initialized");
+    }
+    
     int bytesent = zmq_send(socket, msg_out, len, 0);
 
     return bytesent;
@@ -110,15 +113,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Send a message out */
     } else if (strcmp(cmd, "respond") == 0) {
-        size_t n_el = mxGetNumberOfElements(prhs[1]);
-        size_t el_sz = mxGetElementSize(prhs[1]);                
-        size_t msglen = n_el*el_sz;
+        mxLogical *p;
+
+        /* Check if the input format is valid */
+        if (nrhs != 2) {
+            mexErrMsgTxt("Please provide the message to send");
+        } 
+        
+        size_t msglen = mxGetNumberOfElements(prhs[1]) * mxGetElementSize(prhs[1]);
         char *msg_out = (char*)mxGetData(prhs[1]);
-       
+        plhs[0] = mxCreateLogicalMatrix(1, 1);
+        p = mxGetLogicals(plhs[0]);
+
         if (msglen == respond(msg_out, msglen)) {
-            plhs[0] = mxCreateString("Data sent successfully");
+            p[0] = true;
+            mexPrintf("%d bytes of data sent successfully\n", msglen);
         } else {
-            plhs[0] = mxCreateString("Data sent unsuccessfully");
+            p[0] = false;
+            mexErrMsgTxt("Failed to send message due to ZMQ error");
         }
 
         return;
