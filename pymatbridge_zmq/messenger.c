@@ -6,7 +6,7 @@
 #include "zmq.h"
 
 /* Set a 1MB receiver buffer size */
-#define BUFLEN 1000000
+#define BUFLEN 8
 
 void *ctx, *socket;
 static int initialized = 0;
@@ -26,12 +26,16 @@ int initialize(char *socket_addr) {
     }
 }
 
-/* Waiting for a message */
-void listen(char *buffer, int buflen) {
-    assert(initialized == 1);
-    zmq_recv(socket, buffer, buflen, 0); 
-
-    return;
+/* Listen over an existing socket 
+ * Now the receiver buffer is pre-allocated
+ * In the future we can possibly use multi-part messaging 
+ */
+int listen(char *buffer, int buflen) {
+    if (!initialized) {
+        mexErrMsgTxt("Error: ZMQ session not initialized");
+    }
+    
+    return zmq_recv(socket, buffer, buflen, 0); 
 }
 
 /* Sending out a message */
@@ -76,7 +80,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         if (!initialized) {
             if (!initialize(socket_addr)) {
                 p[0] = true;
-                mexPrintf("Socket created at: %s", socket_addr);
+                mexPrintf("Socket created at: %s\n", socket_addr);
             } else {
                 p[0] = false;
                 mexErrMsgTxt("Socket creation failed.");
@@ -87,15 +91,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         return;
  
-    /* Listen over an existing socket */    
+    /* Listen over an existing socket */
     } else if (strcmp(cmd, "listen") == 0) {
-        char *recv_buffer;
+        char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
 
-        recv_buffer = mxCalloc(BUFLEN, sizeof(char));
-        listen(recv_buffer, BUFLEN);
-        plhs[0] = mxCreateString(recv_buffer);    
-
+        int byte_recvd = listen(recv_buffer, BUFLEN);
+        
+        /* Check if the received data is complete and correct */
+        if ((byte_recvd > -1) && (byte_recvd <= BUFLEN)) {
+            plhs[0] = mxCreateString(recv_buffer);    
+        } else if (byte_recvd > BUFLEN){
+            mexErrMsgTxt("Receiver buffer overflow. Message truncated");
+        } else {
+            mexErrMsgTxt("Failed to receive a message due to ZMQ error.");
+        }
+        
         return;
+
+    /* Send a message out */
     } else if (strcmp(cmd, "respond") == 0) {
         size_t n_el = mxGetNumberOfElements(prhs[1]);
         size_t el_sz = mxGetElementSize(prhs[1]);                
