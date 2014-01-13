@@ -49,6 +49,18 @@ int respond(char *msg_out, int len) {
     return bytesent;
 }
 
+/* Cleaning up after session finished */
+void cleanup (void) {
+    /* Send a confirmation message to the client */
+    zmq_send(socket, "exit", 4, 0);
+
+    zmq_close(socket);
+    mexPrintf("Socket closed\n");
+    zmq_term(ctx);
+    mexPrintf("Context terminated\n");
+}
+
+
 /* Gateway function with Matlab */
 void mexFunction(int nlhs, mxArray *plhs[], 
                  int nrhs, const mxArray *prhs[]) {
@@ -134,5 +146,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
 
         return;
+
+    /* Close the socket and context */
+    } else if (strcmp(cmd, "exit") == 0) {
+        cleanup();
+
+        return;
+    } else {
+        mexErrMsgTxt("Unidentified command");
     }
 }
