@@ -132,14 +132,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
             mexErrMsgTxt("Please provide the message to send");
         } 
         
-        size_t msglen = mxGetNumberOfElements(prhs[1]) * mxGetElementSize(prhs[1]);
-        char *msg_out = (char*)mxGetData(prhs[1]);
+        size_t msglen = mxGetNumberOfElements(prhs[1]);
+        char *msg_out = mxArrayToString(prhs[1]);
+
         plhs[0] = mxCreateLogicalMatrix(1, 1);
         p = mxGetLogicals(plhs[0]);
 
         if (msglen == respond(msg_out, msglen)) {
             p[0] = true;
-            mexPrintf("%d bytes of data sent successfully\n", msglen);
         } else {
             p[0] = false;
             mexErrMsgTxt("Failed to send message due to ZMQ error");
