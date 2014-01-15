@@ -47,7 +47,7 @@ class Matlab(object):
     id = None
     server_process = Process()
 
-    def __init__(self, matlab='matlab', host='localhost', port=None,
+    def __init__(self, matlab='matlab', socket_addr='ipc:///tmp/pymatbridge',
                  id='python-matlab-bridge', log=False, maxtime=None,
                  platform=None, startup_options=None):
         """
@@ -60,12 +60,9 @@ class Matlab(object):
             A string that woul start matlab at the terminal. Per default, this
             is set to 'matlab', so that you can alias in your bash setup
 
-        host : str
-            If you want something else than 'localhost', blame yourself
-
-        port : integer
-            This is the number of the port. The default (None), gets a random
-            free port
+        socket_addr : str
+            A string that represents a valid ZMQ socket address, such as
+            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
 
         id : str
             An identifier for this instance of the pymatbridge
@@ -82,21 +79,10 @@ class Matlab(object):
            will be taken from sys.platform.
 
         """
-
-        # These are the matlab functions that post requests to the webserever
-        # through the methods of this class:
-        self.feval = 'web_feval.m'
-        self.eval = 'web_eval.m'
-        self.get_var = 'web_get_variable.m'
+        # Setup internal state variables
         self.matlab = matlab
-        self.host = host
-        if port is None:
-            sock = socket.socket()
-            sock.bind(('', 0))
-            port = sock.getsockname()[1]
+        self.socket_addr = socket_addr
 
-        self.port = port
-        self.server = 'http://%s:%s' % (self.host, str(self.port))
         self.id = id
         self.log = log
         self.maxtime = maxtime
@@ -112,6 +98,10 @@ class Matlab(object):
             self.startup_options = ' -automation -noFigureWindows'
         else:
             self.startup_options = ' -nodesktop -nodisplay'
+
+        self.context = None
+        self.socket = None
+
 
     def start(self):
         # Start the MATLAB server
