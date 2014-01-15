@@ -6,30 +6,32 @@ This is a module for communicating and running
 
 Part of Python-MATLAB-bridge, Max Jaderberg 2012
 
+This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 
 import numpy as np
-from httplib import BadStatusLine
-import urllib2, urllib, os, json, time, socket
-from multiprocessing import Process
+import os, json, time
+import zmq
+import subprocess
 import platform
 import sys
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
-
-def _run_matlab_server(matlab_bin, matlab_port, matlab_log, matlab_id, matlab_startup_options):
+# Start a Matlab server and bind it to a ZMQ socket(TCP/IPC)
+def _run_matlab_server(matlab_bin, matlab_socket_addr, matlab_log, matlab_id, matlab_startup_options):
     command = matlab_bin
     command += ' %s ' % matlab_startup_options
     command += ' -r "'
     command += "addpath(genpath("
     command += "'%s'" % MATLAB_FOLDER
-    command += ')), webserver(%s),exit"' % matlab_port
+    command += ')), matlabserver(%s),exit"' % matlab_socket_addr
 
     if matlab_log:
         command += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (matlab_id, matlab_id)
 
-    os.system(command)
+    subprocess.Popen(command, shell = True)
+
     return True
 
 
