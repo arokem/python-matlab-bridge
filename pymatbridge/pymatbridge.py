@@ -158,19 +158,21 @@ class Matlab(object):
             pass
         return False
 
+    # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None, maxtime=None):
         if self.running:
             time.sleep(0.05)
-        page_args = {
-            'func_path': func_path,
-        }
-        if func_args:
-            page_args['arguments'] = json.dumps(func_args)
-        if maxtime:
-            result = self._open_page(self.feval, page_args, maxtime)
-        else:
-            result = self._open_page(self.feval, page_args)
-        return result
+
+        req = dict(cmd="run_function")
+        req['func_path'] = func_path
+        req['func_args'] = func_args
+
+        req = json.dumps(req)
+        self.socket.send(req)
+        resp = self.socket.recv_string()
+        resp = json.loads(resp)
+
+        return resp['result']
 
 
     def run_code(self, code, maxtime=None):
