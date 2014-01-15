@@ -27,7 +27,6 @@ function json_response = matlab_feval(req)
     func_path = req.func_path;
     if arguments_check
         arguments = req.func_args;
-        disp(arguments);
     else
         arguments = '';
     end
