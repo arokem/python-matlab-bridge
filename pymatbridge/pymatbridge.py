@@ -123,26 +123,31 @@ class Matlab(object):
 
         return True
 
+
     # Stop the Matlab server
     def stop(self):
         req = json.dumps(dict(cmd="exit"))
         self.socket.send(req)
         resp = self.socket.recv_string()
 
-        # Matlab should respond with "exit" if successfull
+        # Matlab should respond with "exit" if successful
         if resp == "exit":
             print "MATLAB closed"
 
         return True
 
+    # To test if the client can talk to the server
     def is_connected(self):
-        try:
-            resp = self._open_page('test_connect.m', {'id': self.id})
-            if resp['message']:
-                return True
-        except urllib2.URLError:
-            pass
-        return False
+        req = json.dumps(dict(cmd="connect"))
+        self.socket.send(req)
+        resp = self.socket.recv_string()
+
+        # Matlab should respond with "connected" if successful
+        if resp == "connected":
+            return True
+        else:
+            return False
+
 
     def is_function_processor_working(self):
         try:
