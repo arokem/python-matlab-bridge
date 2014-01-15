@@ -41,7 +41,7 @@ class Matlab(object):
     """
 
     def __init__(self, matlab='matlab', socket_addr='ipc:///tmp/pymatbridge',
-                 id='python-matlab-bridge', log=False, maxtime=None,
+                 id='python-matlab-bridge', log=False, maxtime=10,
                  platform=None, startup_options=None):
         """
         Initialize this thing.
@@ -134,6 +134,7 @@ class Matlab(object):
         req = json.dumps(dict(cmd="connect"))
         self.socket.send(req)
 
+        start_time = time.time()
         while(True):
             try:
                 resp = self.socket.recv_string(flags=zmq.NOBLOCK)
@@ -144,6 +145,9 @@ class Matlab(object):
             except zmq.Again:
                 np.disp(".", linefeed=False)
                 time.sleep(1)
+                if (time.time() - start_time > self.maxtime) :
+                    print "Matlab session timed out after %d seconds" % (self.maxtime)
+                    return False
 
 
     def is_function_processor_working(self):
