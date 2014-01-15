@@ -39,13 +39,6 @@ class Matlab(object):
     """
     A class for communicating with a matlab session
     """
-    running = False
-    matlab = None
-    host = None
-    port = None
-    server = None
-    id = None
-    server_process = Process()
 
     def __init__(self, matlab='matlab', socket_addr='ipc:///tmp/pymatbridge',
                  id='python-matlab-bridge', log=False, maxtime=None,
@@ -80,6 +73,7 @@ class Matlab(object):
 
         """
         # Setup internal state variables
+        self.running = False
         self.matlab = matlab
         self.socket_addr = socket_addr
 
