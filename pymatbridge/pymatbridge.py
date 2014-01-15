@@ -109,13 +109,12 @@ class Matlab(object):
         self.socket.connect(self.socket_addr)
 
         # Test if connection is established
-        while not self.is_connected():
-            np.disp(".", linefeed=False)
-            time.sleep(1)
-
-        print "MATLAB started and connected!"
-
-        return True
+        if (self.is_connected()):
+            print "MATLAB started and connected!"
+            return True
+        else:
+            print "MATLAB failed to start"
+            return False
 
 
     # Stop the Matlab server
@@ -134,13 +133,17 @@ class Matlab(object):
     def is_connected(self):
         req = json.dumps(dict(cmd="connect"))
         self.socket.send(req)
-        resp = self.socket.recv_string()
 
-        # Matlab should respond with "connected" if successful
-        if resp == "connected":
-            return True
-        else:
-            return False
+        while(True):
+            try:
+                resp = self.socket.recv_string(flags=zmq.NOBLOCK)
+                if resp == "connected":
+                    return True
+                else:
+                    return False
+            except zmq.Again:
+                np.disp(".", linefeed=False)
+                time.sleep(1)
 
 
     def is_function_processor_working(self):
