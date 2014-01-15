@@ -123,17 +123,16 @@ class Matlab(object):
 
         return True
 
-
+    # Stop the Matlab server
     def stop(self):
-        # Stop the MATLAB server
-        try:
-            try:
-                resp = self._open_page('exit_server.m', {'id': self.id})
-            except BadStatusLine:
-                pass
-        except urllib2.URLError:
-            pass
-        print "MATLAB closed"
+        req = json.dumps(dict(cmd="exit"))
+        self.socket.send(req)
+        resp = self.socket.recv_string()
+
+        # Matlab should respond with "exit" if successfull
+        if resp == "exit":
+            print "MATLAB closed"
+
         return True
 
     def is_connected(self):
