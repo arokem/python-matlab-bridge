@@ -102,18 +102,25 @@ class Matlab(object):
         self.context = None
         self.socket = None
 
-
+    # Start server/client session and make the connection
     def start(self):
-        # Start the MATLAB server
-        print "Starting MATLAB on http://%s:%s" % (self.host, str(self.port))
-        print " visit http://%s:%s/exit.m to shut down same" % (self.host, str(self.port))
-        self.server_process = Process(target=_run_matlab_server, args=(self.matlab, self.port, self.log, self.id, self.startup_options))
-        self.server_process.daemon = True
-        self.server_process.start()
+        # Start the MATLAB server in a new process
+        print "Starting MATLAB on ZMQ socket %s" % (self.socket_addr)
+        print "Send 'exit' command to kill the server"
+        _run_matlab_server(self.matlab, self.socket_addr, self.log, self.id, self.startup_options)
+
+        # Start the client
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REQ)
+        self.socket.connect(self.socket_addr)
+
+        # Test if connection is established
         while not self.is_connected():
             np.disp(".", linefeed=False)
             time.sleep(1)
+
         print "MATLAB started and connected!"
+
         return True
 
 
