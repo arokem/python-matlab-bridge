@@ -25,7 +25,7 @@ def _run_matlab_server(matlab_bin, matlab_socket_addr, matlab_log, matlab_id, ma
     command += ' -r "'
     command += "addpath(genpath("
     command += "'%s'" % MATLAB_FOLDER
-    command += ')), matlabserver(%s),exit"' % matlab_socket_addr
+    command += ')), matlabserver(\'%s\'),exit"' % matlab_socket_addr
 
     if matlab_log:
         command += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (matlab_id, matlab_id)
