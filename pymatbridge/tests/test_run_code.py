@@ -3,7 +3,7 @@ import numpy.testing as npt
 import test_utils as tu
 
 
-class TestFunctionProcessor:
+class TestRunCode:
 
     # Start a Matlab session before running any tests
     @classmethod
