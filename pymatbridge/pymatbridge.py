@@ -183,22 +183,19 @@ class Matlab(object):
 
         return resp
 
-
+    # Run some code in Matlab command line provide by a string
     def run_code(self, code, maxtime=None):
-        """
-
-        Run a piece of code provided as a string
-
-        """
         if self.running:
             time.sleep(0.05)
 
-        if maxtime:
-            result = self._open_page(self.eval, dict(code=code), maxtime)
-        else:
-            result = self._open_page(self.eval, dict(code=code), self.maxtime)
+        req = dict(cmd="run_code")
+        req['code'] = code
+        req = json.dumps(req)
+        self.socket.send(req)
+        resp = self.socket.recv_string()
+        resp = json.loads(resp)
 
-        return result
+        return resp
 
     def get_variable(self, varname, maxtime=None):
         if self.running:
