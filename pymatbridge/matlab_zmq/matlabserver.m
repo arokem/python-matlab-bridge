@@ -23,9 +23,9 @@ while(1)
 
             messenger('respond', resp);
         case {'run_code'}
-            % Not implemented yet
-            resp = struct('success', 0);
-            resp = mat2json(resp);
+            fhandle = str2func('matlab_eval');
+            resp = feval(fhandle, req);
+
             messenger('respond', resp);
         otherwise
             messenger('respond', 'i dont know what you want');
