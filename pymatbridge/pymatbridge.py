@@ -73,6 +73,7 @@ class Matlab(object):
 
         """
         # Setup internal state variables
+        self.started = False
         self.running = False
         self.matlab = matlab
         self.socket_addr = socket_addr
@@ -108,6 +109,8 @@ class Matlab(object):
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(self.socket_addr)
 
+        self.started = True
+
         # Test if connection is established
         if (self.is_connected()):
             print "MATLAB started and connected!"
@@ -127,10 +130,15 @@ class Matlab(object):
         if resp == "exit":
             print "MATLAB closed"
 
+        self.started = False
         return True
 
     # To test if the client can talk to the server
     def is_connected(self):
+        if not self.started:
+            time.sleep(2)
+            return False
+
         req = json.dumps(dict(cmd="connect"))
         self.socket.send(req)
 
@@ -173,7 +181,7 @@ class Matlab(object):
         resp = self.socket.recv_string()
         resp = json.loads(resp)
 
-        return resp['result']
+        return resp
 
 
     def run_code(self, code, maxtime=None):
