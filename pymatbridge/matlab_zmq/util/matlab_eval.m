@@ -1,4 +1,4 @@
-function json_response = web_eval(headers, varargin);
+function json_response = web_eval(req);
 %WEB_EVAL: Returns a json object of the result of calling the function
 %
 % json_response = WEB_EVAL(headers);
@@ -13,18 +13,13 @@ function json_response = web_eval(headers, varargin);
 % Based on Max Jaderberg's web_feval
 
 response.success = 'false';
-field_names = fieldnames(headers.Content);
-
-% URL decode the POST data
-for i=1:numel(field_names)
-	headers.Content.(field_names{i}) = urldecode(headers.Content.(field_names{i}));
-end
+field_names = fieldnames(req);
 
 response.content = '';
 
 code_check = false;
 if size(field_names)
-	if isfield(headers.Content, 'code')
+	if isfield(req, 'code')
 		code_check = true;
 	end
 end
@@ -35,7 +30,7 @@ if ~code_check
 	return;
 end
 
-code = headers.Content.code;
+code = req.code;
 
 try
 	% tempname is less likely to get bonked by another process.
@@ -46,7 +41,9 @@ try
 
 	datadir = fullfile(tempdir(),'MatlabData');
 	response.content.datadir = [datadir, filesep()];
-	mkdir(datadir);
+	if ~exist(datadir, 'dir')
+        mkdir(datadir);
+    end
 	
 	fig_files = make_figs(datadir);    
 
