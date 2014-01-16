@@ -3,12 +3,12 @@ function matlabserver(socket_address)
 % over the socket. I then enters the listen-respond mode until it gets an 
 % "exit" command
 
+json.startup
 messenger('init', socket_address);
 
 while(1)
     msg_in = messenger('listen');
-    req = parse_json(msg_in);
-    req = req{1};
+    req = json.load(msg_in);
     
     switch(req.cmd)
         case {'connect'}

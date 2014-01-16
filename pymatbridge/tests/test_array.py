@@ -17,9 +17,9 @@ class TestArray:
         tu.stop_matlab(cls.mlab)
 
 
-    # Pass a 50*50 array to Matlab
+    # Pass a 1000*1000 array to Matlab
     def test_array_size(self):
-        array = np.random.random_sample((50,50)).tolist()
+        array = np.random.random_sample((1000,1000)).tolist()
         res = self.mlab.run_func("array_size.m",{'val':array})['result']
         npt.assert_almost_equal(res, array, decimal=8, err_msg = "test_array_size: error")
 
