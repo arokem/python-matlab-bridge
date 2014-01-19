@@ -49,5 +49,3 @@ class TestRunCode:
 
         npt.assert_equal(success, "false")
         npt.assert_equal(message, "Undefined function or variable 'this_is_nonsense'.")
-
-
