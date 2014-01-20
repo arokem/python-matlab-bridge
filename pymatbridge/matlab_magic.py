@@ -21,7 +21,7 @@ from urllib2 import URLError
 
 import numpy as np
 try:
-    import tables
+    import h5py
     import scipy.io as sio
     has_io = True
 except ImportError:
@@ -62,11 +62,15 @@ class MatlabInterperterError(RuntimeError):
 
 def loadmat(fname):
     """
-    Use pytables to read a variable from a v7.3 mat file
+    Use h5py to read a variable from a v7.3 mat file
     """
 
-    f = tables.File(fname)
-    return f.root.__getattr__(f.root.__members__[0])
+    f = h5py.File(fname)
+    data = f.values()[0][:]
+    if len(data.dtype) > 0:
+        # must be complex data
+        data = data['real'] + 1j * data['imag']        
+    return data
 
 
 def matlab_converter(matlab, key):
