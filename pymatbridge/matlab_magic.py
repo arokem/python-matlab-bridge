@@ -26,7 +26,7 @@ try:
     has_io = True
 except ImportError:
     has_io = False
-    no_io_str = "Must have pytables and scipy.io to perform i/o"
+    no_io_str = "Must have h5py and scipy.io to perform i/o"
     no_io_str += "operations with the Matlab session"
     
 from IPython.core.displaypub import publish_display_data
