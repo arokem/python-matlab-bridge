@@ -92,7 +92,7 @@ class MatlabMagics(Magics):
     """
     def __init__(self, shell,
                  matlab='matlab',
-                 maxtime=None,
+                 maxtime=10,
                  matlab_converter=matlab_converter,
                  pyconverter=np.asarray,
                  cache_display_data=False):
@@ -126,8 +126,7 @@ class MatlabMagics(Magics):
         super(MatlabMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.Matlab = pymat.Matlab(matlab, maxtime=maxtime,
-                                   startup_options='-nodesktop -noFigureWindows')
+        self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
         self.pyconverter = pyconverter
         self.matlab_converter = matlab_converter
