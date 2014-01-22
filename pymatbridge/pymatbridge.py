@@ -159,13 +159,12 @@ class Matlab(object):
 
 
     def is_function_processor_working(self):
-        try:
-            result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
-            if result['success'] == 'true':
-                return True
-        except urllib2.URLError:
-            pass
-        return False
+        result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
+        if result['success'] == 'true':
+            return True
+        else:
+            return False
+
 
     # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None, maxtime=None):
@@ -201,33 +200,12 @@ class Matlab(object):
         if self.running:
             time.sleep(0.05)
 
-        if maxtime:
-            result = self._open_page(self.get_var, dict(varname=varname),
-                                     maxtime)
-        else:
-            result = self._open_page(self.get_var, dict(varname=varname),
-                                     self.maxtime)
+        req = dict(cmd="get_var")
+        req['varname'] = varname
+        req = json.dumps(req)
+        self.socket.send(req)
+        resp = self.socket.recv_string()
+        resp = json.loads(resp)
 
-        return result['var']
-
-
-    def _open_page(self, page_name, arguments={}, timeout=10):
-        self.running = True
-        page = urllib2.urlopen('%s/%s' % (self.server, page_name),
-                               urllib.urlencode(arguments),
-                               timeout)
-
-        self.running = False
-        read_page = page.read()
-        # Deal with escape characters: json needs an additional '\':
-        # Kill backspaces (why does Matlab even put these there!?):
-        read_page = read_page.replace("\x08", "")
-        if self.platform == 'Windows':
-            # Matlab strings containing \ for the dir names on windows:
-            read_page = read_page.replace("\\", "\\\\")
-
-        # Keep new-lines:
-        read_page = read_page.replace("\n","\\n")
-        return json.loads(read_page)
-
+        return resp['var']
 
