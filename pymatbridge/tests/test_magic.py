@@ -42,4 +42,16 @@ class TestMagic:
         npt.assert_almost_equal(self.ip.user_ns['resmat'], self.ip.user_ns['respy'], decimal=7)
 
 
+    def test_line_magic(self):
+        # Some operation in Matlab
+        self.ip.run_line_magic('matlab', 'a = [1 2 3]')
+        self.ip.run_line_magic('matlab', 'res = a*2')
+        # Get the result back to Python
+        self.ip.run_cell_magic('matlab', '-o actual', 'actual = res')
 
+        self.ip.run_cell("expected = np.array([[2], [4], [6]])")
+        npt.assert_almost_equal(self.ip.user_ns['actual'], self.ip.user_ns['expected'], decimal=7)
+
+    def test_figure(self):
+        # Just make a plot to get more testing coverage
+        self.ip.run_line_magic('matlab', 'plot([1 2 3])')
