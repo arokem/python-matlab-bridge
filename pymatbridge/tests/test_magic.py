@@ -32,10 +32,12 @@ class TestMagic:
         self.ip.run_cell("res = x*(11.35 - 23.098j)")
         npt.assert_almost_equal(self.ip.user_ns['y'], self.ip.user_ns['res'], decimal=7)
 
+
+    def test_cell_magic_array(self):
         # Random array multiplication
         self.ip.run_cell("val1 = np.random.random_sample((3,3))")
         self.ip.run_cell("val2 = np.random.random_sample((3,3))")
-        self.ip.run_cell("respy = np.dot(val1, val2)")
+        self.ip.run_cell("respy = np.transpose(np.dot(val1, val2))")
         self.ip.run_cell_magic('matlab', '-i val1,val2 -o resmat', 'resmat = val1 * val2')
         npt.assert_almost_equal(self.ip.user_ns['resmat'], self.ip.user_ns['respy'], decimal=7)
 
