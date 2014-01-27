@@ -70,7 +70,7 @@ def loadmat(fname):
     if len(data.dtype) > 0:
         # must be complex data
         data = data['real'] + 1j * data['imag']        
-    return data
+    return np.squeeze(data.T)
 
 
 def matlab_converter(matlab, key):
