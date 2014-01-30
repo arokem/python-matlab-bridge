@@ -61,6 +61,7 @@ class TestMagic:
         # Just make a plot to get more testing coverage
         self.ip.run_line_magic('matlab', 'plot([1 2 3])')
 
+
     def test_matrix(self):
         self.ip.run_cell("in_array = np.array([[1,2,3], [4,5,6]])")
         self.ip.run_cell_magic('matlab', '-i in_array -o out_array',
@@ -68,3 +69,15 @@ class TestMagic:
         npt.assert_almost_equal(self.ip.user_ns['out_array'],
                                 self.ip.user_ns['in_array'],
                                 decimal=7)
+
+    # Matlab struct type should be converted to a Python dict
+    def test_struct(self):
+        self.ip.run_cell('num = 2.567')
+        self.ip.run_cell('num_array = np.array([1.2,3.4,5.6])')
+        self.ip.run_cell('str = "Hello World"')
+        self.ip.run_cell_magic('matlab', '-i num,num_array,str -o obj',
+                                'obj.num = num;obj.num_array = num_array;obj.str = str;')
+        npt.assert_equal(isinstance(self.ip.user_ns['obj'], dict), True)
+        npt.assert_equal(self.ip.user_ns['obj']['num'], self.ip.user_ns['num'])
+        npt.assert_equal(self.ip.user_ns['obj']['num_array'], self.ip.user_ns['num_array'])
+        npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
