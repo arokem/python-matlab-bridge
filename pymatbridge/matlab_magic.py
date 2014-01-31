@@ -82,6 +82,13 @@ def loadmat(fname):
                 if isinstance(f[var_name][mem_name], h5py.Dataset):
                     data[mem_name] = f[var_name][mem_name].value
                     data[mem_name] = np.squeeze(data[mem_name].T)
+                    # This is a quick hack. Need to find a better way
+                    # to identify string
+                    if data[mem_name].dtype == 'uint16':
+                        result = ''
+                        for asc in data[mem_name]:
+                            result += chr(asc)
+                        data[mem_name] = result
                 else:
                     # Currently doesn't support nested struct
                     pass
