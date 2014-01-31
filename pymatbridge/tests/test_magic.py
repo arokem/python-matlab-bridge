@@ -19,7 +19,7 @@ class TestMagic:
         pymat.unload_ipython_extension(cls.ip)
 
 
-    # Test single operation on differnt data structures
+    # Test single operation on different data structures
     def test_cell_magic_number(self):
         # A double precision real number
         self.ip.run_cell("a = np.float64(random.random())")
