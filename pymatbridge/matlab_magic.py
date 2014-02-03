@@ -80,11 +80,17 @@ def loadmat(fname):
             data = {}
             for mem_name in f[var_name].iterkeys():
                 if isinstance(f[var_name][mem_name], h5py.Dataset):
+                    # Check if the dataset is a string
+                    attr = h5py.AttributeManager(f[var_name][mem_name])
+                    if (attr.__getitem__('MATLAB_class') == 'char'):
+                        is_string = True
+                    else:
+                        is_string = False
+
                     data[mem_name] = f[var_name][mem_name].value
                     data[mem_name] = np.squeeze(data[mem_name].T)
-                    # This is a quick hack. Need to find a better way
-                    # to identify string
-                    if data[mem_name].dtype == 'uint16':
+
+                    if is_string:
                         result = ''
                         for asc in data[mem_name]:
                             result += chr(asc)
