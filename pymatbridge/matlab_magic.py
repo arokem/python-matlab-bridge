@@ -186,6 +186,18 @@ class MatlabMagics(Magics):
         # This is the matlab stdout:
         return run_dict
 
+    def set_matlab_var(self, name, value):
+        """
+        Set up a variable in Matlab workspace
+        """
+        run_dict = self.Matlab.run_func("pymat_set_variable.m",
+                                        {'name':name, 'value':value},
+                                        maxtime=self.Matlab.maxtime)
+
+        if run_dict['success'] == 'false':
+            raise MatlabInterperterError(line, run_dict['content']['stdout'])
+
+
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
@@ -238,13 +250,11 @@ class MatlabMagics(Magics):
                         val = local_ns[input]
                     except KeyError:
                         val = self.shell.user_ns[input]
-                    # We save these input arguments into a .mat file:
-                    tempdir = tempfile.gettempdir()
-                    sio.savemat('%s/%s.mat'%(tempdir, input),
-                                eval("dict(%s=val)"%input), oned_as='row')
 
-                    #Which is then read in by the Matlab session
-                    self.eval("load('%s/%s.mat');"%(tempdir, input))
+                    if (isinstance(val, np.ndarray)):
+                        val = val.tolist()
+
+                    self.set_matlab_var(input, val)
 
             else:
                 raise RuntimeError(no_io_str)
