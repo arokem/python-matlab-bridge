@@ -5,6 +5,6 @@ TARGET = messenger
 
 all:
 	$(MEX) $(SRC)
-	mv *.$(MEXEXT) ../matlab_zmq
+	mv *.$(MEXEXT) ../matlab
 clean:
 	rm -f *.$(MEXEXT)

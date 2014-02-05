@@ -16,7 +16,7 @@ import subprocess
 import platform
 import sys
 
-MATLAB_FOLDER = '%s/matlab_zmq' % os.path.realpath(os.path.dirname(__file__))
+MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
 # Start a Matlab server and bind it to a ZMQ socket(TCP/IPC)
 def _run_matlab_server(matlab_bin, matlab_socket_addr, matlab_log, matlab_id, matlab_startup_options):
