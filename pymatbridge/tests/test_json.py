@@ -66,4 +66,3 @@ class TestJson:
                 + unichr(13) + unichr(9) + unichr(12) + unichr(8) + unichr(8) + unichr(12) \
                 + unichr(47) + unichr(34) + unichr(47) + unichr(10) + unichr(10) + unichr(47) + unichr(34)
         npt.assert_equal(res, ans, err_msg = "Special Character Test 8 failed")
-

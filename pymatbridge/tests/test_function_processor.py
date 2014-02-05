@@ -18,4 +18,3 @@ class TestFunctionProcessor:
     # Test the "is_function_processor_working()" function
     def test_is_function_processor_working(self):
         npt.assert_equal(self.mlab.is_function_processor_working(), True)
-
