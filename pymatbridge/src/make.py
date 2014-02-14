@@ -44,7 +44,7 @@ for line in config:
         print "Searching for zmq.h ..."
         header_path = find_path(path[1].split(','), 'zmq.h')
         if header_path == "":
-            print "Cannot find zmq.h. Please add the path to .cfg"
+            print "Cannot find zmq.h. Please add the path to local.cfg"
             success = False
             break
         print "Done"
@@ -62,7 +62,7 @@ for line in config:
             lib_path = find_path(path[1].split(','), 'libzmq.dll')
 
         if lib_path == "":
-            print "Cannot find libzmq. Please add the path to .cfg"
+            print "Cannot find libzmq. Please add the path to loacl.cfg"
             success = False
             break
         print "Done"
@@ -75,10 +75,12 @@ else:
     # Get the extension
     if platform == 'win32':
         mexext = "\\mexext"
+        check_extension = subprocess.Popen("\""+matlab_path + mexext + "\"", stdout = subprocess.PIPE)
+        extension = check_extension.stdout.readline().rstrip('\r\n')
     else:
         mexext = "/mexext"
-    check_extension = subprocess.Popen(matlab_path + mexext, stdout = subprocess.PIPE)
-    extension = check_extension.stdout.readline().rstrip('\r\n')
+        check_extension = subprocess.Popen(matlab_path + mexext, stdout = subprocess.PIPE)
+        extension = check_extension.stdout.readline().rstrip('\r\n')
 
     # Build the mex file
     if platform == 'win32':
