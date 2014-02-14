@@ -74,27 +74,25 @@ if success == False:
 else:
     # Get the extension
     if platform == 'win32':
-        extcmd = "\"" + matlab_path + "\\mexext" + "\""
-        print extcmd
+        extcmd = '"' + matlab_path + "\\mexext.bat" + '"'
         check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
         extension = check_extension.stdout.readline().rstrip('\r\n')
     else:
         extcmd = matlab_path + "/mexext"
-        print extcmd
         check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
         extension = check_extension.stdout.readline().rstrip('\r\n')
 
     # Build the mex file
     if platform == 'win32':
-        mex = "\\mex"
+        mex = "\\mex.bat"
     else:
         mex = "/mex"
-    make_cmd = matlab_path + mex + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
+    make_cmd = '"' + matlab_path + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
     os.system(make_cmd)
 
     # Move to the ../matlab/ directory
     if platform == 'win32':
-        move_cmd = "mv messenger." + extension + " ..\\matlab\\"
+        move_cmd = "move messenger." + extension + " ..\\matlab\\"
     else:
         move_cmd = "mv messenger." + extension + " ../matlab/"
 
