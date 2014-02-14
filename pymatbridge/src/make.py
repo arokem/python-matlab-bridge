@@ -8,7 +8,6 @@ import subprocess
 def find_path(candidates, target):
     for candidate in candidates:
         candidate = candidate.rstrip('\r\n')
-
         if os.path.exists(candidate):
             for root, dirnames, filenames in os.walk(candidate):
                 for filename in fnmatch.filter(filenames, target):
@@ -27,7 +26,7 @@ config = open('local.cfg', 'r')
 success = True
 
 for line in config:
-    path = line.split(' ')
+    path = line.split('?')
 
     if path[0] == "MATLAB_PATH":
         print "Searching for Matlab path ..."
