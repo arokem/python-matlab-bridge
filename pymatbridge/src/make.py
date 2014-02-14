@@ -23,7 +23,7 @@ platform = sys.platform
 print "This is a " + platform + " system"
 
 # Open the configure file and start parsing
-config = open('.cfg', 'r')
+config = open('local.cfg', 'r')
 success = True
 
 for line in config:
@@ -31,9 +31,12 @@ for line in config:
 
     if path[0] == "MATLAB_PATH":
         print "Searching for Matlab path ..."
-        matlab_path = find_path(path[1].split(','), 'matlab')
+        if platform == "win32":
+            matlab_path = find_path(path[1].split(','), 'matlab.exe')
+        else:
+            matlab_path = find_path(path[1].split(','), 'matlab')
         if matlab_path == "":
-            print "Cannot find Matlab. Please add the path to .cfg"
+            print "Cannot find Matlab. Please add the path to local.cfg"
             success = False
             break
         print "Done"
@@ -69,29 +72,29 @@ config.close()
 
 if success == False:
     print "Building failed"
-
-# Get the extension
-if platform == 'win32':
-    mexext = "\\mexext"
 else:
-    mexext = "/mexext"
-check_extension = subprocess.Popen(matlab_path + mexext, stdout = subprocess.PIPE)
-extension = check_extension.stdout.readline().rstrip('\r\n')
+    # Get the extension
+    if platform == 'win32':
+        mexext = "\\mexext"
+    else:
+        mexext = "/mexext"
+    check_extension = subprocess.Popen(matlab_path + mexext, stdout = subprocess.PIPE)
+    extension = check_extension.stdout.readline().rstrip('\r\n')
 
-# Build the mex file
-if platform == 'win32':
-    mex = "\\mex"
-else:
-    mex = "/mex"
-make_cmd = matlab_path + mex + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
-os.system(make_cmd)
+    # Build the mex file
+    if platform == 'win32':
+        mex = "\\mex"
+    else:
+        mex = "/mex"
+    make_cmd = matlab_path + mex + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
+    os.system(make_cmd)
 
-# Move to the ../matlab/ directory
-if platform == 'win32':
-    move_cmd = "mv messenger." + extension + " ..\\matlab\\"
-else:
-    move_cmd = "mv messenger." + extension + " ../matlab/"
+    # Move to the ../matlab/ directory
+    if platform == 'win32':
+        move_cmd = "mv messenger." + extension + " ..\\matlab\\"
+    else:
+        move_cmd = "mv messenger." + extension + " ../matlab/"
 
-os.system(move_cmd)
+    os.system(move_cmd)
 
-print "Building succeeded!"
+    print "Building succeeded!"
