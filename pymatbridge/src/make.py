@@ -74,12 +74,14 @@ if success == False:
 else:
     # Get the extension
     if platform == 'win32':
-        mexext = "\\mexext"
-        check_extension = subprocess.Popen("\""+matlab_path + mexext + "\"", stdout = subprocess.PIPE)
+        extcmd = "\"" + matlab_path + "\\mexext" + "\""
+        print extcmd
+        check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
         extension = check_extension.stdout.readline().rstrip('\r\n')
     else:
-        mexext = "/mexext"
-        check_extension = subprocess.Popen(matlab_path + mexext, stdout = subprocess.PIPE)
+        extcmd = matlab_path + "/mexext"
+        print extcmd
+        check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
         extension = check_extension.stdout.readline().rstrip('\r\n')
 
     # Build the mex file
