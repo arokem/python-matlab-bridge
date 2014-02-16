@@ -7,8 +7,8 @@ import subprocess
 
 def find_path(candidates, target):
     for candidate in candidates:
-        candidate = candidate.rstrip('\r\n')
-        if os.path.exists(candidate):
+        candidate = os.path.expanduser(candidate.rstrip('\r\n'))
+	if os.path.exists(candidate):
             for root, dirnames, filenames in os.walk(candidate):
                 for filename in fnmatch.filter(filenames, target):
                     return os.path.join(root)
@@ -38,7 +38,7 @@ for line in config:
         if matlab_path == "":
             raise ValueError("Could not find matlab. Please add its path to local.cfg")
 
-        print "Done"
+        print "Matlab found in " + matlab_path
 
     elif path[0] == "HEADER_PATH":
         print "Searching for zmq.h ..."
@@ -47,7 +47,7 @@ for line in config:
         if header_path == "":
             raise ValueError("Could not find zmq.h. Please add its path to local.cfg")
 
-        print "Done"
+        print "zmq.h found in " + header_path
 
     elif path[0] == "LIB_PATH":
         # Dynamic library has different names on different platforms
@@ -64,8 +64,8 @@ for line in config:
         if lib_path == "":
             raise ValueError("Could not find zmq library. Please add its path to local.cfg")
 
-        print "Done"
-
+	print "zmq library found in " + lib_path
+	
 config.close()
 
 # Get the extension
@@ -78,6 +78,8 @@ else:
     check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
     extension = check_extension.stdout.readline().rstrip('\r\n')
 
+print "Building messenger." + extension + " ..."
+
 # Build the mex file
 if platform == 'win32':
     mex = "\\mex.bat"
@@ -85,6 +87,8 @@ else:
     mex = "/mex"
 make_cmd = '"' + matlab_path + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
 os.system(make_cmd)
+
+print "Moving messenger." + extension + " to ../matlab/ ..."
 
 # Move to the ../matlab/ directory
 if platform == 'win32':
@@ -94,3 +98,4 @@ else:
 
 os.system(move_cmd)
 
+print "Building succeeded!"
