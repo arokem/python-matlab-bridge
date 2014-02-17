@@ -25,22 +25,17 @@ print "This is a " + platform + " system"
 config = open('local.cfg', 'r')
 success = True
 
+# Extract Matlab bin folder from system
+if "MATLAB_BIN" in os.environ:
+    matlab_path = os.environ['MATLAB_BIN']
+    print "Matlab found in " + matlab_path
+else:
+    raise ValueError("Could not find Matlab bin directory. Please add it to MATLAB_BIN")
+
 for line in config:
     path = line.split('?')
 
-    if path[0] == "MATLAB_PATH":
-        print "Searching for Matlab path ..."
-        if platform == "win32":
-            matlab_path = find_path(path[1].split(','), 'matlab.exe')
-        else:
-            matlab_path = find_path(path[1].split(','), 'matlab')
-
-        if matlab_path == "":
-            raise ValueError("Could not find matlab. Please add its path to local.cfg")
-
-        print "Matlab found in " + matlab_path
-
-    elif path[0] == "HEADER_PATH":
+    if path[0] == "HEADER_PATH":
         print "Searching for zmq.h ..."
         header_path = find_path(path[1].split(','), 'zmq.h')
 

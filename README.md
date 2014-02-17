@@ -38,7 +38,8 @@ by using
 	
 Next, install [pyzmq](http://zeromq.org/bindings:python) and make sure it's import-able.
 
-Then, Create an environment variable MATLAB_PATH that points to the Matlab bin directory.
+Then, Create an environment variable MATLAB_BIN that points to the Matlab bin directory.
+Also add this directory to PATH. 
 
 Finally, install pymatbridge. 
 To install from the source-code. Download the [code zip
