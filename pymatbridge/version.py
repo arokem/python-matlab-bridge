@@ -40,7 +40,7 @@ TODO: more documentation will be here at some point.
 License information
 ===================
 
-Copyright (c) 2012, Max Jaderberg, Ariel Rokem 
+Copyright (c) 2012, Max Jaderberg, Ariel Rokem
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -86,8 +86,8 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['pymatbridge']
-PACKAGE_DATA = {"pymatbridge": ["matlab/*.m", "matlab/functions/*.m",
-                                "matlab/private/*.m", "matlab/www/*.m",
-                                "test/*.m", "test/*.py", "examples/*.ipynb"]}
+PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
+                                "matlab/usrprog/*.m", "matlab/util/*.m",
+                                "tests/*.py", "examples/*.ipynb"]}
 
 REQUIRES = []
