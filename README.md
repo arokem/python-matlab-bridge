@@ -22,21 +22,25 @@ pymatbridge. Please follow the procedures for your own platform.
 
 ### Mac OS
 
-1. Download the latest version of [ZMQ library](http://zeromq.org/intro:get-the-software)
+First, download the latest version of [ZMQ library](http://zeromq.org/intro:get-the-software)
 and follow the building instructions on the official page to install ZMQ to your machine.
 This step will provide the header file and library file for the the building of pymatbridge.
-ZMQ will be installed to the system directories on default. If you have permission issues 
-we recommend you to install ZMQ to ~/zmq. 
+ZMQ will be installed to the system directories on default. If you don't have permissions 
+we recommend you to install ZMQ to 
+
+	~/zmq
+
+by using 
+
+	./configure --prefix=~/zmq
+	make
+	make install
 	
-2. Download [pyzmq](http://zeromq.org/bindings:python) and make sure it's python-importable.
+Next, install [pyzmq](http://zeromq.org/bindings:python) and make sure it's import-able.
 
-3. Create environment variable MATLAB_PATH that points to the Matlab bin directory.
+Then, Create an environment variable MATLAB_PATH that points to the Matlab bin directory.
 
-### Linux
-
-### Windows
-
-Install pymatbridge
+Finally, install pymatbridge. 
 To install from the source-code. Download the [code zip
 file](https://github.com/arokem/python-matlab-bridge/archive/master.zip). Unzip
 it somewhere on your machine and then issue:
@@ -57,6 +61,15 @@ Or
     pip install pymatbridge
 
 To get things going.
+
+
+### Linux
+
+TBD
+
+### Windows
+
+TBD
 
 ### API: 
 
