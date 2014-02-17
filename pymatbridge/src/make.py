@@ -65,7 +65,7 @@ for line in config:
             raise ValueError("Could not find zmq library. Please add its path to local.cfg")
 
 	print "zmq library found in " + lib_path
-	
+
 config.close()
 
 # Get the extension
@@ -85,16 +85,16 @@ if platform == 'win32':
     mex = "\\mex.bat"
 else:
     mex = "/mex"
-make_cmd = '"' + matlab_path + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq messenger.c"
+make_cmd = '"' + matlab_path + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq pymatbridge/src/messenger.c"
 os.system(make_cmd)
 
 print "Moving messenger." + extension + " to ../matlab/ ..."
 
 # Move to the ../matlab/ directory
 if platform == 'win32':
-    move_cmd = "move messenger." + extension + " ..\\matlab\\"
+    move_cmd = "move messenger." + extension + " pymatbridge\\matlab\\"
 else:
-    move_cmd = "mv messenger." + extension + " ../matlab/"
+    move_cmd = "mv messenger." + extension + " pymatbridge/matlab/"
 
 os.system(move_cmd)
 
