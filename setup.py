@@ -15,10 +15,6 @@ from distutils.core import setup
 ver_file = os.path.join('pymatbridge', 'version.py')
 execfile(ver_file)
 
-# Compile the messenger mex file and move it to the matlab folder
-make_file = os.path.join('pymatbridge', 'src', 'make.py')
-execfile(make_file)
-
 opts = dict(name=NAME,
             maintainer=MAINTAINER,
             maintainer_email=MAINTAINER_EMAIL,
