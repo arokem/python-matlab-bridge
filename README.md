@@ -52,12 +52,25 @@ it somewhere on your machine and then issue:
 
 	python make.py
 
-This will build the MEX file used by the package. For Mac OS users. depending on your Xcode 
-version, `make.py` might fail. This is due to wrong compiler setup. To solve this problem 
-please refer to the 
- [solution provided by Mathwork](http://www.mathworks.com/support/compilers/R2012b/maci64.html#matlab)
+This will build the MEX file used by the package. The building process may fail due to 
+several reasons. Please follow the instructions according to the error message you get:
 
-After the make process succeeded, issue:
+- `Could not find Matlab bin directory. Please add it to MATLAB_BIN`: Please make 
+sure you have set up the environment variable `MATLAB_BIN` which points to the Matlab bin 
+directory.
+- `Could not find zmq.h. Please add its path to local.cfg`: Please find the path
+where `zmq.h` is installed on your machine, add it after `HEADER_PATH` in `local.cfg`, 
+separated by a comma with other paths.
+- `Could not find zmq library. Please add its path to local.cfg`: Please find the 
+path where ZMQ library is installed on your machine. On Mac OS X this would be `libzmq.dylib`,
+Linux `libzmq.so` and Windows `libzmq.dll`. Add it after `LIB_PATH` in `local.cfg`, 
+separated by a comma with other paths.
+
+Other errors are caused by wrong compiler setup. For Mac OS X users please 
+follow the 
+ [solution provided by Mathwork](http://www.mathworks.com/support/compilers/R2012b/maci64.html#matlab).
+ 
+After the building process succeeded, issue:
 
 	python setup.py install
 

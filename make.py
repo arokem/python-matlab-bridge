@@ -92,4 +92,3 @@ else:
 
 os.system(move_cmd)
 
-print "Building succeeded!"
