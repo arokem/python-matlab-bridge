@@ -21,16 +21,15 @@ def find_path(candidates, target):
 platform = sys.platform
 print "This is a " + platform + " system"
 
-# Open the configure file and start parsing
-config = open('local.cfg', 'r')
-success = True
-
 # Extract Matlab bin folder from system
 if "MATLAB_BIN" in os.environ:
     matlab_path = os.environ['MATLAB_BIN']
     print "Matlab found in " + matlab_path
 else:
     raise ValueError("Could not find Matlab bin directory. Please add it to MATLAB_BIN")
+
+# Open the configure file and start parsing
+config = open('local.cfg', 'r')
 
 for line in config:
     path = line.split('?')
