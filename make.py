@@ -82,7 +82,7 @@ else:
 make_cmd = '"' + matlab_path + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq pymatbridge/src/messenger.c"
 os.system(make_cmd)
 
-print "Moving messenger." + extension + " to ../matlab/ ..."
+print "Moving messenger." + extension + " to pymatbridge/matlab/ ..."
 
 # Move to the ../matlab/ directory
 if platform == 'win32':

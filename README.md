@@ -18,64 +18,53 @@ For examples, check out the `.ipynb` files
 
 As pymatbridge uses [ZMQ](http://zeromq.org/) to communicate between Python and 
 Matlab, ZMQ library and pyzmq have to be installed before the installation of 
-pymatbridge. Please follow the procedures for your own platform. 
+pymatbridge. 
 
-### Mac OS
+### Install ZMQ library and pyzmq
 
-First, download the latest version of [ZMQ library](http://zeromq.org/intro:get-the-software)
-and follow the building instructions on the official page to install ZMQ to your machine.
-This step will provide the header file and library file for the the building of pymatbridge.
-ZMQ will be installed to the system directories on default. If you don't have permissions 
-we recommend you to install ZMQ to 
+Get the latest version of [ZMQ library](http://zeromq.org/intro:get-the-software). 
+For Mac/Linux users, please download the `POSIX tarball`, then follow the building 
+instructions in section `To build on UNIX-like systems`. To build ZMQ, you need to make 
+sure you have installed the `GNU build system`, also known as the `autotools`. If you 
+don't have it, you need to install it first. 
 
-	~/zmq
-
-by using 
+The default building process will install ZMQ to the system libraries. If you don't have 
+permissions we recommend you to install ZMQ to `~/zmq` by using 
 
 	./configure --prefix=~/zmq
 	make
 	make install
 	
-Next, install [pyzmq](http://zeromq.org/bindings:python) and make sure it's import-able.
+For Windows users, please use the `Windows installers`. Further instructions TBD. 
+	
+After ZMQ is installed successfully, install [pyzmq](http://zeromq.org/bindings:python) 
+and make sure it's import-able.
 
-Then, Create an environment variable MATLAB_BIN that points to the Matlab bin directory.
-Also add this directory to PATH. 
+### Install pymatbridge
 
-	export MATLAB_BIN = your_matlab_bin_folder
-	export PATH = $MATLAB_BIN:$PATH
+First, Create an environment variable `MATLAB_BIN` that points to the Matlab bin directory.
+Also add this directory to `PATH`. 
 
-Finally, install pymatbridge. 
+Then, install pymatbridge. 
 To install from the source-code. Download the [code zip
 file](https://github.com/arokem/python-matlab-bridge/archive/master.zip). Unzip
 it somewhere on your machine and then issue:
+
+	python make.py
+
+This will build the MEX file used by the package. For Mac OS users. depending on your Xcode 
+version, `make.py` might fail. This is due to wrong compiler setup. To solve this problem 
+please refer to the 
+ [solution provided by Mathwork](http://www.mathworks.com/support/compilers/R2012b/maci64.html#matlab)
+
+After the make process succeeded, issue:
 
 	python setup.py install
 
 This should make the python-matlab-bridge import-able.
 
-Alternatively, you can get pymatbridge at the
-[cheese-shop](https://pypi.python.org/pypi/pymatbridge).
 
-This means that you can use:
-
-    easy_install pymatbridge
-
-Or
-
-    pip install pymatbridge
-
-To get things going.
-
-
-### Linux
-
-TBD
-
-### Windows
-
-TBD
-
-### API: 
+## API: 
 
 Initialize the Matlab class:
 
