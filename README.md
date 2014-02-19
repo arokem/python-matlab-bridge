@@ -62,14 +62,19 @@ directory.
 where `zmq.h` is installed on your machine, add it after `HEADER_PATH` in `local.cfg`, 
 separated by a comma with other paths.
 - `Could not find zmq library. Please add its path to local.cfg`: Please find the 
-path where ZMQ library is installed on your machine. On Mac OS X this would be `libzmq.dylib`,
+path where ZMQ library is installed on your machine. On Mac OS this would be `libzmq.dylib`,
 Linux `libzmq.so` and Windows `libzmq.dll`. Add it after `LIB_PATH` in `local.cfg`, 
 separated by a comma with other paths.
 
-Other errors are caused by wrong compiler setup. For Mac OS X users please 
-follow the 
- [solution provided by Mathwork](http://www.mathworks.com/support/compilers/R2012b/maci64.html#matlab).
- 
+Other errors are caused by wrong compiler setup:
+
+- For Mac OS users, if you are using Xcode 4.2 ~ 4.6 please apply the official 
+[patch](http://www.mathworks.com/matlabcentral/answers/94092) provide by MathWorks. For 
+Mac OS 10.9 and Xcode 5.X users, please first apply `optsPatch10.8.patch` and then follow 
+[this instruction](http://www.mathworks.com/matlabcentral/answers/103258#answer_112685)
+- For Linux users, TBD
+- For Windows users, TBD
+
 After the building process succeeded, issue:
 
 	python setup.py install
