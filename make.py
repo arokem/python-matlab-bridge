@@ -21,20 +21,19 @@ def find_path(candidates, target):
 platform = sys.platform
 print "This is a " + platform + " system"
 
-# Extract Matlab bin folder from system
-if "MATLAB_BIN" in os.environ:
-    matlab_path = os.environ['MATLAB_BIN']
-    print "Matlab found in " + matlab_path
-else:
-    raise ValueError("Could not find Matlab bin directory. Please add it to MATLAB_BIN")
-
 # Open the configure file and start parsing
 config = open('local.cfg', 'r')
 
 for line in config:
-    path = line.split('?')
+    path = line.split('=')
 
-    if path[0] == "HEADER_PATH":
+    if path[0] == "MATLAB_BIN":
+        matlab_path = path[1].rstrip('\r\n')
+        if matlab_path == ""
+            raise ValueError("Could not find Matlab bin directory. Please add it to MATLAB_BIN")
+        print "Matlab found in " + matlab_path
+
+    elif path[0] == "HEADER_PATH":
         print "Searching for zmq.h ..."
         header_path = find_path(path[1].split(','), 'zmq.h')
 
