@@ -1,5 +1,5 @@
 import IPython.nbformat.current as nbformat
-
+import numpy as np
 
 def format_line(line):
     """
@@ -11,33 +11,27 @@ def format_line(line):
         The line of code to be formatted. Formatting occurs according to the
         following rules:
 
-        - If the line starts with three '%' signs, it will be converted to h1
-          and we will assume that it starts a new cell. Suggested use: title.
         - If the line starts with (at least) two %% signs, a new cell will be
-          started and  this line will be converted to h2. Suggested use:
-          section title.
-        - Additional '#' signs can be used to produce entire lines with other
-          heading styles. Suggested use: knock yerself out.
+          started.
+
         - If the line doesn't start with a '%' sign, it is assumed to be legit
-          matlab code. We will continue to
+          matlab code. We will continue to add to the same cell until reaching
+          the next comment line
     """
-    if line.startswith('%%%'):
+    if line.startswith('%%'):
         md = True
         new_cell = True
-        # Strip off the % signs:
-        source = '#' + line.split('%%%')[1]
-    elif line.startswith('%%'):
-        md = True
-        new_cell = True
-        if line.endswith('%%'):
-            # This is a special case that simply means break up the code here:
-            source = None
-        else:
-            source = '##' + line.split('%%')[1]
+        source = line.split('%%')[1]
+
     elif line.startswith('%'):
         md = True
         new_cell = False
         source = line.split('%')[1]
+
+    elif line == '\n':
+        md = False
+        new_cell = True
+        source = ""
     else:
         md = False
         new_cell = False
@@ -45,7 +39,50 @@ def format_line(line):
 
     return new_cell, md, source
 
-def convert_m_file(mfile, outfile=None):
+def mfile_to_lines(mfile):
+    """
+    Read the lines from an mfile
+
+    Parameters
+    ----------
+    mfile : string
+        Full path to an m file
+    """
+    # We should only be able to read this file:
+    f = file(mfile, 'r')
+    lines = f.readlines()
+    f.close()
+    return lines
+
+def lines_to_notebook(lines, name=None):
+    """
+
+    """
+    source = []
+    md = np.empty(len(lines), dtype=object)
+    new_cell = np.empty(len(lines), dtype=object)
+    for idx, l in enumerate(lines):
+        new_cell[idx], md[idx], this_source = format_line(l)
+        source.append(this_source)
+    # This defines the breaking points between cells:
+    new_cell_idx = np.hstack([np.where(new_cell)[0], -1])
+
+    # Listify the sources:
+    cell_source = [source[new_cell_idx[i]:new_cell_idx[i+1]]
+                   for i in range(len(new_cell_idx)-1)][0]
+    cells = []
+    for cell_idx, cell_s in enumerate(cell_source):
+        if md[cell_idx]:
+            cells.append(nbformat.new_text_cell('markdown', cell_s))
+        else:
+            cells.append(nbformat.new_code_cell(cell_s, language='matlab'))
+
+    ws = nbformat.new_worksheet(cells=cells)
+    notebook = nbformat.new_notebook(metadata=nbformat.new_metadata(),
+                                 worksheets=[ws])
+    return notebook
+
+def convert_mfile(mfile, outfile=None):
     """
     Convert a Matlab m-file into a Matlab notebook in ipynb format
 
@@ -58,39 +95,7 @@ def convert_m_file(mfile, outfile=None):
         Full path to the output ipynb file
 
     """
-    # We should only be able to read this file:
-    f = file(mfile, 'r')
-    cells = []
-    for l in f.readlines():
-        new_cell, md, source = format_line(l)
-        source = l
-        while not new_cell:
-
-            if md:
-                source.join(md)
-            else:
-                source.join(l)
-
-        while md is not None and new_cell is False:
-            source.join(md)
-            new_cell, md = format_line(l)
-
-        cells.append(nbformat.new_text_cell('markdown', source=source))
-
-            md=False
-        else:
-            while l[0] != '%':
-                source += l
-            cells.append(nbformat.new_code_cell(input=source,
-                                                language=u'matlab'))
-
-    f.close()
-
-    notebook = nbformat.new_notebook(
-        metadata=nbformat.new_metadata(name=fname.split),
-        worksheets=cells)
-
-    if outfile is None
+    if outfile is None:
         outfile = fname.split('.m')[0] + '.ipynb'
     nbfile = file(outfile, 'w')
     nbformat.write(notebook, nbfile, format='ipynb')
