@@ -24,7 +24,8 @@ end
 
 varname = req.varname;
 
-response.var = mat2json(evalin('base', varname));
+%response.var = mat2json(evalin('base', varname));
+response.var = evalin('base', varname);
 
 json_response = mat2json(response);
 

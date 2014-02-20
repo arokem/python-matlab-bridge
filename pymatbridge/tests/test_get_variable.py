@@ -21,8 +21,8 @@ class TestGetVariable:
         self.mlab.run_code("a = 456345.345345")
         self.mlab.run_code("b = 0.39748e3")
 
-        npt.assert_equal(self.mlab.get_variable('a'), unicode("456345.3453"))
-        npt.assert_equal(self.mlab.get_variable('b'), unicode("397.48"))
+        npt.assert_equal(self.mlab.get_variable('a'), 456345.3453)
+        npt.assert_equal(self.mlab.get_variable('b'), 397.48)
 
 
     # Get some arrays
@@ -30,8 +30,8 @@ class TestGetVariable:
         self.mlab.run_code("a = [1 2 3 4]")
         self.mlab.run_code("b = [1 2; 3 4]")
 
-        npt.assert_equal(self.mlab.get_variable('a'), unicode("[1,2,3,4]"))
-        npt.assert_equal(self.mlab.get_variable('b'), unicode("[[1,2],[3,4]]"))
+        npt.assert_equal(self.mlab.get_variable('a'), [1,2,3,4])
+        npt.assert_equal(self.mlab.get_variable('b'), [[1,2],[3,4]])
 
 
     # Try to get a non-existent variable

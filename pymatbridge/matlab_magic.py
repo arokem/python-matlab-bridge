@@ -21,12 +21,11 @@ from urllib2 import URLError
 
 import numpy as np
 try:
-    import h5py
     import scipy.io as sio
     has_io = True
 except ImportError:
     has_io = False
-    no_io_str = "Must have h5py and scipy.io to perform i/o"
+    no_io_str = "Must have scipy.io to perform i/o"
     no_io_str += "operations with the Matlab session"
 
 from IPython.core.displaypub import publish_display_data
@@ -60,63 +59,6 @@ class MatlabInterperterError(RuntimeError):
             return unicode_to_str(unicode(self), 'utf-8')
 
 
-def loadmat(fname):
-    """
-    Use h5py to read a variable from a v7.3 mat file
-    """
-
-    f = h5py.File(fname)
-
-    for var_name in f.iterkeys():
-        if isinstance(f[var_name], h5py.Dataset):
-            # Currently only supports numerical array
-            data = f[var_name].value
-            if len(data.dtype) > 0:
-                # must be complex data
-                data = data['real'] + 1j * data['imag']
-            return np.squeeze(data.T)
-
-        elif isinstance(f[var_name], h5py.Group):
-            data = {}
-            for mem_name in f[var_name].iterkeys():
-                if isinstance(f[var_name][mem_name], h5py.Dataset):
-                    # Check if the dataset is a string
-                    attr = h5py.AttributeManager(f[var_name][mem_name])
-                    if (attr.__getitem__('MATLAB_class') == 'char'):
-                        is_string = True
-                    else:
-                        is_string = False
-
-                    data[mem_name] = f[var_name][mem_name].value
-                    data[mem_name] = np.squeeze(data[mem_name].T)
-
-                    if is_string:
-                        result = ''
-                        for asc in data[mem_name]:
-                            result += chr(asc)
-                        data[mem_name] = result
-                else:
-                    # Currently doesn't support nested struct
-                    pass
-
-            return data
-
-
-def matlab_converter(matlab, key):
-    """
-
-    Reach into the matlab namespace and get me the value of the variable
-
-    """
-    tempdir = tempfile.gettempdir()
-    # We save as hdf5 in the matlab session, so that we can grab large
-    # variables:
-    matlab.run_code("save('%s/%s.mat','%s','-v7.3')"%(tempdir, key, key),
-                    maxtime=matlab.maxtime)
-
-    return loadmat('%s/%s.mat'%(tempdir, key))
-
-
 
 @magics_class
 class MatlabMagics(Magics):
@@ -126,7 +68,6 @@ class MatlabMagics(Magics):
     def __init__(self, shell,
                  matlab='matlab',
                  maxtime=10,
-                 matlab_converter=matlab_converter,
                  pyconverter=np.asarray,
                  cache_display_data=False):
         """
@@ -147,10 +88,6 @@ class MatlabMagics(Magics):
             To be called on matlab variables returning into the ipython
             namespace
 
-        matlab_converter : callable
-            To be called on values in ipython namespace before
-            assigning to variables in matlab.
-
         cache_display_data : bool
             If True, the published results of the final call to R are
             cached in the variable 'display_cache'.
@@ -162,7 +99,6 @@ class MatlabMagics(Magics):
         self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
         self.pyconverter = pyconverter
-        self.matlab_converter = matlab_converter
 
     def __del__(self):
         """shut down the Matlab server when the object dies.
@@ -186,6 +122,18 @@ class MatlabMagics(Magics):
         # This is the matlab stdout:
         return run_dict
 
+    def set_matlab_var(self, name, value):
+        """
+        Set up a variable in Matlab workspace
+        """
+        run_dict = self.Matlab.run_func("pymat_set_variable.m",
+                                        {'name':name, 'value':value},
+                                        maxtime=self.Matlab.maxtime)
+
+        if run_dict['success'] == 'false':
+            raise MatlabInterperterError(line, run_dict['content']['stdout'])
+
+
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
@@ -194,7 +142,7 @@ class MatlabMagics(Magics):
 
     @argument(
         '-o', '--output', action='append',
-        help='Names of variables to be pushed from matlab to shell.user_ns after executing cell body and applying self.matlab_converter. Multiple names can be passed separated only by commas with no whitespace.'
+        help='Names of variables to be pushed from matlab to shell.user_ns after executing cell body and applying self.Matlab.get_variable(). Multiple names can be passed separated only by commas with no whitespace.'
         )
 
     @argument(
@@ -238,13 +186,12 @@ class MatlabMagics(Magics):
                         val = local_ns[input]
                     except KeyError:
                         val = self.shell.user_ns[input]
-                    # We save these input arguments into a .mat file:
-                    tempdir = tempfile.gettempdir()
-                    sio.savemat('%s/%s.mat'%(tempdir, input),
-                                eval("dict(%s=val)"%input), oned_as='row')
 
-                    #Which is then read in by the Matlab session
-                    self.eval("load('%s/%s.mat');"%(tempdir, input))
+                    # To make an array JSON serializable
+                    if (isinstance(val, np.ndarray)):
+                        val = val.tolist()
+
+                    self.set_matlab_var(input, val)
 
             else:
                 raise RuntimeError(no_io_str)
@@ -294,8 +241,7 @@ class MatlabMagics(Magics):
         if args.output:
             if has_io:
                 for output in ','.join(args.output).split(','):
-                    self.shell.push({output:self.matlab_converter(self.Matlab,
-                                                              output)})
+                    self.shell.push({output:self.Matlab.get_variable(output)})
             else:
                 raise RuntimeError(no_io_str)
 
