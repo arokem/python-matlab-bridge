@@ -21,17 +21,14 @@ def format_line(line):
     if line.startswith('%%'):
         md = True
         new_cell = True
-        source = line.split('%%')[1]
+        source = line.split('%%')[1] + '\n'  # line-breaks in md require a line
+                                             # gap!
 
     elif line.startswith('%'):
         md = True
         new_cell = False
-        source = line.split('%')[1]
+        source = line.split('%')[1] + '\n'
 
-    elif line == '\n':
-        md = False
-        new_cell = True
-        source = ""
     else:
         md = False
         new_cell = False
@@ -56,6 +53,18 @@ def mfile_to_lines(mfile):
 
 def lines_to_notebook(lines, name=None):
     """
+    Convert the lines of an m file into an IPython notebook
+
+    Parameters
+    ----------
+    lines : list
+        A list of strings. Each element is a line in the m file
+
+    Returns
+    -------
+    notebook : an IPython NotebookNode class instance, containing the
+    information required to create a file
+
 
     """
     source = []
@@ -63,13 +72,21 @@ def lines_to_notebook(lines, name=None):
     new_cell = np.empty(len(lines), dtype=object)
     for idx, l in enumerate(lines):
         new_cell[idx], md[idx], this_source = format_line(l)
+        # Transitions between markdown and code and vice-versa merit a new
+        # cell, even if no newline, or "%%" is found. Make sure not to do this
+        # check for the very first line!
+        if idx>1 and not new_cell[idx]:
+            if md[idx] != md[idx-1]:
+                new_cell[idx] = True
+
         source.append(this_source)
     # This defines the breaking points between cells:
     new_cell_idx = np.hstack([np.where(new_cell)[0], -1])
 
     # Listify the sources:
     cell_source = [source[new_cell_idx[i]:new_cell_idx[i+1]]
-                   for i in range(len(new_cell_idx)-1)][0]
+                   for i in range(len(new_cell_idx)-1)]
+
     cells = []
     for cell_idx, cell_s in enumerate(cell_source):
         if md[cell_idx]:
@@ -95,8 +112,14 @@ def convert_mfile(mfile, outfile=None):
         Full path to the output ipynb file
 
     """
+    f = file(mfile, 'r')
+    lines = f.readlines()
+    f.close()
+    nb =lines_to_notebook(lines)
     if outfile is None:
-        outfile = fname.split('.m')[0] + '.ipynb'
+        outfile = mfile.split('.m')[0] + '.ipynb'
     nbfile = file(outfile, 'w')
-    nbformat.write(notebook, nbfile, format='ipynb')
+    nbformat.write(nb, nbfile, format='ipynb')
     nbfile.close()
+
+
