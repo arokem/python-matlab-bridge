@@ -99,6 +99,7 @@ def lines_to_notebook(lines, name=None):
                                  worksheets=[ws])
     return notebook
 
+
 def convert_mfile(mfile, outfile=None):
     """
     Convert a Matlab m-file into a Matlab notebook in ipynb format
@@ -115,11 +116,10 @@ def convert_mfile(mfile, outfile=None):
     f = file(mfile, 'r')
     lines = f.readlines()
     f.close()
-    nb =lines_to_notebook(lines)
+    nb = lines_to_notebook(lines)
     if outfile is None:
         outfile = mfile.split('.m')[0] + '.ipynb'
     nbfile = file(outfile, 'w')
     nbformat.write(nb, nbfile, format='ipynb')
     nbfile.close()
-
 
