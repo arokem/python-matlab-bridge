@@ -56,7 +56,7 @@ opts = dict(name=NAME,
             package_data=PACKAGE_DATA,
             #data_files=DATA_FILES,
             requires=REQUIRES,
-            scripts=[BIN + x for x in os.listdir(BIN)]
+            scripts=BIN
             )
 
 
