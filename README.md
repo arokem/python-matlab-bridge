@@ -16,32 +16,6 @@ For examples, check out the `.ipynb` files
 
 ## Installation
 
-As pymatbridge uses [ZMQ](http://zeromq.org/) to communicate between Python and 
-Matlab, ZMQ library and pyzmq have to be installed before the installation of 
-pymatbridge. 
-
-### Install ZMQ library and pyzmq
-
-Get the latest version of [ZMQ library](http://zeromq.org/intro:get-the-software). 
-For Mac/Linux users, please download the `POSIX tarball`, then follow the building 
-instructions in section `To build on UNIX-like systems`. To build ZMQ, you need to make 
-sure you have installed the `GNU build system`, also known as the `autotools`. If you 
-don't have it, you need to install it first. 
-
-The default building process will install ZMQ to the system libraries. If you don't have 
-permissions we recommend you to install ZMQ to `~/zmq` by using 
-
-	./configure --prefix=~/zmq
-	make
-	make install
-	
-For Windows users, please use the `Windows installers`. Further instructions TBD. 
-	
-After ZMQ is installed successfully, install [pyzmq](http://zeromq.org/bindings:python) 
-and make sure it's import-able.
-
-### Install pymatbridge
-
 We are currently transitioning into an installation scheme based on conda package
 manager. This section is under construction and will become available soon. 
 
