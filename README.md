@@ -42,45 +42,8 @@ and make sure it's import-able.
 
 ### Install pymatbridge
 
-First, Create an environment variable `MATLAB_BIN` that points to the Matlab bin directory.
-Also add this directory to `PATH`. 
-
-Then, install pymatbridge. 
-To install from the source-code. Download the [code zip
-file](https://github.com/arokem/python-matlab-bridge/archive/master.zip). Unzip
-it somewhere on your machine and then issue:
-
-	python make.py
-
-This will build the MEX file used by the package. The building process may fail due to 
-several reasons. Please follow the instructions according to the error message you get:
-
-- `Could not find Matlab bin directory. Please add it to MATLAB_BIN`: Please make 
-sure you have set up the environment variable `MATLAB_BIN` which points to the Matlab bin 
-directory.
-- `Could not find zmq.h. Please add its path to local.cfg`: Please find the path
-where `zmq.h` is installed on your machine, add it after `HEADER_PATH` in `local.cfg`, 
-separated by a comma with other paths.
-- `Could not find zmq library. Please add its path to local.cfg`: Please find the 
-path where ZMQ library is installed on your machine. On Mac OS this would be `libzmq.dylib`,
-Linux `libzmq.so` and Windows `libzmq.dll`. Add it after `LIB_PATH` in `local.cfg`, 
-separated by a comma with other paths.
-
-Other errors are caused by wrong compiler setup:
-
-- For Mac OS users, if you are using Xcode 4.2 ~ 4.6 please apply the official 
-[patch](http://www.mathworks.com/matlabcentral/answers/94092) provide by MathWorks. For 
-Mac OS 10.9 and Xcode 5.X users, please first apply `optsPatch10.8.patch` and then follow 
-[this instruction](http://www.mathworks.com/matlabcentral/answers/103258#answer_112685)
-- For Linux users, TBD
-- For Windows users, TBD
-
-After the building process succeeded, issue:
-
-	python setup.py install
-
-This should make the python-matlab-bridge import-able.
-
+We are currently transitioning into an installation scheme based on conda package
+manager. This section is under construction and will become available soon. 
 
 ## API: 
 
