@@ -150,7 +150,7 @@ class Matlab(object):
                     return True
                 else:
                     return False
-            except zmq.Again:
+            except zmq.ZMQError:
                 np.disp(".", linefeed=False)
                 time.sleep(1)
                 if (time.time() - start_time > self.maxtime) :
