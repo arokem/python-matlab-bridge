@@ -29,7 +29,7 @@ for line in config:
 
     if path[0] == "MATLAB_BIN":
         matlab_path = path[1].rstrip('\r\n')
-        if matlab_path == ""
+        if matlab_path == "":
             raise ValueError("Could not find Matlab bin directory. Please add it to MATLAB_BIN")
         print "Matlab found in " + matlab_path
 
