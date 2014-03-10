@@ -49,8 +49,9 @@ if 'setuptools' in sys.modules:
 # We run the original python install. This should happen in a conda building recipe
 if __name__ == '__main__':
     if (len(sys.argv) == 2):
-        os.system("conda install pymatbridge")
+        os.system("conda install -c https://conda.binstar.org/public pymatbridge")
     elif (len(sys.argv) == 3 and sys.argv[2] == "build-conda"):
+        sys.argv.remove("build-conda")
         setup(**opts)
     else:
         print "Invalid option"

@@ -16,13 +16,19 @@ def find_path(candidates, target):
 
     return ""
 
+# Get the configuration file path
+if (len(sys.argv) == 2):
+    config_file = sys.argv[1]
+else:
+    print "Failed to build messenger. No configuration file provided."
+    raise SystemExit
+
+# Open the configuration file and start parsing
+config = open(config_file, 'r')
 
 # Check the system platform first
 platform = sys.platform
 print "This is a " + platform + " system"
-
-# Open the configure file and start parsing
-config = open('local.cfg', 'r')
 
 for line in config:
     path = line.split('=')
