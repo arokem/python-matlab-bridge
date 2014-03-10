@@ -1,0 +1,20 @@
+package:
+    name: pymatbridge
+    version: 0.3
+
+source:
+    git_url: git@github.com:arokem/python-matlab-bridge.git
+    git_tag:
+
+build:
+    number: 0
+    string: condatest
+
+requirements:
+    build:
+      - python
+      - zeromq
+    run:
+      - python
+      - pyzmq
+

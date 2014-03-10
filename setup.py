@@ -44,6 +44,14 @@ if len(needs_setuptools.intersection(sys.argv)) > 0:
 if 'setuptools' in sys.modules:
     opts['zip_safe'] = False
 
-# Now call the actual setup function
+# If the user calls "python setup.py install", we call "conda install" to
+# grab the package online. If the user calls "python setup.py install build-conda"
+# We run the original python install. This should happen in a conda building recipe
 if __name__ == '__main__':
-    setup(**opts)
+    if (len(sys.argv) == 2):
+        os.system("conda install pymatbridge")
+    elif (len(sys.argv) == 3 and sys.argv[2] == "build-conda"):
+        setup(**opts)
+    else:
+        print "Invalid option"
+
