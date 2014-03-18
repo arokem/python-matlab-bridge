@@ -34,5 +34,3 @@ dpush.sh
 .py_tags
 rebuildTags.sh
 
-# ignore the mex file
-messenger.mex*
