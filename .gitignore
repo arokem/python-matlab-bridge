@@ -34,3 +34,5 @@ dpush.sh
 .py_tags
 rebuildTags.sh
 
+# binary file in matlab folder
+/pymatbridge/matlab/messenger.*
