@@ -8,7 +8,7 @@ extension, which provides a much simplified interface for weaving python and
 Matlab code together (requires ipython > 0.13).  
 
 
-***AT PRESENT THIS MAY NOT WORK ON WINDOWS; BETA TESTERS WANTED ***
+***AT PRESENT THIS DOES NOT WORK ON WINDOWS; BETA TESTERS WANTED ***
 
 ## Usage
 
@@ -16,8 +16,29 @@ For examples, check out the `.ipynb` files
 
 ## Installation
 
-We are currently transitioning into an installation scheme based on conda package
-manager. This section is under construction and will become available soon. 
+Pymatbridge communicates with Matlab using zeromq. So before installing pymatbridge you 
+must have [zeromq](http://zeromq.org/intro:get-the-software) and 
+[pyzmq](http://zeromq.org/bindings:python) installed on your machine. If you intend to 
+use the Matlab magic extension, you'll also need Ipython.
+
+As the mex file in pymatbridge is dynamically linked, you need to specify the path to
+libzmq as the linking path. On MacOS, add the following line to your .bash_profile:
+
+	export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
+
+On Linux, add the following line to your .bash_profile:
+
+	export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
+
+After the steps above are done, you can install pymatbridge. Download the zip file of the 
+latest release. Unzip it somewhere on your machine and then issue:
+
+	python setup.py install
+	
+This should make the python-matlab-bridge import-able.
+
+
+
 
 ## API: 
 
