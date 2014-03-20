@@ -40,7 +40,7 @@ TODO: more documentation will be here at some point.
 License information
 ===================
 
-Copyright (c) 2012, Max Jaderberg, Ariel Rokem
+Copyright (c) 2012 -- , Max Jaderberg, Ariel Rokem, Haoxing Zhao
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

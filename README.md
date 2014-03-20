@@ -3,24 +3,21 @@
 A python interface to call out to [Matlab(R)](http://mathworks.com). Original
 implementation by [Max Jaderberg](http://www.maxjaderberg.com/).
 
-This implementation also includes an [ipython](http://ipython.org) matlab_magic
-extension, which provides a much simplified interface for weaving python and
+This implementation also includes an [IPython](http://ipython.org) `matlab_magic`
+extension, which provides a simple interface for weaving python and
 Matlab code together (requires ipython > 0.13).  
 
 
-***AT PRESENT THIS DOES NOT WORK ON WINDOWS; BETA TESTERS WANTED ***
-
-## Usage
-
-For examples, check out the `.ipynb` files
+***AT PRESENT THIS DOES NOT WORK ON WINDOWS***
 
 ## Installation
 
-Pymatbridge communicates with Matlab using zeromq. So before installing pymatbridge you 
-must have [zmq](http://zeromq.org/intro:get-the-software) library and 
-[pyzmq](http://zeromq.org/bindings:python) installed on your machine. If you intend to 
-use the Matlab magic extension, you'll also need [IPython](http://ipython.org/install.html).
-To make pymatbridge work properly, please follow the following steps. 
+Pymatbridge communicates with Matlab using zeromq. So before installing
+pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
+library and [pyzmq](http://zeromq.org/bindings:python) installed on your
+machine. If you intend to use the Matlab magic extension, you'll also need
+[IPython](http://ipython.org/install.html).  To make pymatbridge work properly,
+please follow the following steps.
 
 ### Install zmq library
 Please refer to the [official guide](http://zeromq.org/intro:get-the-software) on how to
@@ -64,36 +61,47 @@ latest release. Unzip it somewhere on your machine and then issue:
 	
 This should make the python-matlab-bridge import-able.
 
-## API: 
 
-Initialize the Matlab class:
+## Usage
+
+To use the pymatbridge you need to connect your python interperter to a Matlab
+session. This is done in the following manner:
 
     from pymatbridge import Matlab
     mlab = Matlab()
 
-By default the matlab executable is whatever gets called when you type `matlab`
-in your terminal, the host is localhost and the port is a random unused port.
+This creates a matlab session class instance, into which you will be able to
+inject code and variables, and query for results. By default, when you use
+`start`, this will open whatever gets called when you type `matlab`
+in your Terminal, but you can also specify the location of your Matlab
+application when initialzing your matlab session class:  
 
-You can specify these in the following manner: 
-
-    mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
-                    host='192.168.0.1', port=5151)
-
-Alternatively, if `matlab` is not recognized in the command-line, you can
-create a [symlink](http://en.wikipedia.org/wiki/Symbolic_link) to it's
-location. For example:
-
-	  ln -s /Applications/MATLAB_R2012b.app/bin/matlab ~/bin/matlab
-
-Making sure that your ~/bin directory is on your bash PATH variable.
+    mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab')
 	  
-You can then start the MATLAB server:
+You can then start the Matlab server, which will kick off your matlab session,
+and create the connection between your Python interperter and this session:
 
     mlab.start()
 
 which will return True once connected.
 
-You can then run any local MATLAB function contained within a .m file of the
+   results = mlab.run_code('a=1;')
+
+Should now run that line of code and return a `results` dict into your Python
+namespace. The `results` dict contains the following fields:
+
+    {u'content': {u'code': u'a=1',
+     u'datadir': u'/private/tmp/MatlabData/',
+     u'figures': [],
+     u'stdout': u'\na =\n\n     1\n\n'},
+     u'success': u'true'}
+
+In this case, the variable `a` is available on the Python side, by using
+the `get_variable` method:
+
+    mlab.get_variable('a')
+ 
+You can  run any MATLAB functions contained within a .m file of the
 same name. For example, to call the function jk in jk.m:
 
     %% MATLAB
@@ -103,27 +111,25 @@ same name. For example, to call the function jk in jk.m:
         lol = arg1 + arg2;
     end
 
-by calling:
+you would call:
 
     res = mlab.run_func('path/to/jk.m', {'arg1': 3, 'arg2': 5})
     print res['result']
 
-which will print 8.
+This would print `8`.
 
-Or you can run some arbitrary matlab code:
-
-    res = mlab.run_code('a=10; b=a+3')
-
-You can shut down the MATLAB server by calling
+You can shut down the MATLAB server by calling:
 
     mlab.stop()
 
-NB: you can call MATLAB code before the server starts by adding code to the ./matlab/startup.m file.
+Tip: you can execute MATLAB code at the beginning of each of your matlab
+sessions by adding code to the `~/startup.m` file.
 
 
 ### Matlab magic: 
 
-This can be used in an ipython session in the following manner:
+The Matlab magic allows you to use pymatbridge in the context of the IPython
+notebook format.
 
     import pymatbridge as pymat
     ip = get_ipython()
@@ -140,15 +146,12 @@ write matlab code:
     hold on
     plot(cos(a),'r')
 
+More examples are provided in the `examples` directory
+    
 ### Warnings
 
-Python communicates with Matlab via an ad-hoc webserver. This is inherently
+Python communicates with Matlab via an ad-hoc zmq messenger. This is inherently
 insecure, as the Matlab instance may be directed to perform arbitrary system
 calls. There is no sandboxing of any kind. Use this code at your own risk.
-
-# Examples
-
-An example MATLAB function and usage from Python is shown in test.py and test.m
-and there. Example notebooks are in the '.ipynb' files. 
 
 
