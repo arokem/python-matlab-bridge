@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
-#include <assert.h>
 #include "mex.h"
 #include "zmq.h"
 

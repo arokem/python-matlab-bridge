@@ -1,2 +1,6 @@
 from pymatbridge import *
-from matlab_magic import *
+
+try:
+    from matlab_magic import *
+except ImportError:
+    pass

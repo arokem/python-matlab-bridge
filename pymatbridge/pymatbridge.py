@@ -41,7 +41,7 @@ class Matlab(object):
     """
 
     def __init__(self, matlab='matlab', socket_addr='ipc:///tmp/pymatbridge',
-                 id='python-matlab-bridge', log=False, maxtime=10,
+                 id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):
         """
         Initialize this thing.
@@ -150,7 +150,7 @@ class Matlab(object):
                     return True
                 else:
                     return False
-            except zmq.Again:
+            except zmq.ZMQError:
                 np.disp(".", linefeed=False)
                 time.sleep(1)
                 if (time.time() - start_time > self.maxtime) :
