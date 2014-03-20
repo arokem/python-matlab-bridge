@@ -5,18 +5,6 @@ import sys
 import fnmatch
 import subprocess
 
-def find_path(candidates, target):
-    for candidate in candidates:
-        candidate = os.path.expanduser(candidate.rstrip('\r\n'))
-	if os.path.exists(candidate):
-            for root, dirnames, filenames in os.walk(candidate):
-                for filename in fnmatch.filter(filenames, target):
-                    return os.path.join(root)
-
-
-    return ""
-
-
 # Check the system platform first
 platform = sys.platform
 print "This is a " + platform + " system"
