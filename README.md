@@ -54,7 +54,7 @@ On Windows,
 After step 1 is finished, please grab the latest version of 
 [pyzmq](http://zeromq.org/bindings:python) and follow the instructions on the official 
 page. Note that pymatbridge is developed with pyzmq 14.0.0 and older versions might not 
-be supported. If you have an old version pyzmq, please update it. 
+be supported. If you have an old version of pyzmq, please update it. 
 
 ### Install pymatbridge
 After the steps above are done, you can install pymatbridge. Download the zip file of the 
