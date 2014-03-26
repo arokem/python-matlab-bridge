@@ -10,11 +10,28 @@ This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 
 import numpy as np
-import os, json, time
+import os, time
 import zmq
 import subprocess
 import platform
 import sys
+
+import json
+
+# JSON encoder extension to handle complex numbers
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, complex):
+            return {'real':obj.real, 'imag':obj.imag}
+        # Handle the default case
+        return json.JSONEncoder.default(self, obj)
+
+# JSON decoder for complex numbers
+def as_complex(dct):
+    if 'real' in dct and 'imag' in dct:
+        return complex(dct['real'], dct['imag'])
+    return dct
+
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
@@ -122,7 +139,7 @@ class Matlab(object):
 
     # Stop the Matlab server
     def stop(self):
-        req = json.dumps(dict(cmd="exit"))
+        req = json.dumps(dict(cmd="exit"), cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
 
@@ -139,7 +156,7 @@ class Matlab(object):
             time.sleep(2)
             return False
 
-        req = json.dumps(dict(cmd="connect"))
+        req = json.dumps(dict(cmd="connect"), cls=ComplexEncoder)
         self.socket.send(req)
 
         start_time = time.time()
@@ -175,10 +192,10 @@ class Matlab(object):
         req['func_path'] = func_path
         req['func_args'] = func_args
 
-        req = json.dumps(req)
+        req = json.dumps(req, cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
-        resp = json.loads(resp)
+        resp = json.loads(resp, object_hook=as_complex)
 
         return resp
 
@@ -189,10 +206,10 @@ class Matlab(object):
 
         req = dict(cmd="run_code")
         req['code'] = code
-        req = json.dumps(req)
+        req = json.dumps(req, cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
-        resp = json.loads(resp)
+        resp = json.loads(resp, object_hook=as_complex)
 
         return resp
 
@@ -202,10 +219,10 @@ class Matlab(object):
 
         req = dict(cmd="get_var")
         req['varname'] = varname
-        req = json.dumps(req)
+        req = json.dumps(req, cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
-        resp = json.loads(resp)
+        resp = json.loads(resp, object_hook=as_complex)
 
         return resp['var']
 

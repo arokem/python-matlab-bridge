@@ -120,7 +120,12 @@ function value = parse_data_(node, options)
                 'Field %s renamed to %s', field, safe_field);
       end
       value.(safe_field) = parse_data_(node.get(java.lang.String(key)), ...
-                                       options);
+                                       options);    
+    end
+    % Check if the struct just decoded represents a complex number
+    if isfield(value,'real') && isfield(value, 'imag')
+      complex_value = complex(value.real, value.imag);
+      value = complex_value;
     end
   elseif isa(node, 'org.json.JSONObject$Null')
     value = [];

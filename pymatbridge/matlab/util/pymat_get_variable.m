@@ -17,17 +17,16 @@ end
 
 if ~varname_check
     response.message = 'No variable name provided as input argument';
-    json_response = mat2json(response);
+    json_response = json.dump(response);
     return
 end
 
 
 varname = req.varname;
 
-%response.var = mat2json(evalin('base', varname));
 response.var = evalin('base', varname);
 
-json_response = mat2json(response);
+json_response = json.dump(response);
 
 return
 end
