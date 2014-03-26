@@ -35,6 +35,14 @@ class TestMagic:
                                 self.ip.user_ns['res'], decimal=7)
 
 
+        # A complex matrix:
+        self.ip.run_cell("x = [3.34+4.56j, 3.34+4.56j];")
+        self.ip.run_cell_magic('matlab', '-i x -o y', 'y = x*(11.35 - 23.098j)')
+        self.ip.run_cell("res = x*(11.35 - 23.098j)")
+        npt.assert_almost_equal(self.ip.user_ns['y'],
+                                self.ip.user_ns['res'], decimal=7)
+
+
     def test_cell_magic_array(self):
         # Random array multiplication
         self.ip.run_cell("val1 = np.random.random_sample((3,3))")
