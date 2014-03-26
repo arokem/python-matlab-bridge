@@ -129,7 +129,15 @@ function obj = dump_data_(value, options)
       obj.put(dump_data_(value{i}, options));
     end
   elseif isnumeric(value)
-    obj = java.lang.Double(value);
+    if isreal(value)
+      obj = java.lang.Double(value);
+    % Encode complex number as a struct
+    else
+      complex_struct = struct;
+      complex_struct.real = real(value);
+      complex_struct.imag = imag(value);
+      obj = dump_data_(complex_struct, options);
+    end
   elseif islogical(value)
     obj = java.lang.Boolean(value);
   elseif isstruct(value)
