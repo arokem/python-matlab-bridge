@@ -21,7 +21,7 @@ class TestGetVariable:
         self.mlab.run_code("a = 456345.345345")
         self.mlab.run_code("b = 0.39748e3")
 
-        npt.assert_equal(self.mlab.get_variable('a'), 456345.3453)
+        npt.assert_equal(self.mlab.get_variable('a'), 456345.345345)
         npt.assert_equal(self.mlab.get_variable('b'), 397.48)
 
 
