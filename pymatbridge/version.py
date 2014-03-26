@@ -88,12 +88,11 @@ VERSION = __version__
 PACKAGES = ['pymatbridge']
 PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/usrprog/*", "matlab/util/*.m",
-                                "matlab/util/json_tool/*.m",
-                                "matlab/util/json_tool/json_v0.2.2/LICENSE",
-                                "matlab/util/json_tool/json_v0.2.2/README.md",
-                                "matlab/util/json_tool/json_v0.2.2/test/*",
-                                "matlab/util/json_tool/json_v0.2.2/+json/*.m",
-                                "matlab/util/json_tool/json_v0.2.2/+json/java/*",
+                                "matlab/util/json_v0.2.2/LICENSE",
+                                "matlab/util/json_v0.2.2/README.md",
+                                "matlab/util/json_v0.2.2/test/*",
+                                "matlab/util/json_v0.2.2/+json/*.m",
+                                "matlab/util/json_v0.2.2/+json/java/*",
                                 "tests/*.py", "examples/*.ipynb"]}
 
 REQUIRES = []
