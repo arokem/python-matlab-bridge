@@ -96,3 +96,5 @@ PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "tests/*.py", "examples/*.ipynb"]}
 
 REQUIRES = []
+
+BIN=['pymatbridge/matlab/util/publish-notebook']
