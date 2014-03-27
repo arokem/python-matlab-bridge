@@ -67,7 +67,7 @@ class MatlabMagics(Magics):
     """
     def __init__(self, shell,
                  matlab='matlab',
-                 maxtime=10,
+                 maxtime=60,
                  pyconverter=np.asarray,
                  cache_display_data=False):
         """
