@@ -6,15 +6,15 @@
 /* Set a 200MB receiver buffer size */
 #define BUFLEN 200000000
 
-void *ctx, *socket;
+void *ctx, *socket_ptr;
 static int initialized = 0;
 
 /* Initialize a ZMQ server */
 int initialize(char *socket_addr) {
-
+    int rc;
     ctx = zmq_ctx_new();
-    socket = zmq_socket(ctx, ZMQ_REP);
-    int rc = zmq_bind(socket, socket_addr);
+    socket_ptr = zmq_socket(ctx, ZMQ_REP);
+    rc = zmq_bind(socket_ptr, socket_addr);
 
     if (!rc) {
         initialized = 1;
@@ -33,7 +33,7 @@ int listen(char *buffer, int buflen) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
     }
 
-    return zmq_recv(socket, buffer, buflen, 0);
+    return zmq_recv(socket_ptr, buffer, buflen, 0);
 }
 
 /* Sending out a message */
@@ -42,17 +42,16 @@ int respond(char *msg_out, int len) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
     }
 
-    int bytesent = zmq_send(socket, msg_out, len, 0);
+    return zmq_send(socket_ptr, msg_out, len, 0);
 
-    return bytesent;
 }
 
 /* Cleaning up after session finished */
 void cleanup (void) {
     /* Send a confirmation message to the client */
-    zmq_send(socket, "exit", 4, 0);
+    zmq_send(socket_ptr, "exit", 4, 0);
 
-    zmq_close(socket);
+    zmq_close(socket_ptr);
     mexPrintf("Socket closed\n");
     zmq_term(ctx);
     mexPrintf("Context terminated\n");
@@ -62,14 +61,13 @@ void cleanup (void) {
 /* Gateway function with Matlab */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[]) {
-
+    char *cmd;
     /* If no input argument, print out the usage */
     if (nrhs == 0) {
         mexErrMsgTxt("Usage: messenger('init|listen|respond', extra1, extra2, ...)");
     }
 
     /* Get the input command */
-    char *cmd;
     if(!(cmd = mxArrayToString(prhs[0]))) {
         mexErrMsgTxt("Cannot read the command");
     }
@@ -123,6 +121,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Send a message out */
     } else if (strcmp(cmd, "respond") == 0) {
+        size_t msglen;
+        char *msg_out;
         mxLogical *p;
 
         /* Check if the input format is valid */
@@ -130,8 +130,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
             mexErrMsgTxt("Please provide the message to send");
         }
 
-        size_t msglen = mxGetNumberOfElements(prhs[1]);
-        char *msg_out = mxArrayToString(prhs[1]);
+        msglen = mxGetNumberOfElements(prhs[1]);
+        msg_out = mxArrayToString(prhs[1]);
 
         plhs[0] = mxCreateLogicalMatrix(1, 1);
         p = mxGetLogicals(plhs[0]);
