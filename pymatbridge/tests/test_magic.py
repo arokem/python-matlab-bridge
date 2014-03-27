@@ -27,16 +27,9 @@ class TestMagic:
         npt.assert_almost_equal(self.ip.user_ns['b'],
                                 self.ip.user_ns['a']*2, decimal=7)
 
+    def test_cell_magic_number_complex(self):
         # A complex number
         self.ip.run_cell("x = 3.34+4.56j")
-        self.ip.run_cell_magic('matlab', '-i x -o y', 'y = x*(11.35 - 23.098j)')
-        self.ip.run_cell("res = x*(11.35 - 23.098j)")
-        npt.assert_almost_equal(self.ip.user_ns['y'],
-                                self.ip.user_ns['res'], decimal=7)
-
-
-        # A complex matrix:
-        self.ip.run_cell("x = [3.34+4.56j, 3.34+4.56j];")
         self.ip.run_cell_magic('matlab', '-i x -o y', 'y = x*(11.35 - 23.098j)')
         self.ip.run_cell("res = x*(11.35 - 23.098j)")
         npt.assert_almost_equal(self.ip.user_ns['y'],
@@ -53,6 +46,14 @@ class TestMagic:
         npt.assert_almost_equal(self.ip.user_ns['resmat'],
                                 self.ip.user_ns['respy'], decimal=7)
 
+    def test_cell_magic_array_complex(self):
+        self.ip.run_cell("val1 = np.random.random((3,3)) + np.random.random((3,3))*1j")
+        self.ip.run_cell("val2 = np.random.random((3,3)) + np.random.random((3,3))*1j")
+        self.ip.run_cell("respy = np.dot(val1, val2)")
+        self.ip.run_cell_magic('matlab', '-i val1,val2 -o resmat',
+                               'resmat = val1 * val2')
+        npt.assert_almost_equal(self.ip.user_ns['resmat'],
+                                self.ip.user_ns['respy'], decimal=7)
 
     def test_line_magic(self):
         # Some operation in Matlab
