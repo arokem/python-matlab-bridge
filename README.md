@@ -41,7 +41,9 @@ On Linux, add the following line to your .bash_profile:
 
 	export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
 
-On Windows, add the install location of libzmq.dll to the PATH environmental variable.
+On Windows, add the install location of libzmq.dll to the PATH environment variable.
+On Windows 7+, typing "environment variables" into the start menu will bring up the
+apporpriate Control Panel links.
 	
 ### Install pyzmq
 After step 1 is finished, please grab the latest version of 
