@@ -146,6 +146,11 @@ class MatlabMagics(Magics):
         )
 
     @argument(
+        '-s', '--silent', action='store_true',
+        help='Do not display text output of MATLAB command'
+        )
+
+    @argument(
         'code',
         nargs='*',
         )
@@ -219,7 +224,7 @@ class MatlabMagics(Magics):
         data_dir = result_dict['content']['datadir']
 
         display_data = []
-        if text_output:
+        if text_output and not args.silent:
             display_data.append(('MatlabMagic.matlab',
                                  {'text/plain':text_output}))
 
