@@ -8,8 +8,6 @@ extension, which provides a simple interface for weaving python and
 Matlab code together (requires ipython > 0.13).  
 
 
-***AT PRESENT THIS DOES NOT WORK ON WINDOWS***
-
 ## Installation
 
 Pymatbridge communicates with Matlab using zeromq. So before installing
@@ -25,11 +23,11 @@ build and install zmq. After zmq is installed, make sure you can find the locati
 libzmq is installed. The library extension name and default location on different systems
 are listed below.
 
-| Platform      | library name  | Default locations 		 |
-| ------------- | ------------- | -------------------------- |
-| MacOS      	| libzmq.dylib	| /usr/lib or /usr/local/lib |
-| Linux      	| libzmq.so.3	| /usr/lib or /usr/local/lib |
-| Windows		| libzmq.dll	| TBD						 |
+| Platform      | library name  | Default locations                 |
+| ------------- | ------------- | --------------------------------- |
+| MacOS         | libzmq.dylib	| /usr/lib or /usr/local/lib        |
+| Linux         | libzmq.so.3	| /usr/lib or /usr/local/lib        |
+| Windows       | libzmq.dll    | C:\Program Files\ZeroMQ 3.2.4\bin |
 
 If you specified a prefix when installing zmq, the library file should be located at the
 same prefix location.
@@ -43,9 +41,7 @@ On Linux, add the following line to your .bash_profile:
 
 	export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
 
-On Windows, 
-
-	TBD
+On Windows, add the install location of libzmq.dll to the PATH environmental variable.
 	
 ### Install pyzmq
 After step 1 is finished, please grab the latest version of 
@@ -131,9 +127,7 @@ sessions by adding code to the `~/startup.m` file.
 The Matlab magic allows you to use pymatbridge in the context of the IPython
 notebook format.
 
-    import pymatbridge as pymat
-    ip = get_ipython()
-    pymat.load_ipython_extension(ip)
+    %load_ext pymatbridge
 
 These lines will automatically start the matlab session for you. Then, you can
 simply decorate a line/cell with the '%matlab' or '%%matlab' decorator and
