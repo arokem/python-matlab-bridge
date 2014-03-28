@@ -109,7 +109,7 @@ class Matlab(object):
 
         if startup_options:
             self.startup_options = startup_options
-        elif self.platform == 'Windows':
+        elif self.platform == 'win32':
             self.startup_options = ' -automation -noFigureWindows'
         else:
             self.startup_options = ' -nodesktop -nodisplay'
