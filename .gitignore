@@ -36,3 +36,6 @@ rebuildTags.sh
 
 # binary file in matlab folder
 /pymatbridge/matlab/messenger.*
+
+# caused py setup.py develop
+pymatbridge.egg-info

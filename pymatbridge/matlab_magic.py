@@ -264,4 +264,5 @@ def unload_ipython_extension(ip):
     if _loaded:
         magic = ip.magics_manager.registry.pop('MatlabMagics')
         magic.Matlab.stop()
+        _loaded = False
 
