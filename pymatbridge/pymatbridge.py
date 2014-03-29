@@ -57,7 +57,7 @@ class Matlab(object):
     A class for communicating with a matlab session
     """
 
-    def __init__(self, matlab='matlab', socket_addr='ipc:///tmp/pymatbridge',
+    def __init__(self, matlab='matlab', socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):
         """
@@ -104,9 +104,12 @@ class Matlab(object):
         else:
             self.platform = platform
 
+        if self.socket_addr is None:  # use the default
+            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/pymatbridge"
+
         if startup_options:
             self.startup_options = startup_options
-        elif self.platform == 'Windows':
+        elif self.platform == 'win32':
             self.startup_options = ' -automation -noFigureWindows'
         else:
             self.startup_options = ' -nodesktop -nodisplay'

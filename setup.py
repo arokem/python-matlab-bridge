@@ -13,26 +13,30 @@ if os.path.exists('MANIFEST'):
 from distutils.core import setup
 
 # Find the messenger binary file and copy it to /matlab folder.
-bin_location = ""
+
+def copy_bin(bin_path):
+    if os.path.exists(bin_path):
+        shutil.copy(bin_path, "./pymatbridge/matlab")
+        return True
+    else:
+        return False
+
 if sys.platform == "darwin":
-    if not os.path.exists("./messenger/mexmaci64/messenger.mexmaci64"):
+    if not copy_bin("./messenger/mexmaci64/messenger.mexmaci64"):
         raise ValueError("messenger.mexmaci64 is not built yet. Please build it yourself.")
-    bin_location = "./messenger/mexmaci64/messenger.mexmaci64"
 
 elif sys.platform == "linux2":
-    if not os.path.exists("./messenger/mexa64/messenger.mexa64"):
+    if not copy_bin("./messenger/mexa64/messenger.mexa64"):
         raise ValueError("messenger.mexa64 is not built yet. Please build it yourself.")
-    bin_location = "./messenger/mexa64/messenger.mexa64"
 
 elif sys.platform == "win32":
-    if not os.path.exists("./messenger/mexw32/messenger.mexw32"):
-        raise ValueError("messenger.mexw32 is not built yet. Please build it yourself.")
-    bin_location = "./messenger/mexw32/messenger.mexw32"
+    t1 = copy_bin("./messenger/mexw64/messenger.mexw64")
+    t2 = copy_bin("./messenger/mexw32/messenger.mexw32")
+    if not (t1 or t2):
+        raise ValueError("Neither messenger.mexw32 or mex264 is built yet. Please build the appropriate one yourself") 
 
 else:
     raise ValueError("Known platform")
-
-shutil.copy(bin_location, "./pymatbridge/matlab")
 
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
