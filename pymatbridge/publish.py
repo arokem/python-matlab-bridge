@@ -100,6 +100,7 @@ def lines_to_notebook(lines, name=None):
         if cell_md[cell_idx]:
             cells.append(nbformat.new_text_cell('markdown', cell_s))
         else:
+            cell_s.insert(0, '%%matlab\n')
             cells.append(nbformat.new_code_cell(cell_s, language='matlab'))
 
     ws = nbformat.new_worksheet(cells=cells)
