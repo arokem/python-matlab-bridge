@@ -8,9 +8,10 @@ function publish_notebook(mfile, varargin)
 % mfile : str
 %    Full path to the input m file.
 % outputfile
+%    Full path to the output .ipynb file
 
 if length(varargin)
-    outputfile = varargin{1};
+    outputfile = sprintf('--outfile %s', varargin{1});
 else
     outputfile = '';
 end
@@ -18,6 +19,8 @@ end
 % Matlab system path-setting is broken, so we place the
 % publish-notebook executable right here, so we can easily find it
 binpath = fileparts(which(mfilename));
+pkgpath = fileparts(fileparts(fileparts(binpath)));
 cmd_str = sprintf('%s/publish-notebook %s %s', binpath, mfile, outputfile);
 
-[status,result] = unix(cmd_str)
+setenv('PYTHONPATH', pkgpath);
+[status,result] = system(cmd_str)
