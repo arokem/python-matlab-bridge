@@ -34,7 +34,9 @@ def format_line(line):
         new_cell = False
         source = line
 
+
     return new_cell, md, source
+
 
 def mfile_to_lines(mfile):
     """
@@ -86,12 +88,19 @@ def lines_to_notebook(lines, name=None):
     # Listify the sources:
     cell_source = [source[new_cell_idx[i]:new_cell_idx[i+1]]
                    for i in range(len(new_cell_idx)-1)]
-
+    cell_md = [md[new_cell_idx[i]] for i in range(len(new_cell_idx)-1)]
     cells = []
+
+    # Append the notebook with loading matlab magic extension
+    notebook_head = "import pymatbridge as pymat\n" + "ip = get_ipython()\n" \
+                    + "pymat.load_ipython_extension(ip)"
+    cells.append(nbformat.new_code_cell(notebook_head, language='python'))
+
     for cell_idx, cell_s in enumerate(cell_source):
-        if md[cell_idx]:
+        if cell_md[cell_idx]:
             cells.append(nbformat.new_text_cell('markdown', cell_s))
         else:
+            cell_s.insert(0, '%%matlab\n')
             cells.append(nbformat.new_code_cell(cell_s, language='matlab'))
 
     ws = nbformat.new_worksheet(cells=cells)
