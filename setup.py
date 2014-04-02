@@ -52,9 +52,7 @@ opts = dict(name=NAME,
             platforms=PLATFORMS,
             version=VERSION,
             packages=PACKAGES,
-            #package_dir=PACKAGE_DIR,
             package_data=PACKAGE_DATA,
-            #data_files=DATA_FILES,
             requires=REQUIRES,
             scripts=BIN
             )
