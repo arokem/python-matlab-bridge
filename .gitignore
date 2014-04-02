@@ -22,8 +22,6 @@ ADME.markdown
 *~
 
 build
-# a log directory made for testing.
-pymatbridge/matlab/www/log/
 
 # a nonce file to push this package to our local system.
 dpush.sh

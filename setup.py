@@ -58,18 +58,9 @@ opts = dict(name=NAME,
             packages=PACKAGES,
             package_data=PACKAGE_DATA,
             requires=REQUIRES,
+            scripts=BIN
             )
 
-# For some commands, use setuptools.  Note that we do NOT list install here!
-# If you want a setuptools-enhanced install, just run 'setupegg.py install'
-needs_setuptools = set(('develop', ))
-if len(needs_setuptools.intersection(sys.argv)) > 0:
-    import setuptools
-
-# Only add setuptools-specific flags if the user called for setuptools, but
-# otherwise leave it alone
-if 'setuptools' in sys.modules:
-    opts['zip_safe'] = False
 
 # Now call the actual setup function
 if __name__ == '__main__':
