@@ -28,13 +28,13 @@ def format_line(line):
         md = True
         new_cell = False
         source = line.split('%')[1] + '\n'
-        
+
     else:
         md = False
         new_cell = False
         source = line
 
-        
+
     return new_cell, md, source
 
 
@@ -90,6 +90,12 @@ def lines_to_notebook(lines, name=None):
                    for i in range(len(new_cell_idx)-1)]
     cell_md = [md[new_cell_idx[i]] for i in range(len(new_cell_idx)-1)]
     cells = []
+
+    # Append the notebook with loading matlab magic extension
+    notebook_head = "import pymatbridge as pymat\n" + "ip = get_ipython()\n" \
+                    + "pymat.load_ipython_extension(ip)"
+    cells.append(nbformat.new_code_cell(notebook_head, language='python'))
+
     for cell_idx, cell_s in enumerate(cell_source):
         if cell_md[cell_idx]:
             cells.append(nbformat.new_text_cell('markdown', cell_s))
