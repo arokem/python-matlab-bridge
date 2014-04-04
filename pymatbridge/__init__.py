@@ -1,11 +1,11 @@
-from pymatbridge import *
+from .pymatbridge import *
 
 try:
-    from publish import *
+    from .publish import *
 except ImportError:
     pass
 
 try:
-    from matlab_magic import *
+    from .matlab_magic import *
 except ImportError:
     pass
