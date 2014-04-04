@@ -47,7 +47,7 @@ def _run_matlab_server(matlab_bin, matlab_socket_addr, matlab_log, matlab_id, ma
     if matlab_log:
         command += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (matlab_id, matlab_id)
 
-    subprocess.Popen(command, shell = True)
+    subprocess.Popen(command, shell = True, stdin=subprocess.PIPE)
 
     return True
 
