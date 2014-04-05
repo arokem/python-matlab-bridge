@@ -30,5 +30,5 @@ def test_lines_to_notebook():
 
     nb = publish.lines_to_notebook(lines)
 
-    npt.assert_equal(nb['worksheets'][0]['cells'][0]['source'][0],
+    npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' This is a first line\n\n')
