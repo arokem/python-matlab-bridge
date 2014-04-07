@@ -8,16 +8,40 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 
 This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
-
-import numpy as np
-import os, time
-import zmq
-import subprocess
-import platform
-import sys
-
+from __future__ import print_function
+import collections
+import functools
 import json
+import os
+import platform
+import subprocess
+import sys
+import time
+import types
+import weakref
+import zmq
+try:
+  basestring
+  DEVNULL = open(os.devnull, 'w')
+except:
+  basestring = str
+  DEVNULL = subprocess.DEVNULL
 
+# ----------------------------------------------------------------------------
+# HELPERS
+# ----------------------------------------------------------------------------
+def chain(*iterables):
+    for iterable in iterables:
+        if not isinstance(iterable, collections.Iterable) or isinstance(iterable, basestring):
+            yield iterable
+        else:
+            for item in iterable:
+                yield item
+
+
+# ----------------------------------------------------------------------------
+# JSON EXTENSION
+# ----------------------------------------------------------------------------
 # JSON encoder extension to handle complex numbers
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -33,24 +57,10 @@ def as_complex(dct):
     return dct
 
 
+# ----------------------------------------------------------------------------
+# MATLAB
+# ----------------------------------------------------------------------------
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
-
-# Start a Matlab server and bind it to a ZMQ socket(TCP/IPC)
-def _run_matlab_server(matlab_bin, matlab_socket_addr, matlab_log, matlab_id, matlab_startup_options):
-    command = matlab_bin
-    command += ' %s ' % matlab_startup_options
-    command += ' -r "'
-    command += "addpath(genpath("
-    command += "'%s'" % MATLAB_FOLDER
-    command += ')), matlabserver(\'%s\'),exit"' % matlab_socket_addr
-
-    if matlab_log:
-        command += ' -logfile ./pymatbridge/logs/matlablog_%s.txt > ./pymatbridge/logs/bashlog_%s.txt' % (matlab_id, matlab_id)
-
-    subprocess.Popen(command, shell = True, stdin=subprocess.PIPE)
-
-    return True
-
 
 class Matlab(object):
     """
@@ -58,7 +68,7 @@ class Matlab(object):
     """
 
     def __init__(self, matlab='matlab', socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=60,
+                 id='python-matlab-bridge', log=False, maxtime=30,
                  platform=None, startup_options=None):
         """
         Initialize this thing.
@@ -94,6 +104,7 @@ class Matlab(object):
         self.running = False
         self.matlab = matlab
         self.socket_addr = socket_addr
+        self.blacklist = set()
 
         self.id = id
         self.log = log
@@ -114,44 +125,63 @@ class Matlab(object):
         else:
             self.startup_options = ' -nodesktop -nodisplay'
 
-        self.context = None
-        self.socket = None
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REQ)
 
+        # generate some useful matlab builtins
+        getattr(self, 'addpath')
+        getattr(self, 'eval')
+        getattr(self, 'help')
+        getattr(self, 'license')
+        getattr(self, 'run')
+        getattr(self, 'run')
+        getattr(self, 'version')
+
+    def __del__(self):
+        self.socket.close()
+        try:
+          self.matlab_process.terminate()
+        except:
+          pass
+
+    # ------------------------------------------------------------------------
+    # START/STOP SERVER
+    # ------------------------------------------------------------------------
     # Start server/client session and make the connection
     def start(self):
         # Start the MATLAB server in a new process
-        print "Starting MATLAB on ZMQ socket %s" % (self.socket_addr)
-        print "Send 'exit' command to kill the server"
-        _run_matlab_server(self.matlab, self.socket_addr, self.log, self.id, self.startup_options)
+        command = chain(
+          self.matlab,
+          self.startup_options,
+          '-r',
+          "\"addpath(genpath('%s')),matlabserver('%s'),exit\"" % (MATLAB_FOLDER, self.socket_addr)
+        )
+
+        command = ' '.join(command)
+        print('Starting Matlab subprocess', end='')
+        self.matlab_process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=DEVNULL)
 
         # Start the client
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(self.socket_addr)
-
         self.started = True
 
         # Test if connection is established
         if (self.is_connected()):
-            print "MATLAB started and connected!"
-            return True
+            print('ready')
         else:
-            print "MATLAB failed to start"
-            return False
+            raise RuntimeError('Matlab failed to start')
 
 
     # Stop the Matlab server
     def stop(self):
-        req = json.dumps(dict(cmd="exit"), cls=ComplexEncoder)
+        req = json.dumps({'cmd': 'exit'}, cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
 
         # Matlab should respond with "exit" if successful
         if resp == "exit":
-            print "MATLAB closed"
-
+            print("Matlab subprocess stopped")
         self.started = False
-        return True
 
     # To test if the client can talk to the server
     def is_connected(self):
@@ -171,10 +201,11 @@ class Matlab(object):
                 else:
                     return False
             except zmq.ZMQError:
-                np.disp(".", linefeed=False)
+                print('.', end='')
+                sys.stdout.flush()
                 time.sleep(1)
                 if (time.time() - start_time > self.maxtime) :
-                    print "Matlab session timed out after %d seconds" % (self.maxtime)
+                    print('failed to connect to Matlab after %d seconds' % self.maxtime)
                     return False
 
 
@@ -185,16 +216,7 @@ class Matlab(object):
         else:
             return False
 
-
-    # Run a function in Matlab and return the result
-    def run_func(self, func_path, func_args=None, maxtime=None):
-        if self.running:
-            time.sleep(0.05)
-
-        req = dict(cmd="run_function")
-        req['func_path'] = func_path
-        req['func_args'] = func_args
-
+    def _execute(self, req):
         req = json.dumps(req, cls=ComplexEncoder)
         self.socket.send(req)
         resp = self.socket.recv_string()
@@ -202,30 +224,66 @@ class Matlab(object):
 
         return resp
 
-    # Run some code in Matlab command line provide by a string
-    def run_code(self, code, maxtime=None):
-        if self.running:
-            time.sleep(0.05)
 
-        req = dict(cmd="run_code")
-        req['code'] = code
-        req = json.dumps(req, cls=ComplexEncoder)
-        self.socket.send(req)
-        resp = self.socket.recv_string()
-        resp = json.loads(resp, object_hook=as_complex)
+    # ------------------------------------------------------------------------
+    # PYTHONIC API
+    # ------------------------------------------------------------------------
+    def __getattr__(self, name):
+        if name in self.blacklist:
+            raise AttributeError(attribute_msg.format(name))
+        method_instance = Method(self, name)
+        method_instance.__name__ = name + ' (unverified)'
+        setattr(self, name, types.MethodType(method_instance, weakref.ref(self), Matlab))
+        return getattr(self, name)
 
-        return resp
+    def get_variable(self, varname, timeout=None):
+        req = {
+            'cmd': 'get_var',
+            'varname': varname,
+        }
+        resp = self._execute(req)
+        if not resp['success']:
+            raise RuntimeError(resp['result'] +': '+ resp['message'])
+        return resp['result']
 
-    def get_variable(self, varname, maxtime=None):
-        if self.running:
-            time.sleep(0.05)
+    def clear_blacklist(self):
+        self.blacklist = set()
 
-        req = dict(cmd="get_var")
-        req['varname'] = varname
-        req = json.dumps(req, cls=ComplexEncoder)
-        self.socket.send(req)
-        resp = self.socket.recv_string()
-        resp = json.loads(resp, object_hook=as_complex)
 
-        return resp['var']
+# ----------------------------------------------------------------------------
+# MATLAB METHOD
+# ----------------------------------------------------------------------------
+attribute_msg = "attribute '{0}' does not correspond to a Matlab function and was blacklisted"
 
+class Method(object):
+
+    def __init__(self, parent, name):
+        self.name = name
+        self.doc = None
+
+    def __call__(self, parent, *args, **kwargs):
+        nout  = kwargs.pop('nout', None)
+        args += tuple(item for pair in zip(kwargs.keys(), kwargs.values()) for item in pair)
+        req = {
+            'cmd': 'call',
+            'func': self.name,
+            'args': args
+        }
+        if nout:
+            req['nout'] = nout
+        resp = parent()._execute(req)
+        if not resp['success']:
+            if resp['result'] == 'MATLAB:UndefinedFunction':
+                parent().blacklist.add(self.name)
+                delattr(parent(), self.name)
+                raise AttributeError(attribute_msg.format(self.name))
+            raise RuntimeError(resp['result'] +': '+ resp['message'])
+        else:
+            self.__name__ = self.name + ' (verified)'
+        return resp['result']
+
+    @property
+    def __doc__(self, parent):
+        if not self.doc:
+            self.doc = parent().help(self.name)
+        return self.doc
