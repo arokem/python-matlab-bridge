@@ -1,12 +1,9 @@
-"""
-pymatbridge
-===========
+"""Main module for running and communicating with Matlab subprocess
 
-This is a module for communicating and running
+pymatbridge.py provides Matlab, the main class used to communicate
+with the Matlab executable. Each instance starts and manages its
+own Matlab subprocess.
 
-Part of Python-MATLAB-bridge, Max Jaderberg 2012
-
-This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 from __future__ import print_function
 import collections
@@ -21,16 +18,31 @@ import types
 import weakref
 import zmq
 try:
-  basestring
-  DEVNULL = open(os.devnull, 'w')
+    # Python 2
+    basestring
+    DEVNULL = open(os.devnull, 'w')
 except:
-  basestring = str
-  DEVNULL = subprocess.DEVNULL
+    # Python 3
+    basestring = str
+    DEVNULL = subprocess.DEVNULL
+
 
 # ----------------------------------------------------------------------------
 # HELPERS
 # ----------------------------------------------------------------------------
 def chain(*iterables):
+    """Yield elements from each iterable in order
+
+    Make an iterator that returns elements from the first iterable until
+    it is exhausted, then proceeds to the next iterable, until all of the
+    iterables are exhausted. Unlike itertools.chain, strings are not treated
+    as iterable, and thus not expanded into characters:
+    chain([1, 2, 3, 4], 'string') --> 1, 2, 3, 4, 'string'
+
+    Returns:
+        generator: A generator which yields items from the iterables
+
+    """
     for iterable in iterables:
         if not isinstance(iterable, collections.Iterable) or isinstance(iterable, basestring):
             yield iterable
@@ -39,19 +51,49 @@ def chain(*iterables):
                 yield item
 
 
+class AttributeDict(dict):
+    """A dictionary with attribute-like access
+
+    Values within an AttributeDict can be accessed either via
+    d[key] or d.key.
+    See: http://stackoverflow.com/a/14620633
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 # ----------------------------------------------------------------------------
 # JSON EXTENSION
 # ----------------------------------------------------------------------------
-# JSON encoder extension to handle complex numbers
 class ComplexEncoder(json.JSONEncoder):
+    """A JSON extension for encoding complex numbers
+
+    ComplexEncoder encodes complex numbers as a mapping,
+    complex --> {'real': complex.real, 'imag': complex.imag}
+
+    """
     def default(self, obj):
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
         # Handle the default case
         return json.JSONEncoder.default(self, obj)
 
-# JSON decoder for complex numbers
 def as_complex(dct):
+    """A JSON extension for decoding complex numbers
+
+    as_complex decodes mappings of the form {'real': real_val, 'imag': imag_val}
+    into a single value of type complex
+
+    Args:
+        dct: A dictionary
+
+    Returns:
+        complex: A complex number if the dictionary represents an encoding
+            of a complex number, else the dictionary
+
+    """
     if 'real' in dct and 'imag' in dct:
         return complex(dct['real'], dct['imag'])
     return dct
@@ -60,101 +102,96 @@ def as_complex(dct):
 # ----------------------------------------------------------------------------
 # MATLAB
 # ----------------------------------------------------------------------------
-MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
-
 class Matlab(object):
-    """
-    A class for communicating with a matlab session
-    """
-
     def __init__(self, matlab='matlab', socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=30,
+                 id='python-matlab-bridge', log=False, timeout=30,
                  platform=None, startup_options=None):
-        """
-        Initialize this thing.
+        """Execute functions in a Matlab subprocess via Python
 
-        Parameters
-        ----------
+        Matlab provides a pythonic interface for accessing functions in Matlab.
+        It works by starting a Matlab subprocess and establishing a connection
+        to it using ZMQ. Function calls are serialized and executed remotely.
 
-        matlab : str
-            A string that woul start matlab at the terminal. Per default, this
-            is set to 'matlab', so that you can alias in your bash setup
-
-        socket_addr : str
-            A string that represents a valid ZMQ socket address, such as
-            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
-
-        id : str
-            An identifier for this instance of the pymatbridge
-
-        log : bool
-            Whether to save a log file in some known location.
-
-        maxtime : float
-           The maximal time to wait for a response from matlab (optional,
-           Default is 10 sec)
-
-        platform : string
-           The OS of the machine on which this is running. Per default this
-           will be taken from sys.platform.
+        Keyword Args:
+            matlab (str): A string to the Matlab executable. This defaults
+                to 'matlab', assuming the executable is on your PATH
+            socket_addr (str): A string the represents a valid ZMQ socket
+                address, such as "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:5555"
+            id (str): An identifier for this instance of the pymatbridge
+            log (bool): Log status and error messages
+            timeout: The maximum time to wait for a response from the Matlab
+                process before timing out (default 30 seconds)
+            platform (str): The OS of the machine running Matlab. By default
+                this is determined automatically from sys.platform
+            startup_options (list): A list of switches that should be passed
+                to the Matlab subprocess at startup. By default, switches are
+                passed to disable the graphical session. For a full list of
+                available switches see:
+                Windows: http://www.mathworks.com.au/help/matlab/ref/matlabwindows.html
+                UNIX: http://www.mathworks.com.au/help/matlab/ref/matlabunix.html
 
         """
+        self.MATLAB_FOLDER = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'matlab')
+
         # Setup internal state variables
         self.started = False
-        self.running = False
         self.matlab = matlab
         self.socket_addr = socket_addr
-        self.blacklist = set()
-
         self.id = id
         self.log = log
-        self.maxtime = maxtime
+        self.timeout = timeout
 
-        if platform is None:
-            self.platform = sys.platform
+        # determine the platform-specific options
+        self.platform = platform if platform else sys.platform
+        if self.platform == 'win32':
+            default_socket_addr = "tcp://127.0.0.1:55555"
+            default_options     = ['-automation', '-nofigureWindows']
         else:
-            self.platform = platform
+            default_socket_addr = "ipc:///tmp/pymatbridge"
+            default_options     = ['-nodesktop', '-nodisplay']
 
-        if self.socket_addr is None:  # use the default
-            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/pymatbridge"
+        self.socket_addr = socket_addr if socket_addr else default_socket_addr
+        self.startup_options = startup_options if startup_options else default_options
 
-        if startup_options:
-            self.startup_options = startup_options
-        elif self.platform == 'win32':
-            self.startup_options = ' -automation -noFigureWindows'
-        else:
-            self.startup_options = ' -nodesktop -nodisplay'
-
+        # initialize the ZMQ socket
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
 
-        # generate some useful matlab builtins
-        getattr(self, 'addpath')
-        getattr(self, 'eval')
-        getattr(self, 'help')
-        getattr(self, 'license')
-        getattr(self, 'run')
-        getattr(self, 'run')
-        getattr(self, 'version')
+        # auto-generate some useful matlab builtins
+        self.bind_method('exist',   unconditionally=True)
+        self.bind_method('addpath', unconditionally=True)
+        self.bind_method('eval',    unconditionally=True)
+        self.bind_method('help',    unconditionally=True)
+        self.bind_method('license', unconditionally=True)
+        self.bind_method('run',     unconditionally=True)
+        self.bind_method('version', unconditionally=True)
 
     def __del__(self):
-        self.socket.close()
-        try:
-          self.matlab_process.terminate()
-        except:
-          pass
+        """Forcibly cleanup resources
 
-    # ------------------------------------------------------------------------
-    # START/STOP SERVER
-    # ------------------------------------------------------------------------
-    # Start server/client session and make the connection
+        The user should always call Matlab.stop to gracefully shutdown the Matlab
+        process before Matlab leaves scope, but in case they don't, attempt
+        to cleanup so we don't leave an orphaned process lying around.
+
+        """
+        self.stop()
+
     def start(self):
-        # Start the MATLAB server in a new process
+        """Start a new Matlab subprocess and attempt to connect to it via ZMQ
+
+        Raises:
+            RuntimeError: If Matlab is already running, or failed to start
+
+        """
+        if self.started:
+            raise RuntimeError('Matlab is already running')
+
+        # build the command
         command = chain(
           self.matlab,
           self.startup_options,
           '-r',
-          "\"addpath(genpath('%s')),matlabserver('%s'),exit\"" % (MATLAB_FOLDER, self.socket_addr)
+          "\"addpath(genpath('%s')),matlabserver('%s'),exit\"" % (self.MATLAB_FOLDER, self.socket_addr)
         )
 
         command = ' '.join(command)
@@ -167,123 +204,261 @@ class Matlab(object):
 
         # Test if connection is established
         if (self.is_connected()):
-            print('ready')
+            print('started')
         else:
+            self.started = False
             raise RuntimeError('Matlab failed to start')
 
+    def stop(self, timeout=1):
+        """Stop the Matlab subprocess
 
-    # Stop the Matlab server
-    def stop(self):
+        Attempt to gracefully shutdown the Matlab subprocess. If it fails to
+        stop within the timeout period, terminate it forcefully.
+
+        Args:
+            timeout: Time in seconds before SIGKILL is sent
+
+        """
+        if not self.started:
+            return
+
         req = json.dumps({'cmd': 'exit'}, cls=ComplexEncoder)
-        self.socket.send(req)
-        resp = self.socket.recv_string()
+        try:
+            # the user might be stopping Matlab because the socket is in a bad state
+            self.socket.send(req)
+        except:
+            pass
 
-        # Matlab should respond with "exit" if successful
-        if resp == "exit":
-            print("Matlab subprocess stopped")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if self.matlab_process.poll() is not None:
+                break
+            time.sleep(0.1)
+        else:
+            self.matlab_process.kill()
+
+        # finalize
+        self.socket.close()
         self.started = False
 
-    # To test if the client can talk to the server
-    def is_connected(self):
-        if not self.started:
-            time.sleep(2)
-            return False
+    def restart(self):
+        """Restart the Matlab subprocess if the state becomes bad
 
-        req = json.dumps(dict(cmd="connect"), cls=ComplexEncoder)
+        Aliases the following command:
+            >> matlab.stop()
+            >> matlab.start()
+
+        """
+        self.stop()
+        self.start()
+
+    def is_connected(self):
+        """Test if the client can talk to the server
+
+        Raises:
+            RuntimeError: If there is no running Matlab subprocess to connect to
+
+        Returns:
+            bool: True if the Matlab subprocess ZMQ server can be contacted,
+                  False, otherwise
+
+        """
+        if not self.started:
+            raise RuntimeError('No running Matlab subprocess to connect to')
+
+        req = json.dumps({'cmd': 'ping'}, cls=ComplexEncoder)
         self.socket.send(req)
 
         start_time = time.time()
-        while(True):
+        while time.time() - start_time < self.timeout:
+            time.sleep(0.5)
             try:
-                resp = self.socket.recv_string(flags=zmq.NOBLOCK)
-                if resp == "connected":
-                    return True
-                else:
-                    return False
+                self.socket.recv_string(flags=zmq.NOBLOCK)
+                return True
             except zmq.ZMQError:
                 print('.', end='')
                 sys.stdout.flush()
-                time.sleep(1)
-                if (time.time() - start_time > self.maxtime) :
-                    print('failed to connect to Matlab after %d seconds' % self.maxtime)
-                    return False
 
+        print('failed to connect to Matlab after %d seconds' % self.timeout)
+        return False
 
     def is_function_processor_working(self):
-        result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
-        if result['success'] == 'true':
-            return True
-        else:
+        """Check whether the Matlab subprocess can evaluate functions
+
+        First check whether the Python client can talk to the Matlab
+        server, then if the server is in a state where it can successfully
+        evaluate a function
+
+        Raises:
+            RuntimeError: If there is no running Matlab subprocess to connect to
+
+        Returns:
+            bool: True if Matlab can evaluate a function, False otherwise
+
+        """
+        if not self.is_connected():
             return False
 
-    def _execute(self, req):
+        try:
+            self.abs(2435)
+            return True
+        except:
+            return False
+
+    def execute_in_matlab(self, req):
+        """Execute a request in the Matlab subprocess
+
+        Args:
+            req (dict): A dictionary containing the request to evaluate in
+                Matlab. The request should contain the 'cmd' key, and the
+                corresponding command recognized by matlabserver.m, as well
+                as any arguments required by that command
+
+        Returns:
+            resp (dict): A dictionary containing the response from the Matlab
+                server containing the keys 'success', 'result', and 'message'
+
+        Raises:
+            RuntimeError: If the 'success' field of the resp object is False,
+                then an exception is raised with the value of the 'result'
+                field which will contain the identifier of the exception
+                raised in Matlab, and the 'message' field, which will contain
+                the reason for the exception
+
+        """
+        # send the request
         req = json.dumps(req, cls=ComplexEncoder)
         self.socket.send(req)
-        resp = self.socket.recv_string()
-        resp = json.loads(resp, object_hook=as_complex)
 
+        # receive the response
+        resp = self.socket.recv_string()
+        resp = AttributeDict(json.loads(resp, object_hook=as_complex))
+        if not resp.success:
+            raise RuntimeError(resp.result +': '+ resp.message)
         return resp
 
-
-    # ------------------------------------------------------------------------
-    # PYTHONIC API
-    # ------------------------------------------------------------------------
     def __getattr__(self, name):
-        if name in self.blacklist:
-            raise AttributeError(attribute_msg.format(name))
-        method_instance = Method(self, name)
-        method_instance.__name__ = name + ' (unverified)'
+        return self.bind_method(name)
+    def bind_method(self, name, unconditionally=False):
+        """Generate a Matlab function and bind it to the instance
+
+        This is where the magic happens. When an unknown attribute of the
+        Matlab class is requested, it is assumed to be a call to a
+        Matlab function, and is generated and bound to the instance.
+
+        This works because getattr() falls back to __getattr__ only if no
+        attributes of the requested name can be found through normal
+        routes (__getattribute__, __dict__, class tree).
+
+        bind_method first checks whether the requested name is a callable
+        Matlab function before generating a binding.
+
+        Args:
+            name (str): The name of the Matlab function to call
+                e.g. 'sqrt', 'sum', 'svd', etc
+            unconditionally (bool): Bind the method without performing
+                checks. Used to bootstrap methods that are required and
+                know to exist
+
+        Returns:
+            Method: a reference to a newly bound Method instance if the
+                requested name is determined to be a callable function
+
+        Raises:
+            AttributeError: if the requested name is not a callable
+                Matlab function
+
+        """
+        # TODO: This does not work if the function is a mex function inside a folder of the same name
+        if not unconditionally and not self.exist(name):
+            raise AttributeError("'Matlab' object has no attribute '%s'" % name)
+
+        # create a new method instance
+        method_instance = Method(weakref.ref(self), name)
+        method_instance.__name__ = name
+
+        # bind to the Matlab instance with a weakref (to avoid circular references)
         setattr(self, name, types.MethodType(method_instance, weakref.ref(self), Matlab))
         return getattr(self, name)
-
-    def get_variable(self, varname, timeout=None):
-        req = {
-            'cmd': 'get_var',
-            'varname': varname,
-        }
-        resp = self._execute(req)
-        if not resp['success']:
-            raise RuntimeError(resp['result'] +': '+ resp['message'])
-        return resp['result']
-
-    def clear_blacklist(self):
-        self.blacklist = set()
 
 
 # ----------------------------------------------------------------------------
 # MATLAB METHOD
 # ----------------------------------------------------------------------------
-attribute_msg = "attribute '{0}' does not correspond to a Matlab function and was blacklisted"
-
 class Method(object):
 
     def __init__(self, parent, name):
+        """An object representing a Matlab function
+
+        Methods are dynamically bound to instances of Matlab objects and
+        represent a callable function in the Matlab subprocess.
+
+        Args:
+            parent: A reference to the parent (Matlab instance) to which the
+                Method is being bound
+            name: The name of the Matlab function this represents
+
+        """
         self.name = name
+        self._parent = parent
         self.doc = None
 
-    def __call__(self, parent, *args, **kwargs):
+    def __call__(self, unused_parent_weakref, *args, **kwargs):
+        """Call a function with the supplied arguments in the Matlab subprocess
+
+        Args:
+            The *args parameter is unpacked and forwarded verbatim to Matlab.
+            It contains arguments in the order that they would appear in a
+            native function call.
+
+        Keyword Args:
+            Keyword arguments are passed to Matlab in the form [key, val] so
+            that matlab.plot(x, y, '--', LineWidth=2) would be translated into
+            plot(x, y, '--', 'LineWidth', 2)
+
+            nout (int): The number of arguments to output. By default this is
+                1 for functions that return 1 or more values, and 0 for
+                functions that return no values. This is useful for functions
+                that change their behvaiour depending on the number of inputs:
+                U, S, V = matlab.svd(A, nout=3)
+
+        """
+        # parse out number of output arguments
         nout  = kwargs.pop('nout', None)
+
+        # convert keyword arguments to arguments
         args += tuple(item for pair in zip(kwargs.keys(), kwargs.values()) for item in pair)
-        req = {
-            'cmd': 'call',
-            'func': self.name,
-            'args': args
-        }
-        if nout:
-            req['nout'] = nout
-        resp = parent()._execute(req)
-        if not resp['success']:
-            if resp['result'] == 'MATLAB:UndefinedFunction':
-                parent().blacklist.add(self.name)
-                delattr(parent(), self.name)
-                raise AttributeError(attribute_msg.format(self.name))
-            raise RuntimeError(resp['result'] +': '+ resp['message'])
-        else:
-            self.__name__ = self.name + ' (verified)'
-        return resp['result']
+
+        # build request
+        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nout': nout}
+        resp  = self.parent.execute_in_matlab(req)
+
+        # return the result
+        return resp.get('result', None)
 
     @property
-    def __doc__(self, parent):
-        if not self.doc:
-            self.doc = parent().help(self.name)
+    def parent(self):
+        """Get the actual parent from the stored weakref
+
+        The parent (Matlab instance) is stored as a weak reference
+        to eliminate circular references from dynamically binding Methods
+        to Matlab.
+
+        """
+        parent = self._parent()
+        if parent is None:
+            raise AttributeError('Stale reference to attribute of non-existent Matlab object')
+        return parent
+
+    @property
+    def __doc__(self):
+        """Fetch the docstring from Matlab
+
+        Get the documentation for a Matlab function by calling Matlab's builtin
+        help() then returning it as the Python docstring. The result is cached
+        so Matlab is only ever polled on the first request
+
+        """
+        if self.doc is None:
+            self.doc = self.parent.help(self.name)
         return self.doc
