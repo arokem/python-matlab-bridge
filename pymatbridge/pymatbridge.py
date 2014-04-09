@@ -223,6 +223,7 @@ class Matlab(object):
         self.matlab_process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=DEVNULL)
 
         # Start the client
+        self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(self.socket_addr)
         self.started = True
 
