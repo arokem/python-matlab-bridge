@@ -9,6 +9,7 @@ from __future__ import print_function
 import collections
 import functools
 import json
+import numpy as np
 import os
 import platform
 import subprocess
@@ -67,36 +68,59 @@ class AttributeDict(dict):
 # ----------------------------------------------------------------------------
 # JSON EXTENSION
 # ----------------------------------------------------------------------------
-class ComplexEncoder(json.JSONEncoder):
-    """A JSON extension for encoding complex numbers
+class MatlabEncoder(json.JSONEncoder):
+    """A JSON extension for encoding numpy arrays to Matlab format
 
-    ComplexEncoder encodes complex numbers as a mapping,
+    Numpy arrays are converted to nested lists. Complex numbers
+    (either standalone or scalars within an array) are converted to JSON
+    objects.
     complex --> {'real': complex.real, 'imag': complex.imag}
-
     """
     def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
         # Handle the default case
-        return json.JSONEncoder.default(self, obj)
+        return super(MatlabEncoder, self).default(obj)
 
-def as_complex(dct):
-    """A JSON extension for decoding complex numbers
 
-    as_complex decodes mappings of the form {'real': real_val, 'imag': imag_val}
-    into a single value of type complex
+class MatlabDecoder(json.JSONDecoder):
+    """A JSON extension for decoding Matlab arrays into numpy arrays
 
-    Args:
-        dct: A dictionary
-
-    Returns:
-        complex: A complex number if the dictionary represents an encoding
-            of a complex number, else the dictionary
-
+    The default JSON decoder is called first, then elements within the
+    resulting object tree are greedily marshalled to numpy arrays. If this
+    fails, the function recurses into
     """
-    if 'real' in dct and 'imag' in dct:
-        return complex(dct['real'], dct['imag'])
-    return dct
+    def __init__(self, encoding='UTF-8', **kwargs):
+        # register the complex object decoder with the super class
+        kwargs['object_hook'] = self.decode_complex
+        # allowable scalar types we can coerce to (not strings or objects)
+        super(MatlabDecoder, self).__init__(encoding=encoding, **kwargs)
+
+    def decode(self, s):
+        # decode the string using the default decoder first
+        tree = super(MatlabDecoder, self).decode(s)
+        # recursively attempt to build numpy arrays (top-down)
+        return self.coerce_to_numpy(tree)
+
+    def decode_complex(self, d):
+        try:
+            return complex(d['real'], d['imag'])
+        except KeyError:
+            return d
+
+    def coerce_to_numpy(self, tree):
+        """Greedily attempt to coerce an object into a numeric numpy"""
+        if isinstance(tree, dict):
+            return dict((key, self.coerce_to_numpy(val)) for key, val in tree.items())
+        if isinstance(tree, list):
+            array = np.array(tree)
+            if isinstance(array.dtype.type(), (bool, int, float, complex)):
+                return array
+            else:
+                return [self.coerce_to_numpy(item) for item in tree]
+        return tree
 
 
 # ----------------------------------------------------------------------------
@@ -222,7 +246,7 @@ class Matlab(object):
         if not self.started:
             return
 
-        req = json.dumps({'cmd': 'exit'}, cls=ComplexEncoder)
+        req = json.dumps({'cmd': 'exit'})
         try:
             # the user might be stopping Matlab because the socket is in a bad state
             self.socket.send(req)
@@ -266,7 +290,7 @@ class Matlab(object):
         if not self.started:
             raise RuntimeError('No running Matlab subprocess to connect to')
 
-        req = json.dumps({'cmd': 'ping'}, cls=ComplexEncoder)
+        req = json.dumps({'cmd': 'ping'})
         self.socket.send(req)
 
         start_time = time.time()
@@ -327,12 +351,12 @@ class Matlab(object):
 
         """
         # send the request
-        req = json.dumps(req, cls=ComplexEncoder)
+        req = json.dumps(req, cls=MatlabEncoder)
         self.socket.send(req)
 
         # receive the response
         resp = self.socket.recv_string()
-        resp = AttributeDict(json.loads(resp, object_hook=as_complex))
+        resp = AttributeDict(json.loads(resp, cls=MatlabDecoder))
         if not resp.success:
             raise RuntimeError(resp.result +': '+ resp.message)
         return resp
@@ -380,6 +404,22 @@ class Matlab(object):
         # bind to the Matlab instance with a weakref (to avoid circular references)
         setattr(self, name, types.MethodType(method_instance, weakref.ref(self), Matlab))
         return getattr(self, name)
+
+
+    def run_func(self, func_path, func_args=None, maxtime=None):
+        path, filename = os.path.split(func_path)
+        func, ext = filename.split('.')
+
+        self.addpath(path)
+
+    def run_code(self, code, maxtime=None):
+        try:
+            return {'result': self.eval(code), 'success': 'true', 'message': ''}
+        except RuntimeError as e:
+            return {'result': '', 'success': 'false', 'message': e}
+
+    def get_variable(self, varname, maxtime=None):
+        return self.evalin('base',varname)
 
 
 # ----------------------------------------------------------------------------
