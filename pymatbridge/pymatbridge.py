@@ -78,7 +78,9 @@ class MatlabEncoder(json.JSONEncoder):
     """
     def default(self, obj):
         if isinstance(obj, np.ndarray):
-            return obj.tolist()
+            ordering = range(0, obj.ndim)
+            ordering[0:2] = ordering[1::-1]
+            return np.transpose(obj, axes=ordering[::-1]).tolist()
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
         # Handle the default case
@@ -117,7 +119,9 @@ class MatlabDecoder(json.JSONDecoder):
         if isinstance(tree, list):
             array = np.array(tree)
             if isinstance(array.dtype.type(), (bool, int, float, complex)):
-                return array
+                ordering = range(0, array.ndim)
+                ordering[-2:] = ordering[:-3:-1]
+                return np.transpose(array, axes=ordering[::-1])
             else:
                 return [self.coerce_to_numpy(item) for item in tree]
         return tree
