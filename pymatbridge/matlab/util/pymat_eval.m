@@ -6,7 +6,7 @@ function json_response = web_eval(req);
 %
 %   This allows you to run any matlab code. To be used with webserver.m.
 %   HTTP POST to /web_eval.m with the following parameters:
-%       code: a string which contains the code to be run in the matlab session
+%       expr: a string which contains the expression to evaluate in the matlab session
 %
 %   Should return a json object containing the result
 %
@@ -17,26 +17,26 @@ field_names = fieldnames(req);
 
 response.content = '';
 
-code_check = false;
+expr_check = false;
 if size(field_names)
-	if isfield(req, 'code')
-		code_check = true;
+	if isfield(req, 'expr')
+		expr_check = true;
 	end
 end
 
-if ~code_check
-	response.message = 'No code provided as POST parameter';
+if ~expr_check
+	response.message = 'No expression provided as POST parameter';
 	json_response = json.dump(response);
 	return;
 end
 
-code = req.code;
+expr = req.expr;
 
 try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
-	evalin('base', code);
+	evalin('base', expr);
 	diary('off');
 
 	datadir = fullfile(tempdir(),'MatlabData');
@@ -69,7 +69,7 @@ catch ME
 	response.content.stdout = ME.message;
 end
 
-response.content.code = code;
+response.content.expr = expr;
 
 json_response = json.dump(response);
 

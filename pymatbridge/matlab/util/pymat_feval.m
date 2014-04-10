@@ -1,6 +1,18 @@
-% Max Jaderberg 2011
-
 function json_response = matlab_feval(req)
+
+    if ~isfield(req, 'func_path')
+        response.success = false;
+        response.message = 'No function given as func_path POST parameter';
+        json_response = json.dump(response);
+    end
+
+    if ~isfield(req, 'func_args')
+        req.func_args = {}
+    end
+
+    [dir, func_name, ext] = fileparts(req.func_path);
+    try
+        response.result = 
 
     response.success = 'false';
     field_names = fieldnames(req);
