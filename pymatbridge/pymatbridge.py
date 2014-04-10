@@ -173,10 +173,10 @@ class Matlab(object):
         self.platform = platform if platform else sys.platform
         if self.platform == 'win32':
             default_socket_addr = "tcp://127.0.0.1:55555"
-            default_options     = ['-automation', '-nofigureWindows']
+            default_options     = ['-automation']
         else:
             default_socket_addr = "ipc:///tmp/pymatbridge"
-            default_options     = ['-nodesktop', '-nodisplay']
+            default_options     = ['-nodesktop', '-nosplash']
 
         self.socket_addr = socket_addr if socket_addr else default_socket_addr
         self.startup_options = startup_options if startup_options else default_options
