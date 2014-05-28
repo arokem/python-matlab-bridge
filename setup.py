@@ -21,23 +21,14 @@ def copy_bin(bin_path):
     else:
         return False
 
-if sys.platform == "darwin":
-    if not copy_bin("./messenger/mexmaci64/messenger.mexmaci64"):
-        raise ValueError("messenger.mexmaci64 is not built yet. Please build it yourself.")
-
-elif sys.platform == "linux2":
-    if not copy_bin("./messenger/mexa64/messenger.mexa64"):
-        raise ValueError("messenger.mexa64 is not built yet. Please build it yourself.")
-
-elif sys.platform in ["win32", "cygwin"]:
-    t1 = copy_bin("./messenger/mexw64/messenger.mexw64")
-    t2 = copy_bin("./messenger/mexw32/messenger.mexw32")
-    if not (t1 or t2):
-        raise ValueError("Neither messenger.mexw32 or mex264 is built yet. Please build the appropriate one yourself") 
-
+if sys.platform == "win32":
+    raise ValueError("pymatbridge does not work on win32")
 else:
-    raise ValueError("Unknown platform")
-
+    for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
+                      "./messenger/mexa64/messenger.mexa64",
+                      "./messenger/mexw64/messenger.mexw64"]:
+        copy_bin(copy_this)
+        
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
 exec(open(ver_file).read())
