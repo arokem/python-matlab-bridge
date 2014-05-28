@@ -1,108 +1,171 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Python-matlab-bridge : A simple Python =&gt; MATLAB(R) interface and a matlab_magic for ipython" />
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Python-matlab-bridge by arokem</title>
+    <title>Python-matlab-bridge</title>
   </head>
 
   <body>
-    <header>
-      <div class="inner">
-        <h1>Python-matlab-bridge</h1>
-        <h2>A simple Python =&gt; MATLAB(R) interface and a matlab_magic for ipython</h2>
-        <a href="https://github.com/arokem/python-matlab-bridge" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>Python-MATLAB(R) Bridge and ipython matlab_magic</h1>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/arokem/python-matlab-bridge">View on GitHub</a>
+
+          <h1 id="project_title">Python-matlab-bridge</h1>
+          <h2 id="project_tagline">A simple Python =&gt; MATLAB(R) interface and a matlab_magic for ipython</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/arokem/python-matlab-bridge/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/arokem/python-matlab-bridge/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="python-matlabr-bridge-and-ipython-matlab_magic" class="anchor" href="#python-matlabr-bridge-and-ipython-matlab_magic"><span class="octicon octicon-link"></span></a>Python-MATLAB(R) Bridge and ipython matlab_magic</h1>
 
 <p>A python interface to call out to <a href="http://mathworks.com">Matlab(R)</a>. Original
 implementation by <a href="http://www.maxjaderberg.com/">Max Jaderberg</a>.</p>
 
-<p>This implementation also includes an <a href="http://ipython.org">ipython</a> matlab_magic
-extension, which provides a much simplified interface for weaving python and
-Matlab code together.  </p>
+<p>This implementation also includes an <a href="http://ipython.org">IPython</a> <code>matlab_magic</code>
+extension, which provides a simple interface for weaving python and
+Matlab code together (requires ipython &gt; 0.13).  </p>
 
-<p><em>**AT PRESENT THIS MAY NOT WORK ON WINDOWS; BETA TESTERS WANTED *</em>*</p>
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
-<h2>Usage</h2>
+<p>Pymatbridge communicates with Matlab using zeromq. So before installing
+pymatbridge you must have <a href="http://zeromq.org/intro:get-the-software">zmq</a>
+library and <a href="http://zeromq.org/bindings:python">pyzmq</a> installed on your
+machine. If you intend to use the Matlab magic extension, you'll also need
+<a href="http://ipython.org/install.html">IPython</a>.  To make pymatbridge work properly,
+please follow the following steps.</p>
 
-<p>For examples, check out the <code>.ipynb</code> files</p>
+<h3>
+<a name="install-zmq-library" class="anchor" href="#install-zmq-library"><span class="octicon octicon-link"></span></a>Install zmq library</h3>
 
-<h2>Installation</h2>
+<p>Please refer to the <a href="http://zeromq.org/intro:get-the-software">official guide</a> on how to
+build and install zmq. After zmq is installed, make sure you can find the location where
+libzmq is installed. The library extension name and default location on different systems
+are listed below.</p>
 
-<p>To install from the source-code. Download the <a href="https://github.com/arokem/python-matlab-bridge/archive/master.zip">code zip
-file</a>. Unzip
-it somewhere on your machine and then issue:</p>
+<table>
+<thead><tr>
+<th>Platform</th>
+<th>library name</th>
+<th>Default locations</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>MacOS</td>
+<td>libzmq.dylib</td>
+<td>/usr/lib or /usr/local/lib</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>libzmq.so.3</td>
+<td>/usr/lib or /usr/local/lib</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>libzmq.dll</td>
+<td>C:\Program Files\ZeroMQ 3.2.4\bin</td>
+</tr>
+</tbody>
+</table><p>If you specified a prefix when installing zmq, the library file should be located at the
+same prefix location.</p>
+
+<p>After the library file is located, you need to add it to dynamic loader path on your 
+machine. On MacOS, you can do this by adding the following line to your .bash_profile:</p>
+
+<pre><code>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:&lt;Path to your zmq lib directory&gt;
+</code></pre>
+
+<p>On Linux, add the following line to your .bash_profile:</p>
+
+<pre><code>export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:&lt;Path to your zmq lib directory&gt;
+</code></pre>
+
+<p>On Windows, add the install location of libzmq.dll to the PATH environment variable.
+On Windows 7+, typing "environment variables" into the start menu will bring up the
+apporpriate Control Panel links.</p>
+
+<h3>
+<a name="install-pyzmq" class="anchor" href="#install-pyzmq"><span class="octicon octicon-link"></span></a>Install pyzmq</h3>
+
+<p>After step 1 is finished, please grab the latest version of 
+<a href="http://zeromq.org/bindings:python">pyzmq</a> and follow the instructions on the official 
+page. Note that pymatbridge is developed with pyzmq 14.0.0 and older versions might not 
+be supported. If you have an old version of pyzmq, please update it. </p>
+
+<h3>
+<a name="install-pymatbridge" class="anchor" href="#install-pymatbridge"><span class="octicon octicon-link"></span></a>Install pymatbridge</h3>
+
+<p>After the steps above are done, you can install pymatbridge. Download the zip file of the 
+latest release. Unzip it somewhere on your machine and then issue:</p>
 
 <pre><code>python setup.py install
 </code></pre>
 
 <p>This should make the python-matlab-bridge import-able.</p>
 
-<p>Alternatively, you can get pymatbridge at the
-<a href="https://pypi.python.org/pypi/pymatbridge">cheese-shop</a>.</p>
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>This means that you can use:</p>
-
-<pre><code>easy_install pymatbridge
-</code></pre>
-
-<p>Or</p>
-
-<pre><code>pip install pymatbridge
-</code></pre>
-
-<p>To get things going.</p>
-
-<h3>API:</h3>
-
-<p>Initialize the Matlab class:</p>
+<p>To use the pymatbridge you need to connect your python interperter to a Matlab
+session. This is done in the following manner:</p>
 
 <pre><code>from pymatbridge import Matlab
 mlab = Matlab()
 </code></pre>
 
-<p>By default the matlab executable is whatever gets called when you type <code>matlab</code>
-in your terminal, the host is localhost and the port is a random unused port.</p>
+<p>This creates a matlab session class instance, into which you will be able to
+inject code and variables, and query for results. By default, when you use
+<code>start</code>, this will open whatever gets called when you type <code>matlab</code>
+in your Terminal, but you can also specify the location of your Matlab
+application when initialzing your matlab session class:  </p>
 
-<p>You can specify these in the following manner: </p>
-
-<pre><code>mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab',
-                host='192.168.0.1', port=5151)
+<pre><code>mlab = Matlab(matlab='/Applications/MATLAB_R2011a.app/bin/matlab')
 </code></pre>
 
-<p>Alternatively, if <code>matlab</code> is not recognized in the command-line, you can
-create a <a href="http://en.wikipedia.org/wiki/Symbolic_link">symlink</a> to it's
-location. For example:</p>
-
-<pre><code>  ln -s /Applications/MATLAB_R2012b.app/bin/matlab ~/bin/matlab
-</code></pre>
-
-<p>Making sure that your ~/bin directory is on your bash PATH variable.</p>
-
-<p>You can then start the MATLAB server:</p>
+<p>You can then start the Matlab server, which will kick off your matlab session,
+and create the connection between your Python interperter and this session:</p>
 
 <pre><code>mlab.start()
 </code></pre>
 
 <p>which will return True once connected.</p>
 
-<p>You can then run any local MATLAB function contained within a .m file of the
+<pre><code>results = mlab.run_code('a=1;')
+</code></pre>
+
+<p>Should now run that line of code and return a <code>results</code> dict into your Python
+namespace. The <code>results</code> dict contains the following fields:</p>
+
+<pre><code>{u'content': {u'code': u'a=1',
+ u'datadir': u'/private/tmp/MatlabData/',
+ u'figures': [],
+ u'stdout': u'\na =\n\n     1\n\n'},
+ u'success': u'true'}
+</code></pre>
+
+<p>In this case, the variable <code>a</code> is available on the Python side, by using
+the <code>get_variable</code> method:</p>
+
+<pre><code>mlab.get_variable('a')
+</code></pre>
+
+<p>You can  run any MATLAB functions contained within a .m file of the
 same name. For example, to call the function jk in jk.m:</p>
 
 <pre><code>%% MATLAB
@@ -113,33 +176,29 @@ function lol = jk(args)
 end
 </code></pre>
 
-<p>by calling:</p>
+<p>you would call:</p>
 
 <pre><code>res = mlab.run_func('path/to/jk.m', {'arg1': 3, 'arg2': 5})
 print res['result']
 </code></pre>
 
-<p>which will print 8.</p>
+<p>This would print <code>8</code>.</p>
 
-<p>Or you can run some arbitrary matlab code:</p>
-
-<pre><code>res = mlab.run_code('a=10; b=a+3')
-</code></pre>
-
-<p>You can shut down the MATLAB server by calling</p>
+<p>You can shut down the MATLAB server by calling:</p>
 
 <pre><code>mlab.stop()
 </code></pre>
 
-<p>NB: you can call MATLAB code before the server starts by adding code to the ./matlab/startup.m file.</p>
+<p>Tip: you can execute MATLAB code at the beginning of each of your matlab
+sessions by adding code to the <code>~/startup.m</code> file.</p>
 
-<h3>Matlab magic:</h3>
+<h3>
+<a name="matlab-magic" class="anchor" href="#matlab-magic"><span class="octicon octicon-link"></span></a>Matlab magic:</h3>
 
-<p>This can be used in an ipython session in the following manner:</p>
+<p>The Matlab magic allows you to use pymatbridge in the context of the IPython
+notebook format.</p>
 
-<pre><code>import pymatbridge as pymat
-ip = get_ipython()
-pymat.load_ipython_extension(ip)
+<pre><code>%load_ext pymatbridge
 </code></pre>
 
 <p>These lines will automatically start the matlab session for you. Then, you can
@@ -154,36 +213,26 @@ hold on
 plot(cos(a),'r')
 </code></pre>
 
-<h3>Warnings</h3>
+<p>More examples are provided in the <code>examples</code> directory</p>
 
-<p>Python communicates with Matlab via an ad-hoc webserver. This is inherently
+<h3>
+<a name="warnings" class="anchor" href="#warnings"><span class="octicon octicon-link"></span></a>Warnings</h3>
+
+<p>Python communicates with Matlab via an ad-hoc zmq messenger. This is inherently
 insecure, as the Matlab instance may be directed to perform arbitrary system
 calls. There is no sandboxing of any kind. Use this code at your own risk.</p>
-
-<h1>Examples</h1>
-
-<p>An example MATLAB function and usage from Python is shown in test.py and test.m
-and there. Example notebooks are in the '.ipynb' files. </p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/arokem/python-matlab-bridge/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/arokem/python-matlab-bridge/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/arokem/python-matlab-bridge"></a> is maintained by <a href="https://github.com/arokem">arokem</a>.</p>
-
-          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+      </section>
     </div>
 
-            <script type="text/javascript">
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Python-matlab-bridge maintained by <a href="https://github.com/arokem">arokem</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -193,6 +242,7 @@ and there. Example notebooks are in the '.ipynb' files. </p>
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
+
 
   </body>
 </html>
