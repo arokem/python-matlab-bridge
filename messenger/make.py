@@ -4,13 +4,25 @@ import os
 import sys
 import fnmatch
 import subprocess
+import shutil
 
 # Check the system platform first
 platform = sys.platform
 print "This is a " + platform + " system"
 
+if platform.startswith('linux'):
+    messenger_dir = 'mexa64'
+elif platform.startswith('darwin'):
+    messenger_dir = 'mexmaci64'
+if platform.startswith('win32'):
+    windowsversion = sys.getwindowsversion()
+    if windowsversion == 'foo':
+        messenger_dir = 'mexw32'
+    elif windowsversion == 'bar':
+        messenger_dir = 'mexw64'
+        
 # Open the configure file and start parsing
-config = open('local.cfg', 'r')
+config = open(os.path.join(messenger_dir, 'local.cfg'), 'r')
 
 for line in config:
     path = line.split('=')
@@ -56,6 +68,8 @@ if platform == 'win32':
     mex = "\\mex.bat"
 else:
     mex = "/mex"
-make_cmd = '"' + matlab_bin + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq ../src/messenger.c"
+make_cmd = '"' + matlab_bin + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq ./src/messenger.c"
 os.system(make_cmd)
+
+shutil.move('messenger.%s'%extension, messenger_dir)
 
