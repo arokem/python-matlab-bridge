@@ -41,7 +41,7 @@ function matlabserver(socket_address)
             % format the exception and pass it back to the client
             resp.success = false;
             resp.result  = exception.identifier;
-            resp.message = exception.message;
+            resp.message = getReport(exception)
 
             json_resp = json.dump(resp);
             messenger('respond', json_resp);
