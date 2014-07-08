@@ -470,12 +470,22 @@ class Method(object):
         """
         # parse out number of output arguments
         nout  = kwargs.pop('nout', None)
+        saveout = kwargs.pop('saveout',None)
+
+        if nout is None:
+            saveout = []
+        else:
+            if saveout is not None:
+                if len(saveout) != nout:
+                    raise ValueError('saveout should be the same length as nout')
 
         # convert keyword arguments to arguments
         args += tuple(item for pair in zip(kwargs.keys(), kwargs.values()) for item in pair)
 
         # build request
-        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nout': nout}
+        so = ';'.join(saveout) + ';' if saveout else ''
+        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nout': nout, 'saveout': so}
+
         resp  = self.parent.execute_in_matlab(req)
 
         # return the result
