@@ -411,11 +411,10 @@ class Matlab(object):
         return getattr(self, name)
 
 
-    def run_func(self, func_path, func_args=None, maxtime=None):
+    def run_func(self, func_path, *args, **kwargs):
         path, filename = os.path.split(func_path)
         func, ext = filename.split('.')
-
-        self.addpath(path)
+        return self.bind_method(func)(*args, **kwargs)
 
     def run_code(self, code, maxtime=None):
         try:
