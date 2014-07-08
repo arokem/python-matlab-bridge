@@ -71,6 +71,7 @@ function resp = call(req)
     % TODO: What should the default behaviour be?
     func = str2func(req.func);
     nout = req.nout;
+    [saveout nsaveout] = regexp(req.saveout, '(?:;)+', 'split', 'match');
     if isempty(nout)
         try
             nout = min(abs(nargout(func)), 1);
@@ -87,6 +88,20 @@ function resp = call(req)
             resp.result = func(req.args{:});
         otherwise
             [resp.result{1:nout}] = func(req.args{:});
+    end
+
+    if length(nsaveout)
+        if nout == 1
+            assignin('base',saveout{1},resp.result);
+            resp.result = ['__VAR=' saveout{1} '|' class(resp.result)];
+        elseif nout > 1
+            tmp_result = '';
+            for i=1:nout
+                assignin('base',saveout{i},resp.result{i});
+                tmp_result = ['__VAR=' saveout{i} '|' class(resp.result{i}) ';' tmp_result];
+            end
+            resp.result = tmp_result;
+        end
     end
 
     % build the response
