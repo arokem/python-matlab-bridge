@@ -390,6 +390,10 @@ class Matlab(object):
         resp = AttributeDict(json.loads(resp, cls=MatlabDecoder))
         if not resp.success:
             raise RuntimeError(resp.result +': '+ resp.message)
+
+        if hasattr(resp, 'result') and isinstance(resp.result, dict) and 'nout' in resp.result:
+            resp.result = [resp.result['a%d'%i] for i in range(resp.result['nout'])]
+
         return resp
 
     def __getattr__(self, name):
@@ -510,9 +514,15 @@ class Method(object):
         # convert keyword arguments to arguments
         args += tuple(item for pair in zip(kwargs.keys(), kwargs.values()) for item in pair)
 
+        #now convert to a dict with string(num) keys because of the ambiguity
+        #of JSON wrt decoding [[1,2],[3,4]] (2 array args get decoded as a single
+        #matrix argument
+        nin = len(args)
+        args = {'a%d'%i:a for i,a in enumerate(args)}
+
         # build request
         so = ';'.join(saveout) + ';' if saveout else ''
-        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nout': nout, 'saveout': so}
+        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nin': nin, 'nout': nout, 'saveout': so}
 
         self.parent.log("REQ:     %r:"%req)
 
