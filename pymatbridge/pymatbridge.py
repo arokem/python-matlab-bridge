@@ -172,6 +172,7 @@ class Matlab(object):
         self.timeout = timeout
         self.capture_stdout = capture_stdout
         self._log = log
+        self._path_cache = None
 
         # determine the platform-specific options
         self.platform = platform if platform else sys.platform
@@ -207,6 +208,21 @@ class Matlab(object):
 
         """
         self.stop()
+
+    def _ensure_in_path(self, path):
+        if not os.path.isfile(path):
+            raise ValueError("not a valid matlab file: %s" % path)
+
+        path, filename = os.path.split(path)
+        funcname, ext = os.path.splitext(filename)
+
+        if self._path_cache is None:
+            self._path_cache = self.path().split(os.pathsep)
+        if path not in self._path_cache:
+            self.addpath(path)
+            self._path_cache.append(path)
+
+        return path,funcname
 
     def log(self, msg):
         if self._log:
