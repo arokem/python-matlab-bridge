@@ -443,7 +443,7 @@ class Matlab(object):
 
     def run_code(self, code, maxtime=None):
         try:
-            return {'result': self.eval(code), 'success': 'true', 'message': ''}
+            return {'result': self.evalin('base',code), 'success': 'true', 'message': ''}
         except RuntimeError as e:
             return {'result': '', 'success': 'false', 'message': e}
 
