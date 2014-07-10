@@ -445,6 +445,10 @@ class Matlab(object):
         path, funcname = self._ensure_in_path(func_path)
         return self.bind_method(funcname)(*args, **kwargs)
 
+    def run_script(self, script_path):
+        path, funcname = self._ensure_in_path(script_path)
+        self.evalin('base',"run('%s')" % funcname, nout=0)
+
     def run_code(self, code, maxtime=None):
         try:
             return {'result': self.evalin('base',code), 'success': 'true', 'message': ''}
