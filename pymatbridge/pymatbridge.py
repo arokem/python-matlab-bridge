@@ -438,9 +438,8 @@ class Matlab(object):
 
 
     def run_func(self, func_path, *args, **kwargs):
-        path, filename = os.path.split(func_path)
-        func, ext = filename.split('.')
-        return self.bind_method(func)(*args, **kwargs)
+        path, funcname = self._ensure_in_path(func_path)
+        return self.bind_method(funcname)(*args, **kwargs)
 
     def run_code(self, code, maxtime=None):
         try:
