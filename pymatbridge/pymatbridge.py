@@ -433,7 +433,7 @@ class Matlab(object):
         method_instance.__name__ = name
 
         # bind to the Matlab instance with a weakref (to avoid circular references)
-        setattr(self, name, types.MethodType(method_instance, weakref.ref(self), Matlab))
+        setattr(self, name, types.MethodType(method_instance, Matlab))
         return getattr(self, name)
 
 
@@ -469,11 +469,13 @@ class Method(object):
             name: The name of the Matlab function this represents
 
         """
-        self.name = name
         self._parent = parent
+        self.name = name
         self.doc = None
 
-    def __call__(self, unused_parent_weakref, *args, **kwargs):
+        self.parent.log("CREATED: %s" % self.name)
+
+    def __call__(self, _, *args, **kwargs):
         """Call a function with the supplied arguments in the Matlab subprocess
 
         Args:
