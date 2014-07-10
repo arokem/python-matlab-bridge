@@ -133,7 +133,8 @@ class MatlabDecoder(json.JSONDecoder):
 class Matlab(object):
     def __init__(self, matlab='matlab', socket_addr=None,
                  id='python-matlab-bridge', log=False, timeout=30,
-                 platform=None, startup_options=None):
+                 platform=None, startup_options=None,
+                 capture_stdout=True):
         """Execute functions in a Matlab subprocess via Python
 
         Matlab provides a pythonic interface for accessing functions in Matlab.
@@ -157,6 +158,8 @@ class Matlab(object):
                 available switches see:
                 Windows: http://www.mathworks.com.au/help/matlab/ref/matlabwindows.html
                 UNIX: http://www.mathworks.com.au/help/matlab/ref/matlabunix.html
+            capture_stdout: capture (hide) matlab stdout, such as disp()
+                and redirect to /dev/null/
 
         """
         self.MATLAB_FOLDER = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'matlab')
@@ -168,6 +171,7 @@ class Matlab(object):
         self.id = id
         self.log = log
         self.timeout = timeout
+        self.capture_stdout = capture_stdout
 
         # determine the platform-specific options
         self.platform = platform if platform else sys.platform
@@ -224,7 +228,9 @@ class Matlab(object):
 
         command = ' '.join(command)
         print('Starting Matlab subprocess', end='')
-        self.matlab_process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=DEVNULL)
+        self.matlab_process = subprocess.Popen(command, shell=True,
+                                               stdin=subprocess.PIPE,
+                                               stdout=DEVNULL if self.capture_stdout else None)
 
         # Start the client
         self.socket = self.context.socket(zmq.REQ)
