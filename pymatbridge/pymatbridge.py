@@ -169,9 +169,9 @@ class Matlab(object):
         self.matlab = matlab
         self.socket_addr = socket_addr
         self.id = id
-        self.log = log
         self.timeout = timeout
         self.capture_stdout = capture_stdout
+        self._log = log
 
         # determine the platform-specific options
         self.platform = platform if platform else sys.platform
@@ -207,6 +207,10 @@ class Matlab(object):
 
         """
         self.stop()
+
+    def log(self, msg):
+        if self._log:
+            print(msg)
 
     def start(self):
         """Start a new Matlab subprocess and attempt to connect to it via ZMQ
@@ -473,6 +477,8 @@ class Method(object):
                 U, S, V = matlab.svd(A, nout=3)
 
         """
+        self.parent.log("CALL:    %s" % self.name)
+
         # parse out number of output arguments
         nout  = kwargs.pop('nout', None)
         saveout = kwargs.pop('saveout',None)
@@ -490,6 +496,8 @@ class Method(object):
         # build request
         so = ';'.join(saveout) + ';' if saveout else ''
         req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nout': nout, 'saveout': so}
+
+        self.parent.log("REQ:     %r:"%req)
 
         resp  = self.parent.execute_in_matlab(req)
 
