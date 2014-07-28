@@ -114,7 +114,7 @@ class MatlabMagics(Magics):
         """
         Parse and evaluate a single line of matlab
         """
-        run_dict = self.Matlab.run_code(line, maxtime=self.Matlab.maxtime)
+        run_dict = self.Matlab.run_code(line)
 
         if run_dict['success'] == 'false':
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
@@ -127,8 +127,7 @@ class MatlabMagics(Magics):
         Set up a variable in Matlab workspace
         """
         run_dict = self.Matlab.run_func("pymat_set_variable.m",
-                                        {'name':name, 'value':value},
-                                        maxtime=self.Matlab.maxtime)
+                                        {'name':name, 'value':value})
 
         if run_dict['success'] == 'false':
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
