@@ -1,4 +1,4 @@
-function str = dump(value, varargin)
+function str = json_dump(value, varargin)
 %DUMP Encode matlab value into a JSON string.
 %
 % SYNOPSIS
@@ -64,7 +64,7 @@ function str = dump(value, varargin)
 %
 % See also json.load json.write
 
-  json.startup('WarnOnAddpath', true);
+  json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   obj = dump_data_(value, options);
   if isempty(options.indent)

@@ -1,4 +1,4 @@
-function write(value, filename, varargin)
+function json_write(value, filename, varargin)
 %WRITE Write a matlab value into a JSON file.
 %
 % SYNOPSIS
@@ -19,7 +19,7 @@ function write(value, filename, varargin)
   fid = 0;
   try
     fid = fopen(filename, 'w');
-    fprintf(fid, '%s', json.dump(value, varargin{:}));
+    fprintf(fid, '%s', json_dump(value, varargin{:}));
     fclose(fid);
   catch e
     if fid ~= 0, fclose(fid); end

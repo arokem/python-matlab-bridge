@@ -26,7 +26,7 @@ end
 
 if ~code_check
 	response.message = 'No code provided as POST parameter';
-	json_response = json.dump(response);
+	json_response = json_dump(response);
 	return;
 end
 
@@ -71,6 +71,6 @@ end
 
 response.content.code = code;
 
-json_response = json.dump(response);
+json_response = json_dump(response);
 
 end %function

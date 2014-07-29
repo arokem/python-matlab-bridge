@@ -1,4 +1,4 @@
-function value = load(str, varargin)
+function value = json_load(str, varargin)
 %LOAD Load matlab value from a JSON string.
 %
 % SYNOPSIS
@@ -57,7 +57,7 @@ function value = load(str, varargin)
 %
 % See also json.dump json.read
 
-  json.startup('WarnOnAddpath', true);
+  json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   singleton = false;
 

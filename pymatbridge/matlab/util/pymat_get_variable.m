@@ -17,7 +17,7 @@ end
 
 if ~varname_check
     response.message = 'No variable name provided as input argument';
-    json_response = json.dump(response);
+    json_response = json_dump(response);
     return
 end
 
@@ -26,7 +26,7 @@ varname = req.varname;
 
 response.var = evalin('base', varname);
 
-json_response = json.dump(response);
+json_response = json_dump(response);
 
 return
 end
