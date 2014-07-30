@@ -9,7 +9,6 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 
-import numpy as np
 import os, time
 import zmq
 import subprocess
@@ -171,7 +170,7 @@ class Matlab(object):
                 else:
                     return False
             except zmq.ZMQError:
-                np.disp(".", linefeed=False)
+                sys.stdout.write('.')
                 time.sleep(1)
                 if (time.time() - start_time > self.maxtime) :
                     print "Matlab session timed out after %d seconds" % (self.maxtime)
