@@ -92,6 +92,9 @@ class _Session(object):
         self.context = None
         self.socket = None
 
+    def _program_name(self):
+        raise NotImplemented
+
     def _preamble_code(self):
         return ["addpath(genpath('%s'))" % MATLAB_FOLDER]
 
@@ -111,7 +114,7 @@ class _Session(object):
     # Start server/client session and make the connection
     def start(self):
         # Start the MATLAB server in a new process
-        print "Starting MATLAB on ZMQ socket %s" % (self.socket_addr)
+        print "Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr)
         print "Send 'exit' command to kill the server"
         self._run_server()
 
@@ -124,10 +127,10 @@ class _Session(object):
 
         # Test if connection is established
         if self.is_connected():
-            print "MATLAB started and connected!"
+            print "%s started and connected!" % self._program_name()
             return True
         else:
-            print "MATLAB failed to start"
+            print "%s failed to start" % self._program_name()
             return False
 
     def _response(self, **kwargs):
@@ -140,7 +143,7 @@ class _Session(object):
     def stop(self):
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
-            print "MATLAB closed"
+            print "%s closed" % self._program_name()
 
         self.started = False
         return True
@@ -163,11 +166,12 @@ class _Session(object):
                 sys.stdout.write('.')
                 time.sleep(1)
                 if time.time() - start_time > self.maxtime:
-                    print "Matlab session timed out after %d seconds" % self.maxtime
+                    print "%s session timed out after %d seconds" % (self._program_name(), self.maxtime)
                     return False
 
     def is_function_processor_working(self):
-        result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER, {'echo': 'Matlab: Function processor is working!'})
+        result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER,
+                {'echo': '%s: Function processor is working!' % self._program_name()})
         return result['success'] == 'true'
 
     def _json_response(self, **kwargs):
@@ -237,6 +241,9 @@ class Matlab(_Session):
         super(Matlab, self).__init__(executable, socket_addr, id, log, maxtime,
                                      platform, startup_options)
 
+    def _program_name(self):
+        return 'MATLAB'
+
     def _execute_flag(self):
         return '-r'
 
@@ -281,6 +288,9 @@ class Octave(_Session):
             startup_options = '--silent --no-gui'
         super(Octave, self).__init__(executable, socket_addr, id, log, maxtime,
                                      platform, startup_options)
+
+    def _program_name(self):
+        return 'Octave'
 
     def _preamble_code(self):
         code = super(Octave, self)._preamble_code()
