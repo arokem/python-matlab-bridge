@@ -32,7 +32,7 @@ def as_complex(dct):
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
 
 
-class Session(object):
+class _Session(object):
     """
     A class for communicating with a MATLAB session. It provides the behavior
     common across different MATLAB implementations. You shouldn't instantiate
@@ -42,7 +42,37 @@ class Session(object):
     def __init__(self, executable, socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):
+        """
+        Initialize this thing.
 
+        Parameters
+        ----------
+
+        executable : str
+            A string that would start the session at the terminal.
+
+        socket_addr : str
+            A string that represents a valid ZMQ socket address, such as
+            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
+
+        id : str
+            An identifier for this instance of the pymatbridge.
+
+        log : bool
+            Whether to save a log file in some known location.
+
+        maxtime : float
+           The maximal time to wait for a response from the session (optional,
+           Default is 10 sec)
+
+        platform : string
+           The OS of the machine on which this is running. Per default this
+           will be taken from sys.platform.
+
+        startup_options : string
+           Command line options to include in the executable's invocation.
+           Optional; sensible defaults are used if this is not provided.
+        """
         self.started = False
         self.running = False
         self.executable = executable
@@ -159,7 +189,7 @@ class Session(object):
         return self._json_response(cmd='get_var', varname=varname)['var']
 
 
-class Matlab(Session):
+class Matlab(_Session):
     def __init__(self, executable='matlab', socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):
@@ -211,7 +241,7 @@ class Matlab(Session):
         return '-r'
 
 
-class Octave(Session):
+class Octave(_Session):
     def __init__(self, executable='octave', socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):
@@ -236,7 +266,7 @@ class Octave(Session):
             Whether to save a log file in some known location.
 
         maxtime : float
-           The maximal time to wait for a response from matlab (optional,
+           The maximal time to wait for a response from octave (optional,
            Default is 10 sec)
 
         platform : string
