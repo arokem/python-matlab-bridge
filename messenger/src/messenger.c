@@ -90,10 +90,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         if (!initialized) {
             if (!initialize(socket_addr)) {
-                p[0] = true;
+                p[0] = 1;
                 mexPrintf("Socket created at: %s\n", socket_addr);
             } else {
-                p[0] = false;
+                p[0] = 0;
                 mexErrMsgTxt("Socket creation failed.");
             }
         } else {
@@ -137,9 +137,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
         p = mxGetLogicals(plhs[0]);
 
         if (msglen == respond(msg_out, msglen)) {
-            p[0] = true;
+            p[0] = 1;
         } else {
-            p[0] = false;
+            p[0] = 0;
             mexErrMsgTxt("Failed to send message due to ZMQ error");
         }
 
