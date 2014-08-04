@@ -18,6 +18,9 @@ import time
 import types
 import weakref
 import zmq
+import tempfile
+import hashlib
+import shutil
 try:
     # Python 2
     basestring
@@ -199,6 +202,9 @@ class Matlab(object):
         self.bind_method('run',     unconditionally=True)
         self.bind_method('version', unconditionally=True)
 
+        #generate a temporary directory to run code in
+        self.tempdir_code = tempfile.mkdtemp(prefix='pymatlabridge',suffix='code')
+
     def __del__(self):
         """Forcibly cleanup resources
 
@@ -295,6 +301,8 @@ class Matlab(object):
         # finalize
         self.socket.close()
         self.started = False
+
+        shutil.rmtree(self.tempdir_code)
 
     def restart(self):
         """Restart the Matlab subprocess if the state becomes bad
@@ -447,13 +455,16 @@ class Matlab(object):
 
     def run_script(self, script_path):
         path, funcname = self._ensure_in_path(script_path)
-        self.evalin('base',"run('%s')" % funcname, nout=0)
+        return self.evalin('base',"run('%s')" % funcname, nout=0)
 
-    def run_code(self, code, maxtime=None):
-        try:
-            return {'result': self.evalin('base',code), 'success': 'true', 'message': ''}
-        except RuntimeError as e:
-            return {'result': '', 'success': 'false', 'message': e}
+    def run_code(self, code):
+        #write a temporary file
+        fn = os.path.join(self.tempdir_code,
+                          'code_' + hashlib.md5(code).hexdigest() + '.m')
+        if not os.path.isfile(fn):
+            with open(fn,'w') as f:
+                f.write(code)
+        return self.run_script(fn)
 
     def get_variable(self, varname, maxtime=None):
         return self.evalin('base',varname)
