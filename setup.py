@@ -1,17 +1,25 @@
 #!/usr/bin/env python
+"""Setup file for python-matlab-bridge"""
+
 import os
 import sys
-import glob
 import shutil
-from setuptools import setup
 
+# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
+# update it when the contents of directories change.
+if os.path.exists('MANIFEST'):
+    os.remove('MANIFEST')
 
-# ----------------------------------------------------------------------------
-# HELPERS
-# ----------------------------------------------------------------------------
-def read(file_name):
-  with open(os.path.join(os.path.dirname(__file__), file_name)) as f:
-    return f.read()
+from distutils.core import setup
+
+# Find the messenger binary file and copy it to /matlab folder.
+
+def copy_bin(bin_path):
+    if os.path.exists(bin_path):
+        shutil.copy(bin_path, "./pymatbridge/matlab")
+        return True
+    else:
+        return False
 
 if sys.platform == "win32":
     raise ValueError("pymatbridge does not work on win32")
@@ -19,58 +27,32 @@ else:
     for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
                       "./messenger/mexa64/messenger.mexa64",
                       "./messenger/mexw64/messenger.mexw64"]:
-      shutil.copy(messenger, 'pymatbridge/matlab')
-  
-# ----------------------------------------------------------------------------
-# SETUP
-# ----------------------------------------------------------------------------
-__version__ = '0.4.dev'
+        copy_bin(copy_this)
+        
+# Get version and release info, which is all stored in pymatbridge/version.py
+ver_file = os.path.join('pymatbridge', 'version.py')
+exec(open(ver_file).read())
 
-setup(
-    name = 'pymatbridge',
-    version = __version__,
-    platforms = 'OS Independent',
-    description = 'A package to call Matlab functions from Python',
-    long_description = read('README.md'),
-    maintainer = 'Ariel Rokem',
-    maintainer_email = 'arokem@gmail.com',
-    url = 'https://github.com/arokem/python-matlab-bridge',
-    download_url = 'https://github.com/arokem/python-matlab-bridge/archive/master.tar.gz',
-    license = 'BSD',
-    packages = [
-        'pymatbridge'
-    ],
-    install_requires = [
-        'numpy>=1.7.0',
-        'pyzmq>=13.0.0'
-    ],
-    entry_points = {
-        'console_scripts': [
-            'publish-notebook = pymatbridge.publish:main'
-        ]
-    },
-    package_data = {
-        'pymatbridge': [
-            'matlab/matlabserver.m',
-            'matlab/messenger.*',
-            'matlab/usrprog/*',
-            'matlab/util/*.m',
-            'matlab/util/json_v0.2.2/LICENSE',
-            'matlab/util/json_v0.2.2/README.md',
-            'matlab/util/json_v0.2.2/test/*',
-            'matlab/util/json_v0.2.2/+json/*.m',
-            'matlab/util/json_v0.2.2/+json/java/*',
-            'tests/*.py',
-            'examples/*.ipynb'
-        ]
-    },
-    classifiers = [
-        'Development Status :: 3 - Alpha',
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Topic :: Scientific/Engineering'
-    ]
-)
+opts = dict(name=NAME,
+            maintainer=MAINTAINER,
+            maintainer_email=MAINTAINER_EMAIL,
+            description=DESCRIPTION,
+            long_description=LONG_DESCRIPTION,
+            url=URL,
+            download_url=DOWNLOAD_URL,
+            license=LICENSE,
+            classifiers=CLASSIFIERS,
+            author=AUTHOR,
+            author_email=AUTHOR_EMAIL,
+            platforms=PLATFORMS,
+            version=VERSION,
+            packages=PACKAGES,
+            package_data=PACKAGE_DATA,
+            requires=REQUIRES,
+            scripts=BIN
+            )
+
+
+# Now call the actual setup function
+if __name__ == '__main__':
+    setup(**opts)

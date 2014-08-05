@@ -132,20 +132,3 @@ def convert_mfile(mfile, outfile=None):
     nbformat.write(nb, nbfile, format='ipynb')
     nbfile.close()
 
-
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description='Publish a matlab file (.m) as an interactive notebook (.ipynb)')
-
-    parser.add_argument('mfile', action='store', metavar='File', help='Matlab m-file (.m)')
-    parser.add_argument('--outfile', action='store', metavar='File',
-        help='Output notebook (.ipynb). Default: same name and location as the input file ', default=None)
-
-    params = parser.parse_args()
-
-    convert_mfile(params.mfile, params.outfile)
-
-if __name__ == '__main__':
-    main()
