@@ -20,7 +20,7 @@ function json_response = matlab_feval(req)
 
     if ~func_path_check
         response.message = 'No function given as func_path POST parameter';
-        json_response = json.dump(response);
+        json_response = json_dump(response);
         return
     end
 
@@ -35,7 +35,7 @@ function json_response = matlab_feval(req)
     response.success = 'true';
     response.message = 'Successfully completed request';
 
-    json_response = json.dump(response);
+    json_response = json_dump(response);
 
     return
 

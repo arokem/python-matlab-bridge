@@ -1,4 +1,4 @@
-function value = read(filename, varargin)
+function value = json_read(filename, varargin)
 %READ Load a matlab value from a JSON file.
 %
 % SYNOPSIS
@@ -19,7 +19,7 @@ function value = read(filename, varargin)
   fid = 0;
   try
     fid = fopen(filename, 'r');
-    value = json.load(fscanf(fid, '%c', inf));
+    value = json_load(fscanf(fid, '%c', inf));
     fclose(fid);
   catch e
     if fid ~= 0, fclose(fid); end

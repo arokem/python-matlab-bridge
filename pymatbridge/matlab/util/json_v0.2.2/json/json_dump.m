@@ -1,4 +1,4 @@
-function str = dump(value, varargin)
+function str = json_dump(value, varargin)
 %DUMP Encode matlab value into a JSON string.
 %
 % SYNOPSIS
@@ -64,7 +64,7 @@ function str = dump(value, varargin)
 %
 % See also json.load json.write
 
-  json.startup('WarnOnAddpath', true);
+  json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   obj = dump_data_(value, options);
   if isempty(options.indent)
@@ -95,11 +95,12 @@ end
 function obj = dump_data_(value, options)
 %DUMP_DATA_
   if ischar(value) && (isvector(value) || isempty(value))
-    obj = java.lang.String(value);
+    obj = javaObject('java.lang.String', value);
   elseif isempty(value) && isnumeric(value)
-    obj = org.json.JSONObject.NULL;
+    json_object = javaObject('org.json.JSONObject');
+    obj = json_object.NULL;
   elseif ~isscalar(value)
-    obj = org.json.JSONArray();
+    obj = javaObject('org.json.JSONArray');
 
     if ndims(value) > 2
       split_value = num2cell(value, 1:ndims(value)-1);
@@ -124,13 +125,13 @@ function obj = dump_data_(value, options)
       end
     end
   elseif iscell(value)
-    obj = org.json.JSONArray();
+    obj = javaObject('org.json.JSONArray');
     for i = 1:numel(value)
       obj.put(dump_data_(value{i}, options));
     end
   elseif isnumeric(value)
     if isreal(value)
-      obj = java.lang.Double(value);
+      obj = javaObject('java.lang.Double', value);
     % Encode complex number as a struct
     else
       complex_struct = struct;
@@ -139,9 +140,9 @@ function obj = dump_data_(value, options)
       obj = dump_data_(complex_struct, options);
     end
   elseif islogical(value)
-    obj = java.lang.Boolean(value);
+    obj = javaObject('java.lang.Boolean', value);
   elseif isstruct(value)
-    obj = org.json.JSONObject();
+    obj = javaObject('org.json.JSONObject');
     keys = fieldnames(value);
     for i = 1:length(keys)
       obj.put(keys{i},dump_data_(value.(keys{i}), options));

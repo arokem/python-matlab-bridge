@@ -1,4 +1,4 @@
-function value = load(str, varargin)
+function value = json_load(str, varargin)
 %LOAD Load matlab value from a JSON string.
 %
 % SYNOPSIS
@@ -57,7 +57,7 @@ function value = load(str, varargin)
 %
 % See also json.dump json.read
 
-  json.startup('WarnOnAddpath', true);
+  json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   singleton = false;
 
@@ -66,11 +66,11 @@ function value = load(str, varargin)
     error('json:invalidString','Invalid JSON string');
   end
   if str(1)=='{'
-    node = org.json.JSONObject(java.lang.String(str));
+    node = javaObject('org.json.JSONObject', javaObject('java.lang.String', str));
   else
     singleton = str(1) ~= '[' && str(end) ~= ']';
     if singleton, str = ['[',str,']']; end
-    node = org.json.JSONArray(java.lang.String(str));
+    node = javaObject('org.json.JSONArray', javaObject('java.lang.String', str));
   end
   value = parse_data_(node, options);
   if singleton, value = value{:}; end
@@ -119,7 +119,7 @@ function value = parse_data_(node, options)
         warning('json:fieldNameConflict', ...
                 'Field %s renamed to %s', field, safe_field);
       end
-      value.(safe_field) = parse_data_(node.get(java.lang.String(key)), ...
+      value.(safe_field) = parse_data_(node.get(javaObject('java.lang.String', key)), ...
                                        options);    
     end
     % Check if the struct just decoded represents a complex number
@@ -127,7 +127,8 @@ function value = parse_data_(node, options)
       complex_value = complex(value.real, value.imag);
       value = complex_value;
     end
-  elseif isa(node, 'org.json.JSONObject$Null')
+  % In MATLAB, nested classes end up with a $ in the name, in Octave it's a .
+  elseif isa(node, 'org.json.JSONObject$Null') || isa(node, 'org.json.JSONObject.Null')
     value = [];
   else
     error('json:typeError', 'Unknown data type: %s', class(node));

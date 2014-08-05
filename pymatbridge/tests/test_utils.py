@@ -1,8 +1,13 @@
+import os
+
 import pymatbridge as pymat
 import numpy.testing as npt
 
+def on_octave():
+    return bool(os.environ.get('USE_OCTAVE', False))
+
 def connect_to_matlab():
-    mlab = pymat.Matlab()
+    mlab = pymat.Octave() if on_octave() else pymat.Matlab()
     mlab.start()
     npt.assert_(mlab.is_connected(), msg = "connect_to_matlab(): Connection failed")
 

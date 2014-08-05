@@ -1,4 +1,4 @@
-function startup(varargin)
+function json_startup(varargin)
 %STARTUP Initialize runtime environment.
 %
 % SYNOPSIS
