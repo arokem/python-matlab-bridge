@@ -91,8 +91,8 @@ PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/util/json_v0.2.2/LICENSE",
                                 "matlab/util/json_v0.2.2/README.md",
                                 "matlab/util/json_v0.2.2/test/*",
-                                "matlab/util/json_v0.2.2/+json/*.m",
-                                "matlab/util/json_v0.2.2/+json/java/*",
+                                "matlab/util/json_v0.2.2/json/*.m",
+                                "matlab/util/json_v0.2.2/json/java/*",
                                 "tests/*.py", "examples/*.ipynb"]}
 
 REQUIRES = []
