@@ -73,7 +73,7 @@ function resp = call(req)
     % TODO: What should the default behaviour be?
     func = str2func(req.func);
     nout = req.nout;
-    [saveout nsaveout] = strsplit(req.saveout,';');
+    [saveout nsaveout] = regexp(req.saveout, '(?:;)+', 'split', 'match');
     if isempty(nout)
         try
             nout = min(abs(nargout(func)), 1);
