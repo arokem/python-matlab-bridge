@@ -10,6 +10,7 @@ import collections
 import functools
 import json
 import numpy as np
+import scipy.io
 import os
 import platform
 import subprocess
@@ -399,8 +400,21 @@ class Matlab(object):
         if not resp.success:
             raise RuntimeError(resp.result +': '+ resp.message)
 
+        self.log("RESP:     %r:"%resp)
+
         if hasattr(resp, 'result') and isinstance(resp.result, dict) and 'nout' in resp.result:
-            resp.result = [resp.result['a%d'%i] for i in range(resp.result['nout'])]
+            array_result = []
+            for i in range(resp.result['nout']):
+                try:
+                    array_result.append(resp.result['a%d'%i])
+                except KeyError:
+                    #passed as matlab array
+                    key = 'b%d'%i
+                    matname = os.path.join(resp['state']['tmp_mat_dir'], key+'.mat')
+                    val = scipy.io.loadmat(matname)['v']
+                    array_result.append(val)
+
+            resp.result = array_result
 
         return resp
 
@@ -532,14 +546,22 @@ class Method(object):
         #now convert to a dict with string(num) keys because of the ambiguity
         #of JSON wrt decoding [[1,2],[3,4]] (2 array args get decoded as a single
         #matrix argument
-        nin = len(args)
-        args = {'a%d'%i:a for i,a in enumerate(args)}
+        dargs = {}
+        for i,a in enumerate(args):
+            if isinstance(a,np.ndarray) and (a.nbytes > 1000):
+                key = 'b%d' % i
+                val = os.path.join(self.parent.tempdir_code,'%s.mat' % key)
+                scipy.io.savemat(val, {'v':a}, oned_as='row')
+            else:
+                key = 'a%d' % i
+                val = a
+            dargs[key] = val
 
         # build request
         so = ';'.join(saveout) + ';' if saveout else ''
-        req   = {'cmd': 'call', 'func': self.name, 'args': args, 'nin': nin, 'nout': nout, 'saveout': so}
+        req   = {'cmd': 'call', 'func': self.name, 'args': dargs, 'nin': len(dargs), 'nout': nout, 'saveout': so}
 
-        self.parent.log("REQ:     %r:"%req)
+        self.parent.log("REQ :     %r:"%req)
 
         resp  = self.parent.execute_in_matlab(req)
 

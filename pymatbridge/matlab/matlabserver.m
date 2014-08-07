@@ -13,6 +13,9 @@ function matlabserver(socket_address)
     json.startup
     messenger('init', socket_address);
 
+    state.tmp_mat_dir = tempname;
+    mkdir(state.tmp_mat_dir);
+
     while true
         % don't let any errors escape (and crash the server)
         try
@@ -29,7 +32,8 @@ function matlabserver(socket_address)
                     break;
 
                 case {'call'}
-                    resp = call(req);
+                    resp = call(req, state);
+                    resp.state = state;
                     json_resp = json.dump(resp);
                     messenger('respond', json_resp);
 
@@ -47,10 +51,13 @@ function matlabserver(socket_address)
             messenger('respond', json_resp);
         end
     end
+
+    rmdir(state.tmp_mat_dir, 's');
+
 end
 
 
-function resp = call(req)
+function resp = call(req, state)
 % CALL Call a Matlab function
 %
 % RESPONSE = CALL(REQUEST) calls Matlab's FEVAL function, intelligently
@@ -65,7 +72,15 @@ function resp = call(req)
     args = {};
     if req.nin > 0
         for i=1:req.nin
-            args{i} = req.args.(['a' num2str(i-1)]);
+            fn = num2str(i-1);
+            if isfield(req.args,['a' fn])
+                args{i} = req.args.(['a' num2str(i-1)]);
+            elseif isfield(req.args,['b' fn])
+                data = load(req.args.(['b' fn]), 'v');
+                args{i} = data.v;
+            else
+                throw(MException('MATLAB:matlabserver', ['Unrecognized field ' 'b' fn]));
+            end
         end
     end
 
@@ -97,7 +112,17 @@ function resp = call(req)
                 %at the python end
                 result_struct = struct('nout',nout);
                 for i=1:nout
-                    result_struct.(['a' num2str(i-1)]) = resp.result{i};
+                    v = resp.result{i};
+                    if isa(v,'numeric') & (numel(v) > 100)
+                        key = ['b' num2str(i-1)];
+                        val = fullfile(state.tmp_mat_dir, [key '.mat']);
+                        save(val,'v','-v6');
+                        clear v;
+                    else
+                        key = ['a' num2str(i-1)];
+                        val = v;
+                    end
+                    result_struct.(key) = val;
                 end
                 resp.result = result_struct;
             end
