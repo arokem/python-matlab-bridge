@@ -17,7 +17,6 @@ import tempfile
 from glob import glob
 from shutil import rmtree
 from getopt import getopt
-from urllib2 import URLError
 
 import numpy as np
 try:
@@ -37,6 +36,7 @@ from IPython.core.magic_arguments import (argument, magic_arguments,
 from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
 
 import pymatbridge as pymat
+from .compat import text_type
 
 
 class MatlabInterperterError(RuntimeError):
@@ -56,7 +56,7 @@ class MatlabInterperterError(RuntimeError):
         __str__ = __unicode__
     else:
         def __str__(self):
-            return unicode_to_str(unicode(self), 'utf-8')
+            return unicode_to_str(text_type(self), 'utf-8')
 
 
 
@@ -210,7 +210,7 @@ class MatlabMagics(Magics):
             else:
                 e_s = "There was an error running the code:\n %s"%code
                 result_dict = self.eval(code)
-        except URLError:
+        except:
             e_s += "\n-----------------------"
             e_s += "\nAre you sure Matlab is started?"
             raise RuntimeError(e_s)

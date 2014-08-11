@@ -1,4 +1,5 @@
 import pymatbridge as pymat
+from pymatbridge.compat import unichr
 import numpy.testing as npt
 import test_utils as tu
 
