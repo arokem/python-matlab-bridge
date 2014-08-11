@@ -114,8 +114,8 @@ class _Session(object):
     # Start server/client session and make the connection
     def start(self):
         # Start the MATLAB server in a new process
-        print "Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr)
-        print "Send 'exit' command to kill the server"
+        print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
+        print("Send 'exit' command to kill the server")
         self._run_server()
 
         # Start the client
@@ -127,15 +127,15 @@ class _Session(object):
 
         # Test if connection is established
         if self.is_connected():
-            print "%s started and connected!" % self._program_name()
+            print("%s started and connected!" % self._program_name())
             return True
         else:
-            print "%s failed to start" % self._program_name()
+            print("%s failed to start" % self._program_name())
             return False
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=ComplexEncoder)
-        self.socket.send(req)
+        self.socket.send_string(req)
         resp = self.socket.recv_string()
         return resp
 
@@ -143,7 +143,7 @@ class _Session(object):
     def stop(self):
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
-            print "%s closed" % self._program_name()
+            print("%s closed" % self._program_name())
 
         self.started = False
         return True
@@ -155,7 +155,7 @@ class _Session(object):
             return False
 
         req = json.dumps(dict(cmd="connect"), cls=ComplexEncoder)
-        self.socket.send(req)
+        self.socket.send_string(req)
 
         start_time = time.time()
         while True:
@@ -166,7 +166,7 @@ class _Session(object):
                 sys.stdout.write('.')
                 time.sleep(1)
                 if time.time() - start_time > self.maxtime:
-                    print "%s session timed out after %d seconds" % (self._program_name(), self.maxtime)
+                    print("%s session timed out after %d seconds" % (self._program_name(), self.maxtime))
                     return False
 
     def is_function_processor_working(self):
