@@ -210,6 +210,7 @@ class MatlabMagics(Magics):
             else:
                 e_s = "There was an error running the code:\n %s"%code
                 result_dict = self.eval(code)
+
         except URLError:
             e_s += "\n-----------------------"
             e_s += "\nAre you sure Matlab is started?"
@@ -224,19 +225,17 @@ class MatlabMagics(Magics):
 
         display_data = []
         if text_output and not args.silent:
-            display_data.append(('MatlabMagic.matlab',
-                                 {'text/plain':text_output}))
+            display_data.append({'text/plain':text_output})
 
         for imgf in imgfiles:
             if len(imgf):
                 # Store the path to the directory so that you can delete it
                 # later on:
                 image = open(imgf, 'rb').read()
-                display_data.append(('MatlabMagic.matlab',
-                                     {'image/png': image}))
+                display_data.append({'image/png': image})
 
-        for tag, disp_d in display_data:
-            publish_display_data(tag, disp_d)
+        for disp_d in display_data:
+            publish_display_data(disp_d)
 
         # Delete the temporary data files created by matlab:
         if len(data_dir):
