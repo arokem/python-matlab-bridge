@@ -1,5 +1,4 @@
-function res = test(args)
-% demonstration function; formerly known as 'test.m'
+function res = demo_func(args)
 
 	res = args.a + 1;
 	figure
