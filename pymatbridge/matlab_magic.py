@@ -27,6 +27,10 @@ except ImportError:
     no_io_str = "Must have scipy.io to perform i/o"
     no_io_str += "operations with the Matlab session"
 
+import IPython
+
+ipython_version = int(IPython.__version__[0])
+
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, cell_magic, line_magic,
                                 line_cell_magic, needs_local_scope)
@@ -224,14 +228,22 @@ class MatlabMagics(Magics):
 
         display_data = []
         if text_output and not args.silent:
-            display_data.append({'text/plain':text_output})
+            if ipython_version < 3:
+                display_data.append(('MatlabMagic.matlab',
+                                     {'text/plain':text_output}))
+            else:
+                display_data.append({'text/plain':text_output})
 
         for imgf in imgfiles:
             if len(imgf):
                 # Store the path to the directory so that you can delete it
                 # later on:
                 image = open(imgf, 'rb').read()
-                display_data.append({'image/png': image})
+                if ipython_version < 3:
+                    display_data.append(('MatlabMagic.matlab',
+                                         {'image/png':image}))
+                else:
+                    display_data.append({'image/png': image})
 
         for disp_d in display_data:
             publish_display_data(disp_d)
