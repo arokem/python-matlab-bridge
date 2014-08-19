@@ -20,18 +20,15 @@ while(1)
             break;
 
         case {'run_function'}
-            fhandle = str2func('pymat_feval');
-            resp = feval(fhandle, req);
+            resp = pymat_feval(req);
             messenger('respond', resp);
 
         case {'run_code'}
-            fhandle = str2func('pymat_eval');
-            resp = feval(fhandle, req);
+            resp = pymat_eval(req);
             messenger('respond', resp);
 
         case {'get_var'}
-            fhandle = str2func('pymat_get_variable');
-            resp = feval(fhandle, req);
+            resp = pymat_get_variable(req);
             messenger('respond', resp);
 
         otherwise
