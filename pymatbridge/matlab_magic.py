@@ -246,7 +246,10 @@ class MatlabMagics(Magics):
                     display_data.append({'image/png': image})
 
         for disp_d in display_data:
-            publish_display_data(disp_d)
+            if ipython_version < 3:
+                publish_display_data(disp_d[0], disp_d[1])
+            else:
+                publish_display_data(disp_d)
 
         # Delete the temporary data files created by matlab:
         if len(data_dir):
