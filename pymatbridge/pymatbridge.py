@@ -170,7 +170,7 @@ class _Session(object):
                     return False
 
     def is_function_processor_working(self):
-        result = self.run_func('%s/test_functions/test_sum.m' % MATLAB_FOLDER,
+        result = self.run_func('%s/usrprog/test_sum.m' % MATLAB_FOLDER,
                 {'echo': '%s: Function processor is working!' % self._program_name()})
         return result['success'] == 'true'
 

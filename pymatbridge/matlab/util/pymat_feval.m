@@ -1,6 +1,6 @@
 % Max Jaderberg 2011
 
-function json_response = matlab_feval(req)
+function json_response = pymat_feval(req)
 
     response.success = 'false';
     field_names = fieldnames(req);
