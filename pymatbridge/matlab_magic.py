@@ -130,8 +130,7 @@ class MatlabMagics(Magics):
         """
         Set up a variable in Matlab workspace
         """
-        run_dict = self.Matlab.run_func("pymat_set_variable.m",
-                                        {'name':name, 'value':value})
+        run_dict = self.Matlab.set_variable(name, value)
 
         if run_dict['success'] == 'false':
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
@@ -194,11 +193,9 @@ class MatlabMagics(Magics):
                         val = local_ns[input]
                     except KeyError:
                         val = self.shell.user_ns[input]
-
-                    # To make an array JSON serializable
-                    if (isinstance(val, np.ndarray)):
-                        val = val.tolist()
-
+                    # The _Session.set_variable function which this calls
+                    # should correctly detect numpy arrays and serialize them
+                    # as json correctly.
                     self.set_matlab_var(input, val)
 
             else:

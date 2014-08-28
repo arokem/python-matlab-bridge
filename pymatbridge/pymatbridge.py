@@ -14,12 +14,31 @@ import zmq
 import subprocess
 import sys
 import json
+from random import randint
 
-# JSON encoder extension to handle complex numbers
-class ComplexEncoder(json.JSONEncoder):
+try:
+    from numpy import ndarray, generic
+except ImportError:
+    class ndarray:
+        pass
+    generic = ndarray
+
+try:
+    from scipy.sparse import spmatrix
+except ImportError:
+    class spmatrix:
+        pass
+
+
+# JSON encoder extension to handle complex numbers and numpy arrays
+class PymatEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
+        if isinstance(obj, ndarray):
+            return obj.tolist()
+        if isinstance(obj, generic):
+            return obj.item()
         # Handle the default case
         return json.JSONEncoder.default(self, obj)
 
@@ -134,7 +153,7 @@ class _Session(object):
             return False
 
     def _response(self, **kwargs):
-        req = json.dumps(kwargs, cls=ComplexEncoder)
+        req = json.dumps(kwargs, cls=PymatEncoder)
         self.socket.send_string(req)
         resp = self.socket.recv_string()
         return resp
@@ -154,7 +173,7 @@ class _Session(object):
             time.sleep(2)
             return False
 
-        req = json.dumps(dict(cmd="connect"), cls=ComplexEncoder)
+        req = json.dumps(dict(cmd="connect"), cls=PymatEncoder)
         self.socket.send_string(req)
 
         start_time = time.time()
@@ -191,6 +210,24 @@ class _Session(object):
 
     def get_variable(self, varname):
         return self._json_response(cmd='get_var', varname=varname)['var']
+
+    def set_variable(self, varname, value):
+        if isinstance(value, spmatrix):
+            return self._set_sparse_variable(varname, value)
+        return self.run_func('pymat_set_variable.m',
+                             {'name': varname, 'value': value})
+
+    def _set_sparse_variable(self, varname, value):
+        value = value.todok()
+        prefix = 'pymatbridge_temp_sparse_%d_' % randint(0, 1000000)
+        self.set_variable(prefix + 'keys', value.keys())
+        # correct for 1-indexing in MATLAB
+        self.run_code('{0}keys = {0}keys + 1;'.format(prefix))
+        self.set_variable(prefix + 'values', value.values())
+        cmd = "{1} = sparse({0}keys(:, 1), {0}keys(:, 2), {0}values');"
+        result = self.run_code(cmd.format(prefix, varname))
+        self.run_code('clear {0}keys {0}values'.format(prefix))
+        return result
 
 
 class Matlab(_Session):
