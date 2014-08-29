@@ -14,7 +14,7 @@ import zmq
 import subprocess
 import sys
 import json
-from random import randint
+from uuid import uuid4
 
 try:
     from numpy import ndarray, generic
@@ -219,7 +219,7 @@ class _Session(object):
 
     def _set_sparse_variable(self, varname, value):
         value = value.todok()
-        prefix = 'pymatbridge_temp_sparse_%d_' % randint(0, 1000000)
+        prefix = 'pymatbridge_temp_sparse_%s_' % uuid4().hex
         self.set_variable(prefix + 'keys', value.keys())
         # correct for 1-indexing in MATLAB
         self.run_code('{0}keys = {0}keys + 1;'.format(prefix))
