@@ -112,7 +112,7 @@ same name. For example, to call the function jk in jk.m:
 you would call:
 
     res = mlab.run_func('path/to/jk.m', {'arg1': 3, 'arg2': 5})
-    print res['result']
+    print(es['result'])
 
 This would print `8`.
 
