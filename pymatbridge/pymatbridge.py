@@ -9,9 +9,11 @@ from __future__ import print_function
 import collections
 import functools
 import json
+import string
 import numpy as np
 import scipy.io
 import os
+import random
 import platform
 import subprocess
 import sys
@@ -22,6 +24,7 @@ import zmq
 import tempfile
 import hashlib
 import shutil
+import re
 try:
     # Python 2
     basestring
@@ -55,6 +58,27 @@ def chain(*iterables):
             for item in iterable:
                 yield item
 
+class ProxyVariable(object):
+    PROXY_RE = re.compile("__VAR=(?P<name>[a-zA-Z_]+[a-zA-Z0-9_]*)\|(?P<type>[a-zA-Z0-9[\]() ]+)")
+    def __init__(self, parent, desc):
+        self._parent = parent
+        self._desc = desc
+        self._info = self.PROXY_RE.match(desc).groupdict()
+        self.name = self._info['name']
+
+    def __call__(self):
+        parent = self._parent()
+        return parent.get_variable(self.name)
+
+    def __repr__(self):
+        return "<ProxyVariable %s>" % self._desc
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def matches(placeholder):
+        return ProxyVariable.PROXY_RE.match(placeholder) is not None
 
 class AttributeDict(dict):
     """A dictionary with attribute-like access
@@ -177,6 +201,7 @@ class Matlab(object):
         self.capture_stdout = capture_stdout
         self._log = log
         self._path_cache = None
+        self._name_cache = {}
 
         # determine the platform-specific options
         self.platform = platform if platform else sys.platform
@@ -197,11 +222,12 @@ class Matlab(object):
         # auto-generate some useful matlab builtins
         self.bind_method('exist',   unconditionally=True)
         self.bind_method('addpath', unconditionally=True)
-        self.bind_method('eval',    unconditionally=True)
+        self.bind_method('evalin',  unconditionally=True)
         self.bind_method('help',    unconditionally=True)
         self.bind_method('license', unconditionally=True)
         self.bind_method('run',     unconditionally=True)
         self.bind_method('version', unconditionally=True)
+        self.bind_method('assignin',unconditionally=True)
 
         #generate a temporary directory to run code in
         self.tempdir_code = tempfile.mkdtemp(prefix='pymatlabridge',suffix='code')
@@ -391,8 +417,8 @@ class Matlab(object):
 
         """
         # send the request
-        req = json.dumps(req, cls=MatlabEncoder)
-        self.socket.send(req)
+        reqs = json.dumps(req, cls=MatlabEncoder)
+        self.socket.send(reqs)
 
         # receive the response
         resp = self.socket.recv_string()
@@ -415,6 +441,18 @@ class Matlab(object):
                     array_result.append(val)
 
             resp.result = array_result
+        elif hasattr(resp, 'result') and isinstance(resp.result, (str, unicode)):
+            if req.get('saveout') and ProxyVariable.matches(resp.result):
+                proxies = []
+                #filter the last empty split match (there is a trialing ;)
+                for p in filter(len, resp.result.split(';')):
+                    proxies.append( ProxyVariable(weakref.ref(self), p) )
+
+                #sort according to the order of saveout
+                saveout = req['saveout'].split(';')
+                proxies.sort(key=lambda x: saveout.index(x.name))
+
+                resp.result = proxies[0] if len(proxies) == 1 else proxies
 
         return resp
 
@@ -480,8 +518,26 @@ class Matlab(object):
                 f.write(code)
         return self.run_script(fn)
 
+    def proxy_variable(self, varname):
+        name = '__VAR=' + varname + '|' + \
+               self.evalin('base','class(%s)' % varname) + \
+               '(' + self.evalin('base','mat2str(size(%s))' % varname) + ')'
+        return ProxyVariable(weakref.ref(self), name)
+
     def get_variable(self, varname, maxtime=None):
-        return self.evalin('base',varname)
+        #str(varname) converts proxyvariables to their name
+        return self.evalin('base',str(varname))
+
+    def set_variable(self, varname, var):
+        self.assignin('base',varname,var)
+        return self.proxy_variable(varname)
+
+    def varname(self, prefix='', postfix=''):
+        while True:
+            s = prefix + ''.join(random.choice(string.ascii_uppercase) for _ in range(10)) + postfix
+            if s not in self._name_cache:
+                self._name_cache[s] = True
+                return s
 
 
 # ----------------------------------------------------------------------------
@@ -552,6 +608,9 @@ class Method(object):
                 key = 'b%d' % i
                 val = os.path.join(self.parent.tempdir_code,'%s.mat' % key)
                 scipy.io.savemat(val, {'v':a}, oned_as='row')
+            elif isinstance(a,ProxyVariable):
+                key = 'p%d' % i
+                val = a.name
             else:
                 key = 'a%d' % i
                 val = a

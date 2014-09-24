@@ -78,6 +78,8 @@ function resp = call(req, state)
             elseif isfield(req.args,['b' fn])
                 data = load(req.args.(['b' fn]), 'v');
                 args{i} = data.v;
+            elseif isfield(req.args,['p' fn])
+                args{i} = evalin('base',req.args.(['p' fn]));
             else
                 throw(MException('MATLAB:matlabserver', ['Unrecognized field ' 'b' fn]));
             end
