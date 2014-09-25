@@ -235,7 +235,7 @@ class MatlabMagics(Magics):
             if len(imgf):
                 # Store the path to the directory so that you can delete it
                 # later on:
-                image = open(imgf, 'rb').read().decode('utf-8')
+                image = open(imgf, 'rb').read()
                 if ipython_version < 3:
                     display_data.append(('MatlabMagic.matlab',
                                          {'image/png':image}))

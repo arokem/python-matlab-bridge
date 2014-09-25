@@ -31,7 +31,7 @@ else:
         
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
-exec(open(ver_file).read().decode('utf-8'))
+exec(open(ver_file).read())
 
 opts = dict(name=NAME,
             maintainer=MAINTAINER,
