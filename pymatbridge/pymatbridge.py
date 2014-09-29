@@ -159,6 +159,9 @@ class MatlabDecoder(json.JSONDecoder):
 # MATLAB
 # ----------------------------------------------------------------------------
 class Matlab(object):
+
+    STRING_IS_FUNCTION = re.compile("[\w\s%]*function.*")
+
     def __init__(self, matlab='matlab', socket_addr=None,
                  id='python-matlab-bridge', log=False, timeout=30,
                  platform=None, startup_options=None,
@@ -500,7 +503,6 @@ class Matlab(object):
         setattr(self, name, types.MethodType(method_instance, Matlab))
         return getattr(self, name)
 
-
     def run_func(self, func_path, *args, **kwargs):
         path, funcname = self._ensure_in_path(func_path)
         return self.bind_method(funcname)(*args, **kwargs)
@@ -509,14 +511,18 @@ class Matlab(object):
         path, funcname = self._ensure_in_path(script_path)
         return self.evalin('base',"run('%s')" % funcname, nout=0)
 
-    def run_code(self, code):
+    def run_code(self, code, *args, **kwargs):
         #write a temporary file
         fn = os.path.join(self.tempdir_code,
                           'code_' + hashlib.md5(code).hexdigest() + '.m')
         if not os.path.isfile(fn):
             with open(fn,'w') as f:
                 f.write(code)
-        return self.run_script(fn)
+
+        if self.STRING_IS_FUNCTION.match(code):
+            return self.run_func(fn, *args, **kwargs)
+        else:
+            return self.run_script(fn)
 
     def proxy_variable(self, varname):
         name = '__VAR=' + varname + '|' + \
