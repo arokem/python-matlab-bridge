@@ -32,18 +32,41 @@ are listed below.
 If you specified a prefix when installing zmq, the library file should be located at the
 same prefix location.
 
-After the library file is located, you need to add it to dynamic loader path on your 
-machine. On MacOS, you can do this by adding the following line to your .bash_profile:
+The pymatbridge MEX extension needs to be able to locate the zmq library. If it's in a
+standard location, you may not need to do anything; if not, there are two ways to
+accomplish this:
+
+#### Using the dynamic loader path
+
+One option is to set an environment variable which will point the loader to the right
+directory.
+
+On MacOS, you can do this by adding the following line to your .bash_profile (or similar
+file for your shell):
 
 	export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
 
-On Linux, add the following line to your .bash_profile:
+On Linux, add the following line to your .bash_profile (or similar file for your shell):
 
 	export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
 
 On Windows, add the install location of libzmq.dll to the PATH environment variable.
 On Windows 7+, typing "environment variables" into the start menu will bring up the
 apporpriate Control Panel links.
+
+#### Pointing the binary at the right place
+
+Another option is to modify the MEX binary to point to the right location. This is
+preferable in that it doesn't change loader behavior for other libraries than just
+the pymatbridge messenger.
+
+On MacOS, you can do this from the root of the pymatbridge code with:
+
+	install_name_tool -change /usr/local/lib/libzmq.3.dylib <Path to your zmq lib directory>/libzmq.3.dylib messenger/maci64/messenger.mexmaci64
+
+On Linux, you can add it to the RPATH:
+
+        patchelf --set-rpath <Path to your zmq lib directory> messenger/mexa64/messenger.mexa64
 	
 ### Install pyzmq
 After step 1 is finished, please grab the latest version of 
