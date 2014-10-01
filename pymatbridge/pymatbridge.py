@@ -7,6 +7,7 @@ own Matlab subprocess.
 """
 from __future__ import print_function
 import collections
+import contextlib
 import functools
 import json
 import string
@@ -545,6 +546,20 @@ class Matlab(object):
                 self._name_cache[s] = True
                 return s
 
+    @contextlib.contextmanager
+    def fig(self, destination, name=None):
+        dirname,figname = os.path.split(destination)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        if name is not None:
+            f = self.figure()
+        else:
+            f = self.figure('Name',str(name))
+
+        yield f
+
+        self.saveas(f, destination)
 
 # ----------------------------------------------------------------------------
 # MATLAB METHOD
