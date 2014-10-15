@@ -547,7 +547,7 @@ class Matlab(object):
                 return s
 
     @contextlib.contextmanager
-    def fig(self, destination, name=None):
+    def fig(self, destination, name=None, driver=None):
         dirname,figname = os.path.split(destination)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -559,7 +559,10 @@ class Matlab(object):
 
         yield f
 
-        self.saveas(f, destination)
+        if driver is not None:
+            self.saveas(f, destination, driver)
+        else:
+            self.saveas(f, destination)
 
 # ----------------------------------------------------------------------------
 # MATLAB METHOD
