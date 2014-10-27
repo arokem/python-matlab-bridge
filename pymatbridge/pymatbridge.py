@@ -208,8 +208,12 @@ class _Session(object):
     def run_code(self, code):
         return self._json_response(cmd='run_code', code=code)
 
-    def get_variable(self, varname):
-        return self._json_response(cmd='get_var', varname=varname)['var']
+    def get_variable(self, varname, default=None):
+        response = self._json_response(cmd='get_var', varname=varname)
+        if response['exists']:
+            return response['var']
+        else:
+            return default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
