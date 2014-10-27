@@ -35,8 +35,14 @@ class TestGetVariable:
 
 
     # Try to get a non-existent variable
-    # This one will always fail now since the matlab function cannot handle this situation
-#    def test_nonexistent_var(self):
-#        self.mlab.run_code("clear")
+    def test_nonexistent_var(self):
+        self.mlab.run_code("clear")
 
-#        npt.assert_equal(self.mlab.get_variable('a'), unicode("456345.3453"))
+        npt.assert_equal(self.mlab.get_variable('a'), None)
+
+
+    # Try to get a non-existent variable with default
+    def test_nonexistent_var_default(self):
+        self.mlab.run_code("clear")
+
+        npt.assert_equal(self.mlab.get_variable('a', 'some_val'), 'some_val')
