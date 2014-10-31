@@ -115,7 +115,9 @@ class _Session(object):
         raise NotImplemented
 
     def _preamble_code(self):
-        return ["addpath(genpath('%s'))" % MATLAB_FOLDER]
+        return ["warning('off','all')",
+                "addpath(genpath('%s'))" % MATLAB_FOLDER,
+                "warning('on', 'all')"]
 
     def _execute_flag(self):
         raise NotImplemented
