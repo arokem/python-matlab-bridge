@@ -25,7 +25,7 @@ if platform.startswith('win32'):
 # Open the configure file and start parsing
 config = open(os.path.join(messenger_dir, 'local.cfg'), 'r')
 
-for line in config.decode('utf-8'):
+for line in config:
     path = line.split('=')
 
     if path[0] == "MATLAB_BIN":
@@ -47,8 +47,7 @@ for line in config.decode('utf-8'):
         lib_path = path[1].rstrip('\r\n')
         if lib_path == "":
             raise ValueError("Could not find zmq library. Please add its path to local.cfg")
-
-	print("zmq library found in " + lib_path)
+        print("zmq library found in " + lib_path)
 
 config.close()
 
@@ -56,11 +55,11 @@ config.close()
 if platform == 'win32':
     extcmd = '"' + matlab_bin + "\\mexext.bat" + '"'
     check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
-    extension = check_extension.stdout.readline().rstrip('\r\n')
+    extension = check_extension.stdout.readline().decode('utf-8').rstrip('\r\n')
 else:
     extcmd = matlab_bin + "/mexext"
     check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
-    extension = check_extension.stdout.readline().rstrip('\r\n')
+    extension = check_extension.stdout.readline().decode('utf-8').rstrip('\r\n')
 
 print("Building messenger." + extension + " ...")
 
