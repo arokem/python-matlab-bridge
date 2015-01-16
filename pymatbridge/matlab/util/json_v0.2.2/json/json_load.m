@@ -127,6 +127,11 @@ function value = parse_data_(node, options)
       complex_value = complex(value.real, value.imag);
       value = complex_value;
     end
+    % Check if the struct just decoded represents a numpy array
+    if isfield(value,'ndarray') && isfield(value, 'shape')
+      arr = typecast(unicode2native(value.data, 'latin-1'), 'double')
+      value = reshape(arr, value.shape);
+    end
   % In MATLAB, nested classes end up with a $ in the name, in Octave it's a .
   elseif isa(node, 'org.json.JSONObject$Null') || isa(node, 'org.json.JSONObject.Null')
     value = [];

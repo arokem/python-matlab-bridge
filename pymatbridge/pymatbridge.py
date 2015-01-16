@@ -36,7 +36,11 @@ class PymatEncoder(json.JSONEncoder):
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
         if isinstance(obj, ndarray):
-            return obj.tolist()
+            if obj.size > 100:
+                return {'ndarray': True, 'shape': list(obj.shape),
+                        'data': obj.astype(float).tobytes().encode('latin-1')}
+            else:
+                return obj.tolist()
         if isinstance(obj, generic):
             return obj.item()
         # Handle the default case
