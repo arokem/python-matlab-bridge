@@ -62,7 +62,7 @@ class TestMagic:
         # Get the result back to Python
         self.ip.run_cell_magic('matlab', '-o actual', 'actual = res')
 
-        self.ip.run_cell("expected = np.array([2, 4, 6])")
+        self.ip.run_cell("expected = np.array([[2., 4., 6.]])")
         npt.assert_almost_equal(self.ip.user_ns['actual'],
                                 self.ip.user_ns['expected'], decimal=7)
 
@@ -82,7 +82,7 @@ class TestMagic:
     # Matlab struct type should be converted to a Python dict
     def test_struct(self):
         self.ip.run_cell('num = 2.567')
-        self.ip.run_cell('num_array = np.array([1.2,3.4,5.6])')
+        self.ip.run_cell('num_array = np.array([1.2,3.4,5.6]).reshape(3,1)')
         self.ip.run_cell('str = "Hello World"')
         self.ip.run_cell_magic('matlab', '-i num,num_array,str -o obj',
                                 'obj.num = num;obj.num_array = num_array;obj.str = str;')
