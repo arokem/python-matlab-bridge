@@ -19,7 +19,7 @@ import json
 from uuid import uuid4
 
 try:
-    from numpy import ndarray, generic, float64
+    from numpy import ndarray, generic, float64, array, frombuffer
 except ImportError:
     class ndarray:
         pass
@@ -38,11 +38,12 @@ class PymatEncoder(json.JSONEncoder):
         if isinstance(obj, complex):
             return {'real':obj.real, 'imag':obj.imag}
         if isinstance(obj, ndarray):
-            if obj.size > 100:
-                return {'ndarray': True, 'shape': obj.shape,
-                        'data': codecs.encode(obj.astype(float64).tobytes(), 'base64').decode('utf-8')}
-            else:
-                return obj.tolist()
+            shape = obj.shape
+            if len(shape) == 1:
+                shape = (obj.shape[0], 1)
+            data = codecs.encode(obj.astype(float64).tobytes(), 'base64')
+            return {'ndarray': True, 'shape': shape,
+                    'data': data.decode('utf-8')}
         if isinstance(obj, generic):
             return obj.item()
         # Handle the default case
@@ -52,6 +53,12 @@ class PymatEncoder(json.JSONEncoder):
 def as_complex(dct):
     if 'real' in dct and 'imag' in dct:
         return complex(dct['real'], dct['imag'])
+    if 'ndarray' in dct and 'data' in dct:
+        data = dct['data'].encode('utf-8')
+        shape = dct['shape'].encode('utf-8')
+        value = frombuffer(codecs.decode(data, 'base64'), float64)
+        shape = frombuffer(codecs.decode(shape, 'base64'), float64)
+        return value.reshape(shape)
     return dct
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
