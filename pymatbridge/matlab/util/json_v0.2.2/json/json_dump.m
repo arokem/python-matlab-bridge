@@ -101,7 +101,7 @@ function obj = dump_data_(value, options)
   elseif ~isscalar(value)
     obj = javaObject('org.json.JSONArray');
 
-    if strcmp(class(value), 'double')
+    if strcmp(class(value), 'double') && ~iscell(value)
         % encode double arrays as a struct
         double_struct = struct;
         double_struct.ndarray = 1;
