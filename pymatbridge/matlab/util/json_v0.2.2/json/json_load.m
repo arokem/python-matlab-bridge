@@ -122,15 +122,19 @@ function value = parse_data_(node, options)
       value.(safe_field) = parse_data_(node.get(javaObject('java.lang.String', key)), ...
                                        options);    
     end
-    % Check if the struct just decoded represents a complex number
-    if isfield(value,'real') && isfield(value, 'imag')
+    % Check if the struct just decoded represents an array or complex number
+    if isfield(value,'ndarray') && isfield(value, 'shape')
+      if isfield(value, 'data')
+          arr = typecast(base64decode(value.data), 'double');
+      else
+          r = typecast(base64decode(value.real), 'double');
+          im = typecast(base64decode(value.imag), 'double');
+          arr = complex(r, im);
+      end
+      value = reshape(arr, value.shape);
+    elseif isfield(value,'real') && isfield(value, 'imag')
       complex_value = complex(value.real, value.imag);
       value = complex_value;
-    end
-    % Check if the struct just decoded represents a numpy array
-    if isfield(value,'ndarray') && isfield(value, 'shape')
-      arr = typecast(base64decode(value.data), 'double');
-      value = reshape(arr, value.shape);
     end
   % In MATLAB, nested classes end up with a $ in the name, in Octave it's a .
   elseif isa(node, 'org.json.JSONObject$Null') || isa(node, 'org.json.JSONObject.Null')

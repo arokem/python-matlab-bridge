@@ -101,12 +101,17 @@ function obj = dump_data_(value, options)
   elseif ~isscalar(value)
     obj = javaObject('org.json.JSONArray');
 
-    if isnumeric(value) && isreal(value)
+    if isnumeric(value)
         % encode arrays as a struct
         double_struct = struct;
         double_struct.ndarray = 1;
         value = double(value);
-        double_struct.data = base64encode(typecast(value(:), 'uint8'));
+        if isreal(value) 
+          double_struct.data = base64encode(typecast(value(:), 'uint8'));
+        else
+          double_struct.real = base64encode(typecast(real(value(:)), 'uint8'));
+          double_struct.imag = base64encode(typecast(imag(value(:)), 'uint8'));
+        end
         double_struct.shape = base64encode(typecast(size(value), 'uint8'));
         obj = dump_data_(double_struct, options);
     elseif ndims(value) > 2
