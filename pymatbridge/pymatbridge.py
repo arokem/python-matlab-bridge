@@ -19,7 +19,7 @@ import json
 from uuid import uuid4
 
 try:
-    from numpy import ndarray, generic, float64, array, frombuffer
+    from numpy import ndarray, generic, float64, frombuffer, asfortranarray
 except ImportError:
     class ndarray:
         pass
@@ -34,20 +34,28 @@ except ImportError:
 
 # JSON encoder extension to handle complex numbers and numpy arrays
 class PymatEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, complex):
-            return {'real':obj.real, 'imag':obj.imag}
-        if isinstance(obj, ndarray):
+            return {'real': obj.real, 'imag': obj.imag}
+        if isinstance(obj, ndarray) and not obj.dtype.kind == 'c':
             shape = obj.shape
             if len(shape) == 1:
                 shape = (obj.shape[0], 1)
-            data = codecs.encode(obj.astype(float64).tobytes(), 'base64')
-            return {'ndarray': True, 'shape': shape,
-                    'data': data.decode('utf-8')}
+            if obj.flags.c_contiguous:
+                obj = obj.T
+            elif not obj.flags.f_contiguous:
+                obj = asfortranarray(obj)
+            data = obj.astype(float64).tobytes()
+            data = codecs.encode(data, 'base64').decode('utf-8')
+            return {'ndarray': True, 'shape': shape, 'data': data}
+        elif isinstance(obj, ndarray):
+            return obj.tolist()
         if isinstance(obj, generic):
             return obj.item()
         # Handle the default case
         return json.JSONEncoder.default(self, obj)
+
 
 # JSON decoder for complex numbers
 def as_complex(dct):
@@ -58,7 +66,7 @@ def as_complex(dct):
         shape = dct['shape'].encode('utf-8')
         value = frombuffer(codecs.decode(data, 'base64'), float64)
         shape = frombuffer(codecs.decode(shape, 'base64'), float64)
-        return value.reshape(shape)
+        return value.reshape(shape, order='F')
     return dct
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
