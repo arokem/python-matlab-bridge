@@ -9,7 +9,9 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 
-import os, time
+import os
+import time
+import codecs
 import zmq
 import subprocess
 import sys
@@ -17,7 +19,7 @@ import json
 from uuid import uuid4
 
 try:
-    from numpy import ndarray, generic
+    from numpy import ndarray, generic, float64
 except ImportError:
     class ndarray:
         pass
@@ -37,8 +39,8 @@ class PymatEncoder(json.JSONEncoder):
             return {'real':obj.real, 'imag':obj.imag}
         if isinstance(obj, ndarray):
             if obj.size > 100:
-                return {'ndarray': True, 'shape': list(obj.shape),
-                        'data': obj.astype(float).tobytes().encode('latin-1')}
+                return {'ndarray': True, 'shape': obj.shape,
+                        'data': codecs.encode(obj.astype(float64).tobytes(), 'base64').decode('utf-8')}
             else:
                 return obj.tolist()
         if isinstance(obj, generic):
