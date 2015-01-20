@@ -36,7 +36,7 @@ def encode_ndarray(obj):
     """Write a numpy array and its shape to base64 buffers"""
     shape = obj.shape
     if len(shape) == 1:
-        shape = (obj.shape[0], 1)
+        shape = (1, obj.shape[0])
     if obj.flags.c_contiguous:
         obj = obj.T
     elif not obj.flags.f_contiguous:
