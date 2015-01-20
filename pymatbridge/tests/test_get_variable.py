@@ -30,8 +30,8 @@ class TestGetVariable:
         self.mlab.run_code("a = [1 2 3 4]")
         self.mlab.run_code("b = [1 2; 3 4]")
 
-        npt.assert_equal(self.mlab.get_variable('a'), [1,2,3,4])
-        npt.assert_equal(self.mlab.get_variable('b'), [[1,2],[3,4]])
+        npt.assert_equal(self.mlab.get_variable('a'), [[1.,2.,3.,4.]])
+        npt.assert_equal(self.mlab.get_variable('b'), [[1.,2.],[3.,4.]])
 
 
     # Try to get a non-existent variable

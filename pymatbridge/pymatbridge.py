@@ -9,7 +9,9 @@ Part of Python-MATLAB-bridge, Max Jaderberg 2012
 This is a modified version using ZMQ, Haoxing Zhang Jan.2014
 """
 
-import os, time
+import os
+import time
+import codecs
 import zmq
 import subprocess
 import sys
@@ -17,7 +19,7 @@ import json
 from uuid import uuid4
 
 try:
-    from numpy import ndarray, generic
+    from numpy import ndarray, generic, float64, frombuffer, asfortranarray
 except ImportError:
     class ndarray:
         pass
@@ -30,21 +32,61 @@ except ImportError:
         pass
 
 
+def encode_ndarray(obj):
+    """Write a numpy array and its shape to base64 buffers"""
+    shape = obj.shape
+    if len(shape) == 1:
+        shape = (1, obj.shape[0])
+    if obj.flags.c_contiguous:
+        obj = obj.T
+    elif not obj.flags.f_contiguous:
+        obj = asfortranarray(obj)
+    data = obj.astype(float64).tobytes()
+    data = codecs.encode(data, 'base64').decode('utf-8')
+    return data, shape
+
+
 # JSON encoder extension to handle complex numbers and numpy arrays
 class PymatEncoder(json.JSONEncoder):
+
     def default(self, obj):
-        if isinstance(obj, complex):
-            return {'real':obj.real, 'imag':obj.imag}
-        if isinstance(obj, ndarray):
+        if isinstance(obj, ndarray) and obj.dtype.kind in 'uif':
+            data, shape = encode_ndarray(obj)
+            return {'ndarray': True, 'shape': shape, 'data': data}
+        elif isinstance(obj, ndarray) and obj.dtype.kind == 'c':
+            real, shape = encode_ndarray(obj.real.copy())
+            imag, _ = encode_ndarray(obj.imag.copy())
+            return {'ndarray': True, 'shape': shape,
+                    'real': real, 'imag': imag}
+        elif isinstance(obj, ndarray):
             return obj.tolist()
-        if isinstance(obj, generic):
+        elif isinstance(obj, complex):
+            return {'real': obj.real, 'imag': obj.imag}
+        elif isinstance(obj, generic):
             return obj.item()
         # Handle the default case
         return json.JSONEncoder.default(self, obj)
 
-# JSON decoder for complex numbers
-def as_complex(dct):
-    if 'real' in dct and 'imag' in dct:
+
+def decode_arr(data):
+    """Extract a numpy array from a base64 buffer"""
+    data = data.encode('utf-8')
+    return frombuffer(codecs.decode(data, 'base64'), float64)
+
+
+# JSON decoder for arrays and complex numbers
+def decode_pymat(dct):
+    if 'ndarray' in dct and 'data' in dct:
+        value = decode_arr(dct['data'])
+        shape = decode_arr(dct['shape'])
+        return value.reshape(shape, order='F')
+    elif 'ndarray' in dct and 'imag' in dct:
+        real = decode_arr(dct['real'])
+        imag = decode_arr(dct['imag'])
+        shape = decode_arr(dct['shape'])
+        data = real + 1j * imag
+        return data.reshape(shape, order='F')
+    elif 'real' in dct and 'imag' in dct:
         return complex(dct['real'], dct['imag'])
     return dct
 
@@ -201,7 +243,7 @@ class _Session(object):
     def _json_response(self, **kwargs):
         if self.running:
             time.sleep(0.05)
-        return json.loads(self._response(**kwargs), object_hook=as_complex)
+        return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None):

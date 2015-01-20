@@ -62,7 +62,7 @@ class TestMagic:
         # Get the result back to Python
         self.ip.run_cell_magic('matlab', '-o actual', 'actual = res')
 
-        self.ip.run_cell("expected = np.array([2, 4, 6])")
+        self.ip.run_cell("expected = np.array([[2., 4., 6.]])")
         npt.assert_almost_equal(self.ip.user_ns['actual'],
                                 self.ip.user_ns['expected'], decimal=7)
 
@@ -88,5 +88,5 @@ class TestMagic:
                                 'obj.num = num;obj.num_array = num_array;obj.str = str;')
         npt.assert_equal(isinstance(self.ip.user_ns['obj'], dict), True)
         npt.assert_equal(self.ip.user_ns['obj']['num'], self.ip.user_ns['num'])
-        npt.assert_equal(self.ip.user_ns['obj']['num_array'], self.ip.user_ns['num_array'])
+        npt.assert_equal(self.ip.user_ns['obj']['num_array'].squeeze(), self.ip.user_ns['num_array'])
         npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
