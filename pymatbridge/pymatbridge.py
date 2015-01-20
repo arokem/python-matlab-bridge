@@ -75,7 +75,7 @@ def decode_arr(data):
 
 
 # JSON decoder for arrays and complex numbers
-def as_complex(dct):
+def decode_pymat(dct):
     if 'ndarray' in dct and 'data' in dct:
         value = decode_arr(dct['data'])
         shape = decode_arr(dct['shape'])
@@ -243,7 +243,7 @@ class _Session(object):
     def _json_response(self, **kwargs):
         if self.running:
             time.sleep(0.05)
-        return json.loads(self._response(**kwargs), object_hook=as_complex)
+        return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None):

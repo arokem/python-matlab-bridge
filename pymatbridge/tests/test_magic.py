@@ -82,11 +82,11 @@ class TestMagic:
     # Matlab struct type should be converted to a Python dict
     def test_struct(self):
         self.ip.run_cell('num = 2.567')
-        self.ip.run_cell('num_array = np.array([1.2,3.4,5.6]).reshape(3,1)')
+        self.ip.run_cell('num_array = np.array([1.2,3.4,5.6])')
         self.ip.run_cell('str = "Hello World"')
         self.ip.run_cell_magic('matlab', '-i num,num_array,str -o obj',
                                 'obj.num = num;obj.num_array = num_array;obj.str = str;')
         npt.assert_equal(isinstance(self.ip.user_ns['obj'], dict), True)
         npt.assert_equal(self.ip.user_ns['obj']['num'], self.ip.user_ns['num'])
-        npt.assert_equal(self.ip.user_ns['obj']['num_array'], self.ip.user_ns['num_array'])
+        npt.assert_equal(self.ip.user_ns['obj']['num_array'].squeeze(), self.ip.user_ns['num_array'])
         npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
