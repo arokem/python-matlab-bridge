@@ -14,7 +14,7 @@ if platform.startswith('linux'):
     messenger_dir = 'mexa64'
 elif platform.startswith('darwin'):
     messenger_dir = 'mexmaci64'
-if platform.startswith('win32'):
+elif platform.startswith('win32'):
     # We further need to differniate 32 from 64 bit:
     maxint = sys.maxint()
     if maxint == 9223372036854775807:
