@@ -1,7 +1,10 @@
 # Python-MATLAB(R) Bridge and ipython matlab_magic
 
 A python interface to call out to [Matlab(R)](http://mathworks.com). Original
-implementation by [Max Jaderberg](http://www.maxjaderberg.com/).
+implementation by [Max Jaderberg](http://www.maxjaderberg.com/). His original
+repo of the project can be found [here](
+https://github.com/jaderberg/python-matlab-bridge), but please note that the
+development of the two repositories has significantly diverged.
 
 This implementation also includes an [IPython](http://ipython.org) `matlab_magic`
 extension, which provides a simple interface for weaving python and
