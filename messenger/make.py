@@ -72,5 +72,8 @@ else:
 make_cmd = '"' + matlab_bin + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq ./src/messenger.c"
 os.system(make_cmd)
 
-shutil.move('messenger.%s'%extension, messenger_dir)
+messenger_exe = 'messenger.%s'%extension
+messenger_loc = os.path.join(messenger_dir, messenger_exe)
+
+shutil.move(messenger_exe, messenger_loc)
 
