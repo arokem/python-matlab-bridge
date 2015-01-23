@@ -25,7 +25,8 @@ elif platform.startswith('win32'):
 # Open the configure file and start parsing
 config = open(os.path.join(messenger_dir, 'local.cfg'), 'r')
 
-for line in config.decode('utf-8'):
+for line in config:
+    line = line.decode('utf-8')
     path = line.split('=')
 
     if path[0] == "MATLAB_BIN":
