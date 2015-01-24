@@ -1,11 +1,10 @@
 language: python
 sudo: false
-
 deploy:
   provider: pypi
-  user: foo
+  user: arokem
   password:
-    secure: bar
+    secure: AB7BnrkNOTQWXUNiaShedbIEBay+5JbulAxUHY4vEMdiI68bPLYOrIDxuT/lIfWrrgXUuicbJcWUxt6zpdUEQrEfYB6pNhrosZv4+R5HZu1FHY7EfOfsyHxb2wnezKuIEVXdevAmIg5rYNeTPcdl/CFm4xQGfdc4a3eyT5cJT58=
   on:
     tags: true
     repo: arokem/python-matlab-bridge
