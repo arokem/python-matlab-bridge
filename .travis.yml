@@ -10,3 +10,5 @@ deploy:
     repo: arokem/python-matlab-bridge
     # until this is fixed: https://github.com/travis-ci/travis-ci/issues/1675
     all_branches: true
+script:
+  - true
