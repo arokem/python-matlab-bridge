@@ -25,7 +25,13 @@ elif platform.startswith('win32'):
 # Open the configure file and start parsing
 with open(os.path.join(messenger_dir, 'local.cfg'), 'r') as config:
     for line in config:
-        line = line.decode('utf-8')
+        try:
+            line = line.decode('utf-8')
+
+        # python3
+        except:
+            pass
+
         path = line.split('=')
 
         if path[0] == "MATLAB_BIN":
@@ -55,13 +61,13 @@ with open(os.path.join(messenger_dir, 'local.cfg'), 'r') as config:
 # Get the extension
 if platform == 'win32':
     extcmd = '"' + matlab_bin + "\\mexext.bat" + '"'
-    check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
-    extension = check_extension.stdout.readline().rstrip('\r\n')
 else:
     extcmd = matlab_bin + "/mexext"
-    check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
-    extension = check_extension.stdout.readline().rstrip('\r\n')
 
+check_extension = subprocess.Popen(extcmd, stdout = subprocess.PIPE)
+extension = check_extension.stdout.read()
+extension = extension.decode('utf-8').rstrip('\r\n')
+    
 print("Building messenger." + extension + " ...")
 
 # Build the mex file
@@ -70,6 +76,7 @@ if platform == 'win32':
 else:
     mex = "/mex"
 make_cmd = '"' + matlab_bin + mex + '"' + " -O -I" + header_path + " -L" + lib_path + " -lzmq ./src/messenger.c"
+print(make_cmd)
 os.system(make_cmd)
 
 messenger_exe = 'messenger.%s'%extension
