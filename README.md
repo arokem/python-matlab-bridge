@@ -13,12 +13,21 @@ Matlab code together (requires ipython > 0.13).
 
 ## Installation
 
-Pymatbridge communicates with Matlab using zeromq. So before installing
+`pymatbridge` can be installed from [PyPI][1]:
+
+```
+$ pip install pymatbridge  # sudo may be needed
+```
+
+`pymatbridge` communicates with Matlab using zeromq. So before installing
 pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
 library and [pyzmq](http://zeromq.org/bindings:python) installed on your
 machine. If you intend to use the Matlab magic extension, you'll also need
-[IPython](http://ipython.org/install.html).  To make pymatbridge work properly,
-please follow the following steps.
+[IPython](http://ipython.org/install.html). Note that IPython notebooks
+also depend on `pyzmq` so if you have IPython notebooks installed, you likely
+have `pyzmq` already.
+
+To make pymatbridge work properly, please follow the following steps.
 
 ### Install zmq library
 Please refer to the [official guide](http://zeromq.org/intro:get-the-software) on how to
@@ -207,4 +216,4 @@ Python communicates with Matlab via an ad-hoc zmq messenger. This is inherently
 insecure, as the Matlab instance may be directed to perform arbitrary system
 calls. There is no sandboxing of any kind. Use this code at your own risk.
 
-
+[1]: https://pypi.python.org/pypi/pymatbridge
