@@ -49,6 +49,7 @@ opts = dict(name=NAME,
             packages=PACKAGES,
             package_data=PACKAGE_DATA,
             requires=REQUIRES,
+            extras_require=EXTRAS_REQUIRE,
             scripts=BIN
             )
 
