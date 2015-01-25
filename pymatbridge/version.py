@@ -95,5 +95,5 @@ PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/util/json_v0.2.2/json/java/*",
                                 "tests/*.py", "examples/*.ipynb"]}
 
-REQUIRES = []
+REQUIRES = ['pyzmq']
 BIN=['scripts/publish-notebook']
