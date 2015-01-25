@@ -28,7 +28,7 @@ varname = req.varname;
 % if the var doesn't exist in the workspace, inform adequately
 expr = strcat('exist(''', varname, ''',''var'')');
 var_exists = evalin('base', expr);
-if ~var_exists;
+if ~var_exists
     response.exists = false;
     response.var = '';
 else
