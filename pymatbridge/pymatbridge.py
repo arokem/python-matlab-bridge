@@ -2,11 +2,36 @@
 pymatbridge
 ===========
 
-This is a module for communicating and running
+This is a module for communicating and running Matlab from within python
 
-Part of Python-MATLAB-bridge, Max Jaderberg 2012
+Example
+-------
 
-This is a modified version using ZMQ, Haoxing Zhang Jan.2014
+>>> import pymatbridge
+>>> m = pymatbridge.Matlab()
+>>> m.start()
+Starting MATLAB on ZMQ socket ipc:///tmp/pymatbridge
+Send 'exit' command to kill the server
+.MATLAB started and connected!
+True
+>>> 
+                            < M A T L A B (R) >
+                  Copyright 1984-2014 The MathWorks, Inc.
+                   R2014b (8.4.0.150421) 64-bit (maci64)
+                             September 15, 2014
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+Socket created at: ipc:///tmp/pymatbridge
+
+>>> 
+>>> m.run_code('a=1;')
+{'content': {'stdout': '', 'datadir': '/private/tmp/MatlabData/', 'code': 'a=1;', 'figures': []}, 'success': 'true'}
+>>> m.get_variable('a')
+1
+
 """
 
 import os
