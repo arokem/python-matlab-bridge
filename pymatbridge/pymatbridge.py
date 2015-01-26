@@ -66,7 +66,12 @@ def encode_ndarray(obj):
         obj = obj.T
     elif not obj.flags.f_contiguous:
         obj = asfortranarray(obj)
-    data = obj.astype(float64).tobytes()
+
+    try:
+        data = obj.astype(float64).tobytes()
+    except AttributeError:
+        data = obj.astype(float64).tostring()
+
     data = codecs.encode(data, 'base64').decode('utf-8')
     return data, shape
 
