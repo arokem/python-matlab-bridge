@@ -161,30 +161,13 @@ class MatlabMagics(Magics):
     @needs_local_scope
     @line_cell_magic
     def matlab(self, line, cell=None, local_ns=None):
-        """
+        "Execute code in matlab."
 
-        Execute code in matlab
-
-        """
         args = parse_argstring(self.matlab, line)
-
-        # arguments 'code' in line are prepended to
-        # the cell lines
-
-        if cell is None:
-            code = ''
-            return_output = True
-            line_mode = True
-        else:
-            code = cell
-            return_output = False
-            line_mode = False
-
-        code = ' '.join(args.code) + code
+        code = line if cell is None else ' '.join(args.code) + cell
 
         if local_ns is None:
             local_ns = {}
-
 
         if args.input:
             if has_io:
@@ -201,26 +184,19 @@ class MatlabMagics(Magics):
             else:
                 raise RuntimeError(no_io_str)
 
-        text_output = ''
-        #imgfiles = []
-
         try:
-            if line_mode:
-                e_s = "There was an error running the code:\n %s"%line
-                result_dict = self.eval(line)
-            else:
-                e_s = "There was an error running the code:\n %s"%code
-                result_dict = self.eval(code)
+            result_dict = self.eval(code)
         except MatlabInterperterError:
             raise
         except:
-            e_s += "\n-----------------------"
-            e_s += "\nAre you sure Matlab is started?"
-            raise RuntimeError(e_s)
+            raise RuntimeError('\n'.join([
+                "There was an error running the code:",
+                code,
+                "-----------------------",
+                "Are you sure Matlab is started?",
+            ]))
 
-
-
-        text_output += result_dict['content']['stdout']
+        text_output = result_dict['content']['stdout']
         # Figures get saved by matlab in reverse order...
         imgfiles = result_dict['content']['figures'][::-1]
         data_dir = result_dict['content']['datadir']
