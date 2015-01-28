@@ -211,6 +211,8 @@ class MatlabMagics(Magics):
             else:
                 e_s = "There was an error running the code:\n %s"%code
                 result_dict = self.eval(code)
+        except MatlabInterperterError:
+            raise
         except:
             e_s += "\n-----------------------"
             e_s += "\nAre you sure Matlab is started?"
