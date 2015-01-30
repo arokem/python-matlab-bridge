@@ -31,9 +31,14 @@ $ pip install pyzmq
 ```
 
 If you intend to use the Matlab magic extension, you'll also need
-[IPython](http://ipython.org/install.html). Note that IPython notebooks
-also depend on `pyzmq` so if you have IPython notebooks installed, you likely
-have `pyzmq` already.
+[IPython](http://ipython.org/install.html), as well as
+[Scipy](http://scipy.org/) and [Numpy](http://www.numpy.org/). These can be
+installed from PyPI, or using distributions such as
+[Anaconda](https://store.continuum.io/cshop/anaconda/) or [Enthought
+Canopy](https://store.enthought.com/downloads/) 
+
+Note thatIPython notebooks also depend on `pyzmq` so if you have IPython notebooks
+installed, you likely have `pyzmq` already.
 
 ## Usage
 
