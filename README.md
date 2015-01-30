@@ -1,5 +1,7 @@
 # Python-MATLAB(R) Bridge and IPython `matlab` magic
 
+[![Join the chat at https://gitter.im/arokem/python-matlab-bridge](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arokem/python-matlab-bridge?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A python interface to call out to [Matlab(R)](http://mathworks.com). Original
 implementation by [Max Jaderberg](http://www.maxjaderberg.com/). His original
 repo of the project can be found [here](
