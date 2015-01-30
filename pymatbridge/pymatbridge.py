@@ -284,10 +284,7 @@ class _Session(object):
 
     def get_variable(self, varname, default=None):
         response = self._json_response(cmd='get_var', varname=varname)
-        if response['exists']:
-            return response['var']
-        else:
-            return default
+        return response['var'] if response['exists'] else default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
