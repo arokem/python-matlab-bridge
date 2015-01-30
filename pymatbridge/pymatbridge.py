@@ -165,7 +165,6 @@ class _Session(object):
            Optional; sensible defaults are used if this is not provided.
         """
         self.started = False
-        self.running = False
         self.executable = executable
         self.socket_addr = socket_addr
         self.id = id
@@ -271,8 +270,6 @@ class _Session(object):
         return result['success'] == 'true'
 
     def _json_response(self, **kwargs):
-        if self.running:
-            time.sleep(0.05)
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
