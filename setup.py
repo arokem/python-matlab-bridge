@@ -24,14 +24,13 @@ def copy_bin(bin_path):
 if sys.platform == "win32":
     # We have a win64 messenger, so we need to figure out if this is 32 or 64
     # bit Windows:
-    maxint = sys.maxint()
-    elif maxint == 2147483647:
+    if not platform.machine().endswith('64'):
         raise ValueError("pymatbridge does not work on win32")
-else:
-    for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
-                      "./messenger/mexa64/messenger.mexa64",
-                      "./messenger/mexw64/messenger.mexw64"]:
-        copy_bin(copy_this)
+
+for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
+                  "./messenger/mexa64/messenger.mexa64",
+                  "./messenger/mexw64/messenger.mexw64"]:
+    copy_bin(copy_this)
         
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
