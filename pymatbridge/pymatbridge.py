@@ -189,9 +189,10 @@ class _Session(object):
         # suppress warnings while loading the path, in the case of
         # overshadowing a built-in function on a newer version of
         # Matlab (e.g. isrow)
-        return ["warning('off','all')",
+        return ["old_warning_state = warning('off','all')",
                 "addpath(genpath('%s'))" % MATLAB_FOLDER,
-                "warning('on', 'all')"]
+                "warning(old_warning_state)",
+                "clear old_warning_state"]
 
     def _execute_flag(self):
         raise NotImplemented
