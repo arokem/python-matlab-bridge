@@ -409,6 +409,7 @@ class Octave(_Session):
         code = super(Octave, self)._preamble_code()
         if self.log:
             code.append("diary('./pymatbridge/logs/octavelog_%s.txt')" % self.id)
+        code.append("set(0, 'defaultfigurevisible', 'off');")
         return code
 
     def _execute_flag(self):
