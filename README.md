@@ -117,12 +117,6 @@ As with `pymatbridge.Matlab`, you can override this by specifying the
 
 There are a few caveats to note about Octave support:
 
-* `pymatbridge.Matlab` invokes MATLAB with command line options that suppress
-the display of figures -- these are instead saved to image files, accessible
-via `results['content']['figures']` in the results dict. No such mechanism
-seems to be available for Octave, so when drawing figures you'll likely see
-them briefly pop up and disappear. (If you know of a way around this, feel
-free to send a pull request).
 * The zmq messenger used to communicate with the Octave session is written in C
 and needs to be compiled. For MATLAB various prebuilt binaries are provided
 and added to MATLAB's runtime path, but as of this writing the same isn't
