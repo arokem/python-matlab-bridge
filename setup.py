@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Setup file for python-matlab-bridge"""
 
+import platform
 import os
 import sys
 import shutil
