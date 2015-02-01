@@ -22,7 +22,11 @@ def copy_bin(bin_path):
         return False
 
 if sys.platform == "win32":
-    raise ValueError("pymatbridge does not work on win32")
+    # We have a win64 messenger, so we need to figure out if this is 32 or 64
+    # bit Windows:
+    maxint = sys.maxint()
+    elif maxint == 2147483647:
+        raise ValueError("pymatbridge does not work on win32")
 else:
     for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
                       "./messenger/mexa64/messenger.mexa64",
