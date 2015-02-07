@@ -53,7 +53,8 @@ def encode_ndarray(obj):
         obj = obj.T
     elif not obj.flags.f_contiguous:
         obj = asfortranarray(obj)
-
+    else:
+        obj = obj.T
     try:
         data = obj.astype(float64).tobytes()
     except AttributeError:

@@ -1,5 +1,4 @@
 import os
-
 import pymatbridge as pymat
 import numpy.testing as npt
 
@@ -18,3 +17,6 @@ def stop_matlab(mlab):
     mlab.stop()
     npt.assert_(not mlab.is_connected(), msg = "stop_matlab(): Disconnection failed")
 
+
+    
+    
