@@ -14,12 +14,13 @@ end
 
 for fig=1:length(figHandles)
     h = figHandles(fig);
-    res_fmt = sprintf('-r%d', res);
-    driver = sprintf('-d%s', fmt)
     % We will put all of these in the temp dir with an identifying root, so
     % that we can grab all of them into the cell (and they will be deleted
     % immediately after being rendered).
-    filename = fullfile(figdir, ['MatlabFig', sprintf('%03d.%s', fig, fmt)]);
+    filename = ['MatlabFig', sprintf('%03d.%s', fig, fmt)];
+    filename = fullfile(figdir, filename);
+    res_fmt = sprintf('-r%d', res);
+    driver = sprintf('-d%s', fmt);
     print(h, filename, driver, res_fmt);
     % Once you've saved it, close it, so it doesn't get dragged into the
     % scope of other cells
