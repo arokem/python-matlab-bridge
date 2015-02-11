@@ -102,6 +102,7 @@ class MatlabMagics(Magics):
 
         self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
+        self._initialized = False
         self.pyconverter = pyconverter
 
     def __del__(self):
@@ -153,6 +154,11 @@ class MatlabMagics(Magics):
         )
 
     @argument(
+        '-S', '--size', action='store', default='512,384',
+        help='Pixel size of plots, "width,height.'
+    )
+
+    @argument(
         'code',
         nargs='*',
         )
@@ -168,6 +174,15 @@ class MatlabMagics(Magics):
 
         if local_ns is None:
             local_ns = {}
+
+        if not self._initialized:
+            self._initialized = True
+            self.eval("set(0, 'defaultfigurepaperunits', 'inches');")
+            self.eval("set(0, 'defaultfigureunits', 'inches');")
+
+        width, height = args.size.split(',')
+        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])\n;"
+        code = size % (int(width) / 150., int(height) / 150.) + code
 
         if args.input:
             if has_io:
