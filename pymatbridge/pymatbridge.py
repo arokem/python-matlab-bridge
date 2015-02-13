@@ -213,12 +213,11 @@ class _Session(object):
         # Test if connection is established
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
+            self.set_default_plot_size()
             return True
         else:
             print("%s failed to start" % self._program_name())
             return False
-
-        self.set_default_plot_size()
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
