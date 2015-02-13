@@ -169,6 +169,7 @@ class _Session(object):
 
         self.context = None
         self.socket = None
+        self._initialized = False
 
     def _program_name(self):
         raise NotImplemented
@@ -259,17 +260,25 @@ class _Session(object):
                 {'echo': '%s: Function processor is working!' % self._program_name()})
         return result['success'] == 'true'
 
+    def _initialize(self):
+        self._initialized = True
+        self.set_default_plot_size()
+
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None):
+        if not self._initialized:
+            self._initialize()
         return self._json_response(cmd='run_function',
                                    func_path=func_path,
                                    func_args=func_args)
 
     # Run some code in Matlab command line provide by a string
     def run_code(self, code):
+        if not self._initialized:
+            self._initialize()
         return self._json_response(cmd='run_code', code=code)
 
     def get_variable(self, varname, default=None):
@@ -281,6 +290,13 @@ class _Session(object):
             return self._set_sparse_variable(varname, value)
         return self.run_func('pymat_set_variable.m',
                              {'name': varname, 'value': value})
+
+    def set_default_plot_size(self, width=512, height=384):
+        code = "set(0, 'defaultfigurepaperunits', 'inches');\n"
+        code += "set(0, 'defaultfigureunits', 'inches');\n"
+        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])\n;"
+        code += size % (int(width) / 150., int(height) / 150.)
+        self.run_code(code)
 
     def _set_sparse_variable(self, varname, value):
         value = value.todok()

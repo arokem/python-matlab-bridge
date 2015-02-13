@@ -175,14 +175,8 @@ class MatlabMagics(Magics):
         if local_ns is None:
             local_ns = {}
 
-        if not self._initialized:
-            self._initialized = True
-            self.eval("set(0, 'defaultfigurepaperunits', 'inches');")
-            self.eval("set(0, 'defaultfigureunits', 'inches');")
-
         width, height = args.size.split(',')
-        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])\n;"
-        code = size % (int(width) / 150., int(height) / 150.) + code
+        self.Matlab.set_default_plot_size(width, height)
 
         if args.input:
             if has_io:
