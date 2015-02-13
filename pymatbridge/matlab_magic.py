@@ -5,11 +5,6 @@ matlab_magic
 
 Magic command interface for interactive work with Matlab(R) via the pymatbridge
 
-
-Note
-====
-Thanks to Max Jaderberg for his work on pymatbridge.
-
 """
 
 import sys, os
