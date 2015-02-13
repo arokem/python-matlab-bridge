@@ -102,7 +102,6 @@ class MatlabMagics(Magics):
 
         self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
-        self._initialized = False
         self.pyconverter = pyconverter
 
     def __del__(self):

@@ -169,7 +169,6 @@ class _Session(object):
 
         self.context = None
         self.socket = None
-        self._initialized = False
 
     def _program_name(self):
         raise NotImplemented
@@ -219,6 +218,8 @@ class _Session(object):
             print("%s failed to start" % self._program_name())
             return False
 
+        self.set_default_plot_size()
+
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
         self.socket.send_string(req)
@@ -260,25 +261,17 @@ class _Session(object):
                 {'echo': '%s: Function processor is working!' % self._program_name()})
         return result['success'] == 'true'
 
-    def _initialize(self):
-        self._initialized = True
-        self.set_default_plot_size()
-
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None):
-        if not self._initialized:
-            self._initialize()
         return self._json_response(cmd='run_function',
                                    func_path=func_path,
                                    func_args=func_args)
 
     # Run some code in Matlab command line provide by a string
     def run_code(self, code):
-        if not self._initialized:
-            self._initialize()
         return self._json_response(cmd='run_code', code=code)
 
     def get_variable(self, varname, default=None):
