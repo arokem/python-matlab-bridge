@@ -263,15 +263,35 @@ class _Session(object):
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
-    # Run a function in Matlab and return the result
     def run_func(self, func_path, func_args=None, nargout=1):
+        """Run a function in Matlab and return the result.
+
+        Parameters
+        ----------
+        func_path: str
+            Name of function to run or a path to an m-file.
+        func_args: object
+            Function args to send to the function.
+        nargout: int
+            Desired number of return arguments.
+
+        Returns
+        -------
+        Result dictionary with keys: 'message', 'result', and 'success'
+        """
         return self._json_response(cmd='run_function',
                                    func_path=func_path,
                                    func_args=func_args,
                                    nargout=nargout)
 
-    # Run some code in Matlab command line provide by a string
     def run_code(self, code):
+        """Run some code in Matlab command line provide by a string
+
+        Parameters
+        ----------
+        code : str
+            Code to send for evaluation.
+        """
         return self._json_response(cmd='run_code', code=code)
 
     def get_variable(self, varname, default=None):
