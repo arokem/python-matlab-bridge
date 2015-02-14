@@ -1,5 +1,6 @@
 import pymatbridge as pymat
 from pymatbridge.compat import text_type
+import numpy as np
 import numpy.testing as npt
 import test_utils as tu
 
@@ -63,3 +64,16 @@ class TestRunCode:
             npt.assert_equal(message, "'this_is_nonsense' undefined near line 1 column 1")
         else:
             npt.assert_equal(message, "Undefined function or variable 'this_is_nonsense'.")
+
+
+    def test_nargout(self):
+        res  = self.mlab.run_func('svd', np.array([[1,2],[1,3]]), nargout=3)
+        U, S, V = res['result']
+        npt.assert_almost_equal(U, np.array([[-0.57604844, -0.81741556],
+                                             [-0.81741556, 0.57604844]]))
+        
+        npt.assert_almost_equal(S, np.array([[ 3.86432845, 0.],
+                                             [ 0., 0.25877718]]))
+
+        npt.assert_almost_equal(V, np.array([[-0.36059668, -0.93272184],
+                                             [-0.93272184, 0.36059668]]))
