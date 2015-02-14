@@ -30,8 +30,9 @@ function json_response = pymat_feval(req)
     else
         arguments = '';
     end
-
-    response.result = run_dot_m(func_path, arguments);
+    
+    [resp{1:nargout}] = run_dot_m(func_path, arguments);
+    response.result = resp; 
     response.success = 'true';
     response.message = 'Successfully completed request';
 
