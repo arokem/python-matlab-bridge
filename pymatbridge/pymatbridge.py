@@ -264,10 +264,11 @@ class _Session(object):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
     # Run a function in Matlab and return the result
-    def run_func(self, func_path, func_args=None):
+    def run_func(self, func_path, func_args=None, nargout=1):
         return self._json_response(cmd='run_function',
                                    func_path=func_path,
-                                   func_args=func_args)
+                                   func_args=func_args,
+                                   nargout=nargout)
 
     # Run some code in Matlab command line provide by a string
     def run_code(self, code):
