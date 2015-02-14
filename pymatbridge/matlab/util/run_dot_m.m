@@ -1,12 +1,13 @@
 % Max Jaderberg 2011
 
-function varargout = run_dot_m( file_to_run, arguments, nout )
-%RUN_DOT_M Runs the given .m file with the argument struct given
-%   For exmaple run_dot_m('/path/to/function.m', args);
-%   args is a struct containing the arguments. function.m must take only
-%   one parameter, the argument structure
+function varargout = run_dot_m( func_to_run, arguments, nout )
+%RUN_DOT_M Runs the given function or .m file with the arguments given
+%   and the nout selected
+%   For exmaple run_dot_m('/path/to/function.m', args, 1);
+%   arguments can be a scalar, as cell, or struct containing the arguments.
+%   If it is a struct, func_to_run must take only one parameter, the argument structure
 
-    [dname, func_name, ext] = fileparts(file_to_run);
+    [dname, func_name, ext] = fileparts(func_to_run);
 
     if size(ext)
         if ~strcmp(ext, '.m')
@@ -20,6 +21,10 @@ function varargout = run_dot_m( file_to_run, arguments, nout )
         addpath(dname);
     end
 
-    [varargout{1:nout}] = feval(func_name, arguments);
+    if iscell(arguments)
+        [varargout{1:nout}] = feval(func_name, arguments{:});
+    else
+        [varargout{1:nout}] = feval(func_name, arguments);
+    end
 
 end
