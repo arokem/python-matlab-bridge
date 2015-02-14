@@ -213,6 +213,7 @@ class _Session(object):
         # Test if connection is established
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
+            self.set_default_plot_size()
             return True
         else:
             print("%s failed to start" % self._program_name())
@@ -281,6 +282,13 @@ class _Session(object):
             return self._set_sparse_variable(varname, value)
         return self.run_func('pymat_set_variable.m',
                              {'name': varname, 'value': value})
+
+    def set_default_plot_size(self, width=512, height=384):
+        code = "set(0, 'defaultfigurepaperunits', 'inches');\n"
+        code += "set(0, 'defaultfigureunits', 'inches');\n"
+        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])\n;"
+        code += size % (int(width) / 150., int(height) / 150.)
+        self.run_code(code)
 
     def _set_sparse_variable(self, varname, value):
         value = value.todok()

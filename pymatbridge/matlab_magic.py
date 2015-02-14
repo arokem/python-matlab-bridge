@@ -148,6 +148,11 @@ class MatlabMagics(Magics):
         )
 
     @argument(
+        '-S', '--size', action='store', default='512,384',
+        help='Pixel size of plots, "width,height.'
+    )
+
+    @argument(
         'code',
         nargs='*',
         )
@@ -163,6 +168,9 @@ class MatlabMagics(Magics):
 
         if local_ns is None:
             local_ns = {}
+
+        width, height = args.size.split(',')
+        self.Matlab.set_default_plot_size(width, height)
 
         if args.input:
             if has_io:
