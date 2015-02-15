@@ -1,23 +1,29 @@
+import os
+
 import pymatbridge as pymat
-import IPython
+from IPython.testing.globalipapp import get_ipython
 
 import numpy.testing as npt
+
 
 class TestMagic:
 
     # Create an IPython shell and load Matlab magic
     @classmethod
     def setup_class(cls):
-        cls.ip = IPython.InteractiveShell()
+        cls.ip = get_ipython()
         cls.ip.run_cell('import random')
         cls.ip.run_cell('import numpy as np')
-        pymat.load_ipython_extension(cls.ip)
+        if 'USE_OCTAVE' in os.environ:
+            matlab = 'octave'
+        else:
+            matlab = 'matlab'
+        pymat.load_ipython_extension(cls.ip, matlab=matlab)
 
-    # Unload the magic, shut down Matlab
+    # Unload the magic
     @classmethod
     def teardown_class(cls):
         pymat.unload_ipython_extension(cls.ip)
-
 
     # Test single operation on different data structures
     def test_cell_magic_number(self):

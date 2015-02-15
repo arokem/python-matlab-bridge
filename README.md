@@ -115,17 +115,7 @@ Rather than looking for `matlab` at the shell, this will look for `octave`.
 As with `pymatbridge.Matlab`, you can override this by specifying the
 `executable` keyword argument.
 
-There are a few caveats to note about Octave support:
-
-* The zmq messenger used to communicate with the Octave session is written in C
-and needs to be compiled. For MATLAB various prebuilt binaries are provided
-and added to MATLAB's runtime path, but as of this writing the same isn't
-true for Octave. You'll need to compile the messenger (in
-`messenger/src/messenger.c`) using an incantation like
-`mkoctfile --mex -lzmq messenger.c` and place the resulting `messenger.mex`
-file somewhere in Octave's runtime path.
-
-Finally, rather than `~/startup.m`, Octave looks for an `~/.octaverc` file for
+Rather than `~/startup.m`, Octave looks for an `~/.octaverc` file for
 commands to execute before every session. (This is a good place to manipulate
 the runtime path, for example).
 
@@ -154,11 +144,11 @@ More examples are provided in the `examples` directory
 The installation of `pymatbridge` includes a binary of a mex function to communicate between 
 Python and Matlab using the [0MQ](http://zeromq.org/) messaging library. This should work 
 without any need for compilation on most computers. However, in some cases, you might want
-to build the pymatbridge messenger from source. To do so, you will need to follow the 
+to build the pymatbridge messenger from source. To do so, you will need to follow the instructions below:
 
 ### Install zmq library
 Please refer to the [official guide](http://zeromq.org/intro:get-the-software) on how to
-build and install zmq. After zmq is installed, make sure you can find the location where
+build and install zmq. On Ubuntu, it is as simple as `sudo apt-get install libzmq3-dev`.  After zmq is installed, make sure you can find the location where
 libzmq is installed. The library extension name and default location on different systems
 are listed below.
 
@@ -215,12 +205,23 @@ be supported. If you have an old version of pyzmq, please update it.
 
 ### Install pymatbridge
 After the steps above are done, you can install pymatbridge. Download the zip file of the 
-latest release. Unzip it somewhere on your machine and then issue:
+latest release. Unzip it somewhere on your machine.
+
+For Matlab:
 
 	cd messenger
 	python make.py 
 	cd ..
 	python setup.py install
+
+
+For Octave:
+
+    cd messenger/octave
+    # edit make.py if not using Ubuntu-derivative
+    python make.py
+    cd ..
+    python setup.py
 	
 This should make the python-matlab-bridge import-able.
 

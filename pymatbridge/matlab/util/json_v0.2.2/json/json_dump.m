@@ -143,7 +143,7 @@ function obj = dump_data_(value, options)
     end
   elseif isnumeric(value)
     if isreal(value)
-      obj = javaObject('java.lang.Double', value);
+      obj = value;
     % Encode complex number as a struct
     else
       complex_struct = struct;

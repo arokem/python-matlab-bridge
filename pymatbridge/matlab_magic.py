@@ -7,35 +7,22 @@ Magic command interface for interactive work with Matlab(R) via the pymatbridge
 
 """
 
-import sys, os
-import tempfile
-from glob import glob
 from shutil import rmtree
-from getopt import getopt
 
 import numpy as np
-try:
-    import scipy.io as sio
-    has_io = True
-except ImportError:
-    has_io = False
-    no_io_str = "Must have scipy.io to perform i/o"
-    no_io_str += "operations with the Matlab session"
-
 import IPython
 
-ipython_version = int(IPython.__version__[0])
-
 from IPython.core.displaypub import publish_display_data
-from IPython.core.magic import (Magics, magics_class, cell_magic, line_magic,
+from IPython.core.magic import (Magics, magics_class,
                                 line_cell_magic, needs_local_scope)
-from IPython.testing.skipdoctest import skip_doctest
 from IPython.core.magic_arguments import (argument, magic_arguments,
                                           parse_argstring)
-from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
+from IPython.utils.py3compat import unicode_to_str, PY3
 
 import pymatbridge as pymat
 from .compat import text_type
+
+ipython_version = int(IPython.__version__[0])
 
 
 class MatlabInterperterError(RuntimeError):
@@ -95,7 +82,10 @@ class MatlabMagics(Magics):
         super(MatlabMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
+        if 'octave' in matlab.lower():
+            self.Matlab = pymat.Octave(matlab, maxtime=maxtime)
+        else:
+            self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
         self.pyconverter = pyconverter
 
@@ -173,19 +163,15 @@ class MatlabMagics(Magics):
         self.Matlab.set_default_plot_size(width, height)
 
         if args.input:
-            if has_io:
-                for input in ','.join(args.input).split(','):
-                    try:
-                        val = local_ns[input]
-                    except KeyError:
-                        val = self.shell.user_ns[input]
-                    # The _Session.set_variable function which this calls
-                    # should correctly detect numpy arrays and serialize them
-                    # as json correctly.
-                    self.set_matlab_var(input, val)
-
-            else:
-                raise RuntimeError(no_io_str)
+            for input in ','.join(args.input).split(','):
+                try:
+                    val = local_ns[input]
+                except KeyError:
+                    val = self.shell.user_ns[input]
+                # The _Session.set_variable function which this calls
+                # should correctly detect numpy arrays and serialize them
+                # as json correctly.
+                self.set_matlab_var(input, val)
 
         try:
             result_dict = self.eval(code)
@@ -216,7 +202,8 @@ class MatlabMagics(Magics):
             if len(imgf):
                 # Store the path to the directory so that you can delete it
                 # later on:
-                image = open(imgf, 'rb').read()
+                with open(imgf, 'rb') as fid:
+                    image = fid.read()
                 if ipython_version < 3:
                     display_data.append(('MatlabMagic.matlab',
                                          {'image/png':image}))
@@ -234,11 +221,8 @@ class MatlabMagics(Magics):
             rmtree(data_dir)
 
         if args.output:
-            if has_io:
-                for output in ','.join(args.output).split(','):
-                    self.shell.push({output:self.Matlab.get_variable(output)})
-            else:
-                raise RuntimeError(no_io_str)
+            for output in ','.join(args.output).split(','):
+                self.shell.push({output:self.Matlab.get_variable(output)})
 
 
 _loaded = False
@@ -253,6 +237,5 @@ def unload_ipython_extension(ip):
     global _loaded
     if _loaded:
         magic = ip.magics_manager.registry.pop('MatlabMagics')
-        magic.Matlab.stop()
         _loaded = False
 
