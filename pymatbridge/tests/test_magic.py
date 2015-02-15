@@ -1,3 +1,5 @@
+import os
+
 import pymatbridge as pymat
 import IPython
 
@@ -11,7 +13,11 @@ class TestMagic:
         cls.ip = IPython.InteractiveShell()
         cls.ip.run_cell('import random')
         cls.ip.run_cell('import numpy as np')
-        pymat.load_ipython_extension(cls.ip)
+        if 'USE_OCTAVE' in os.environ:
+            matlab = 'octave'
+        else:
+            matlab = 'matlab'
+        pymat.load_ipython_extension(cls.ip, matlab=matlab)
 
     # Unload the magic, shut down Matlab
     @classmethod

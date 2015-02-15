@@ -428,6 +428,7 @@ class Octave(_Session):
         if self.log:
             code.append("diary('./pymatbridge/logs/octavelog_%s.txt')" % self.id)
         code.append("set(0, 'defaultfigurevisible', 'off');")
+        code.append("graphics_toolkit('gnuplot')")
         return code
 
     def _execute_flag(self):
