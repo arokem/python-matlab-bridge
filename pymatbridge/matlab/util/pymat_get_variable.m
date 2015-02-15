@@ -34,6 +34,7 @@ if ~var_exists
 else
     response.exists = true;
     response.var = evalin('base', varname);
+    response.success = 'true';
 end
 
 json_response = json_dump(response);
