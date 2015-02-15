@@ -95,7 +95,10 @@ class MatlabMagics(Magics):
         super(MatlabMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
+        if 'octave' in matlab:
+            self.Matlab = pymat.Octave(matlab, maxtime=maxtime)
+        else:
+            self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
         self.pyconverter = pyconverter
 
