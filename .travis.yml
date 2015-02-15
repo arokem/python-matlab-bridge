@@ -1,5 +1,4 @@
 language: python
-sudo: false
 deploy:
   provider: pypi
   user: arokem
@@ -10,5 +9,37 @@ deploy:
     repo: arokem/python-matlab-bridge
     # until this is fixed: https://github.com/travis-ci/travis-ci/issues/1675
     all_branches: true
+env:
+    - CONDA="python=2.7 numpy=1.7"
+    - CONDA="python=3.3 numpy"
+    - CONDA="python=3.4 numpy"
+before_install:
+  - sudo apt-add-repository -y ppa:octave/stable;
+  - sudo apt-get update -qq;
+  - sudo apt-get install -qq octave liboctave-dev default-jdk;
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes
+  - conda update conda
+  - conda info -a
+  - travis_retry conda create -n test $CONDA IPython pip nose pyzmq
+  - source activate test
+  - travis_retry pip install coveralls
+
+install:
+  - export PYTHONWARNINGS=all
+  - export USE_OCTAVE=True
+  - python setup.py install
+
 script:
-  - true
+    # run coverage on py2.7, regular on others
+  - if [[ $CONDA == python=2.7* ]]; then
+      nosetests --exe -v --with-cov --cover-package pymatbridge;
+    else
+      nosetests --exe -v pymatbridge;
+    fi
+
+after_success:
+    - coveralls
