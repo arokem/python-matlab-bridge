@@ -23,7 +23,7 @@ True
 
 import os
 import time
-import codecs
+import base64
 import zmq
 import subprocess
 import sys
@@ -60,7 +60,7 @@ def encode_ndarray(obj):
     except AttributeError:
         data = obj.astype(float64).tostring()
 
-    data = codecs.encode(data, 'base64').decode('utf-8')
+    data = base64.b64encode(data).decode('utf-8')
     return data, shape
 
 
@@ -89,19 +89,19 @@ class PymatEncoder(json.JSONEncoder):
 def decode_arr(data):
     """Extract a numpy array from a base64 buffer"""
     data = data.encode('utf-8')
-    return frombuffer(codecs.decode(data, 'base64'), float64)
+    return frombuffer(base64.b64decode(data), float64)
 
 
 # JSON decoder for arrays and complex numbers
 def decode_pymat(dct):
     if 'ndarray' in dct and 'data' in dct:
         value = decode_arr(dct['data'])
-        shape = decode_arr(dct['shape'])
+        shape = decode_arr(dct['shape']).astype(int)
         return value.reshape(shape, order='F')
     elif 'ndarray' in dct and 'imag' in dct:
         real = decode_arr(dct['real'])
         imag = decode_arr(dct['imag'])
-        shape = decode_arr(dct['shape'])
+        shape = decode_arr(dct['shape']).astype(int)
         data = real + 1j * imag
         return data.reshape(shape, order='F')
     elif 'real' in dct and 'imag' in dct:

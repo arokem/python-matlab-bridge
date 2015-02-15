@@ -7,7 +7,7 @@ function Y = isrow(X)
 %
 %
 
-if ndims(X)==2 & size(X,1)==1 & size(X,2)>=1
+if ndims(X)==2 && size(X,1)==1 && size(X,2)>=1
    Y = logical(1);
 else
    Y = logical(0);
