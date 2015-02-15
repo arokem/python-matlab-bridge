@@ -12,7 +12,6 @@ deploy:
 env:
     - CONDA="python=2.7 numpy=1.7"
     - CONDA="python=3.3 numpy"
-    - CONDA="python=3.4 numpy"
 before_install:
   - sudo apt-add-repository -y ppa:octave/stable;
   - sudo apt-get update -qq;
@@ -29,7 +28,6 @@ before_install:
   - travis_retry pip install coveralls
 
 install:
-  - export PYTHONWARNINGS=all
   - export USE_OCTAVE=True
   - python setup.py install
 
