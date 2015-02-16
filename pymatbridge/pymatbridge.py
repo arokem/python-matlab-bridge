@@ -167,7 +167,7 @@ class _Session(object):
         self.socket = None
         atexit.register(self.stop)
 
-    def _program_name(self):  # pramga: no cover
+    def _program_name(self):  # pragma: no cover
         raise NotImplemented
 
     def _preamble_code(self):
