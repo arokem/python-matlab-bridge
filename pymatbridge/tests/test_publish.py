@@ -42,11 +42,12 @@ def test_lines_to_notebook():
 
 def test_convert_mfile():
     publish.convert_mfile(MFILE)
-    with open('test_publish.ipynb') as fid:
+    nb_file = MFILE.replace('.m', '.ipynb')
+    with open(nb_file) as fid:
         nb = json.load(fid)
     npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' Experimenting with conversion from matlab to ipynb\n\n')
-    os.remove(MFILE.replace('.m', '.ipynb'))
+    os.remove(nb_file)
 
 
 def test_mfile_to_lines():
@@ -56,5 +57,3 @@ def test_mfile_to_lines():
 
     npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' Experimenting with conversion from matlab to ipynb\n\n')
-
-    os.remove(MFILE.replace('.m', '.ipynb'))
