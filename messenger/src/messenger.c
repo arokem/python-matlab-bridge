@@ -28,7 +28,7 @@ int initialize(char *socket_addr) {
  * Now the receiver buffer is pre-allocated
  * In the future we can possibly use multi-part messaging
  */
-int listen(char *buffer, int buflen) {
+int listen_zmq(char *buffer, int buflen) {
     if (!initialized) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
     }
@@ -106,7 +106,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     } else if (strcmp(cmd, "listen") == 0) {
         char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
 
-        int byte_recvd = listen(recv_buffer, BUFLEN);
+        int byte_recvd = listen_zmq(recv_buffer, BUFLEN);
 
         /* Check if the received data is complete and correct */
         if ((byte_recvd > -1) && (byte_recvd <= BUFLEN)) {

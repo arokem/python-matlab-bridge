@@ -1,39 +1,29 @@
 #!/usr/bin/env python
 """Setup file for python-matlab-bridge"""
 
-import platform
 import os
 import sys
 import shutil
+import glob
+
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
 # update it when the contents of directories change.
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
+
 from distutils.core import setup
 
-# Find the messenger binary file and copy it to /matlab folder.
 
-def copy_bin(bin_path):
-    if os.path.exists(bin_path):
-        shutil.copy(bin_path, "./pymatbridge/matlab")
-        return True
-    else:
-        return False
+# Find the messenger binary file(s) and copy it to /matlab folder.
+from messenger.get_messenger_dir import get_messenger_dir
+messenger_dir = get_messenger_dir()
 
-if sys.platform == "win32":
-    # We have a win64 messenger, so we need to figure out if this is 32 or 64
-    # bit Windows:
-    if not platform.machine().endswith('64'):
-        raise ValueError("pymatbridge does not work on win32")
+for f in glob.glob("./messenger/%s/messenger.*" % messenger_dir):
+    shutil.copy(f, "./pymatbridge/matlab")
 
-for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
-                  "./messenger/mexa64/messenger.mexa64",
-                  "./messenger/mexw64/messenger.mexw64",
-                  "./messenger/octave/messenger.mex"]:
-    copy_bin(copy_this)
-        
+
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
 exec(open(ver_file).read())
