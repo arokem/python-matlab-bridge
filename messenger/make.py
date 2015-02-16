@@ -38,6 +38,8 @@ def get_config():
 
     cfg = {}
     for line in lines:
+        if '=' not in line:
+            continue
         name, path = line.split('=')
         cfg[name.lower()] = path.strip() or '.'
     return cfg
