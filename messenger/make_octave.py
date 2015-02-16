@@ -5,7 +5,7 @@ from get_messenger_dir import get_messenger_dir
 import shutil
 import subprocess
 
-messenger_dir = get_messenger_dir()
+messenger_dir, splatform = get_messenger_dir()
 
 with open(os.path.join(messenger_dir, 'local_octave.cfg')) as fid:
     lines = fid.readlines()

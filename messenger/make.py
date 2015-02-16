@@ -5,7 +5,7 @@ from get_messenger_dir import get_messenger_dir
 import subprocess
 import shutil
 
-messenger_dir = get_messenger_dir()
+messenger_dir, splatform = get_messenger_dir()
     
 # Open the configure file and start parsing
 with open(os.path.join(messenger_dir, 'local.cfg'), 'r') as config:
@@ -44,7 +44,7 @@ with open(os.path.join(messenger_dir, 'local.cfg'), 'r') as config:
 
 
 # Get the extension
-if platform == 'win32':
+if splatform == 'win32':
     extcmd = '"' + matlab_bin + "\\mexext.bat" + '"'
 else:
     extcmd = matlab_bin + "/mexext"
@@ -56,7 +56,7 @@ extension = extension.decode('utf-8').rstrip('\r\n')
 print("Building messenger." + extension + " ...")
 
 # Build the mex file
-if platform == 'win32':
+if splatform == 'win32':
     mex = "\\mex.bat"
 else:
     mex = "/mex"
