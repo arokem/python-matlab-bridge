@@ -121,7 +121,8 @@ Rather than `~/startup.m`, Octave looks for an `~/.octaverc` file for
 commands to execute before every session. (This is a good place to manipulate
 the runtime path, for example).
 
-Requires Version 3.8 or higher.  Notice: it does not work with the MXE build on Windows due to incomplete Java support.  The Cygwin version has not been tested.
+Requires Version 3.8 or higher.  Notice: Neither the MXE 3.8.1 nor the Cygwin 3.8.2 version is compatible on Windows.  No Windows support will be available
+until a working version of Octave 3.8+ with Java support is released.
 
 
 ### Matlab magic:
