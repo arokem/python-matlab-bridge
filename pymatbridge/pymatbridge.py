@@ -30,12 +30,7 @@ import sys
 import json
 from uuid import uuid4
 
-try:
-    from numpy import ndarray, generic, float64, frombuffer, asfortranarray
-except ImportError:
-    class ndarray:
-        pass
-    generic = ndarray
+from numpy import ndarray, generic, float64, frombuffer, asfortranarray
 
 try:
     from scipy.sparse import spmatrix
@@ -170,7 +165,7 @@ class _Session(object):
         self.context = None
         self.socket = None
 
-    def _program_name(self):
+    def _program_name(self):  # pramga: no cover
         raise NotImplemented
 
     def _preamble_code(self):
@@ -182,7 +177,7 @@ class _Session(object):
                 "warning(old_warning_state)",
                 "clear old_warning_state"]
 
-    def _execute_flag(self):
+    def _execute_flag(self):  # pragma: no cover
         raise NotImplemented
 
     def _run_server(self):
