@@ -48,7 +48,7 @@ def encode_ndarray(obj):
     if obj.flags.c_contiguous:
         obj = obj.T
     elif not obj.flags.f_contiguous:
-        obj = asfortranarray(obj)
+        obj = asfortranarray(obj.T)
     else:
         obj = obj.T
     try:
