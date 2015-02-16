@@ -121,8 +121,7 @@ Rather than `~/startup.m`, Octave looks for an `~/.octaverc` file for
 commands to execute before every session. (This is a good place to manipulate
 the runtime path, for example).
 
-Requires Version 3.8 or higher.  Notice: it does not work with the MXE build on Windows
-due to a Java error.
+Requires Version 3.8 or higher.  Notice: it does not work with the MXE build on Windows due to incomplete Java support.  The Cygwin version has not been tested.
 
 
 ### Matlab magic:
@@ -156,7 +155,7 @@ to build the pymatbridge messenger from source. To do so, you will need to follo
 Please refer to the [official guide](http://zeromq.org/intro:get-the-software) on how to
 build and install zmq. On Ubuntu, it is as simple as `sudo apt-get install libzmq3-dev`.
 On Windows, suggest using the following method:
-- Install MSYS2
+- Install [MSYS2](http://sourceforge.net/projects/msys2/)
 - Run `$ pacman -S make`
 - From the zmq source directory, run: `$ sh configure --prefix=$(pwd) --build=x86_64-w64-mingw32`
 - Run `$ make`.
@@ -223,7 +222,7 @@ latest release. Unzip it somewhere on your machine.
 For Matlab:
 
 	cd messenger
-               # edit local.cfg in the directory for your platform
+    # edit local.cfg in the directory for your platform
 	python make.py
 	cd ..
 	python setup.py install
@@ -232,7 +231,7 @@ For Matlab:
 For Octave:
 
     cd messenger/octave
-     # edit local_octave.cfg in the directory for your platform
+    # edit local_octave.cfg in the directory for your platform
     python make_octave.py
     cd ..
     python setup.py
