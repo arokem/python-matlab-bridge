@@ -48,10 +48,9 @@ def mfile_to_lines(mfile):
         Full path to an m file
     """
     # We should only be able to read this file:
-    f = file(mfile, 'r')
-    lines = f.readlines()
-    f.close()
-    return lines
+    with open(mfile) as fid:
+        return fid.readlines()
+
 
 def lines_to_notebook(lines, name=None):
     """
@@ -122,13 +121,9 @@ def convert_mfile(mfile, outfile=None):
         Full path to the output ipynb file
 
     """
-    f = file(mfile, 'r')
-    lines = f.readlines()
-    f.close()
+    lines = mfile_to_lines(mfile)
     nb = lines_to_notebook(lines)
     if outfile is None:
         outfile = mfile.split('.m')[0] + '.ipynb'
-    nbfile = file(outfile, 'w')
-    nbformat.write(nb, nbfile, format='ipynb')
-    nbfile.close()
-
+    with open(outfile, 'w') as fid:
+        nbformat.write(nb, fid, format='ipynb')
