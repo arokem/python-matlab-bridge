@@ -33,8 +33,8 @@ function json_response = pymat_feval(req)
 
     try
         [resp{1:req.nargout}] = run_dot_m(func_path, arguments, req.nargout);
-    catch
-        response.message = lasterr;
+    catch ME
+        response.message = ME.message;
         json_response = json_dump(response);
         return
     end
