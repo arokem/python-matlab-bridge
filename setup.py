@@ -5,7 +5,6 @@ import os
 import sys
 import shutil
 import glob
-from distutils.core import setup
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
@@ -14,9 +13,11 @@ if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
 
+from distutils.core import setup
+
+
 # Find the messenger binary file(s) and copy it to /matlab folder.
-sys.path.insert(0, 'messenger')
-from get_messenger_dir import get_messenger_dir
+from messenger.get_messenger_dir import get_messenger_dir
 messenger_dir = get_messenger_dir()
 
 for f in glob.glob("./messenger/%s/messenger.*" % messenger_dir):

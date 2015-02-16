@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from __future__ import print_function
 import os
-from get_messenger_dir import get_messenger_dir
+from .get_messenger_dir import get_messenger_dir
 import shutil
 import subprocess
 

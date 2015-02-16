@@ -5,7 +5,6 @@ import platform
 def get_messenger_dir():
     # Check the system platform first
     splatform = sys.platform
-    print("This is a " + splatform + " system")
 
     if splatform.startswith('linux'):
         messenger_dir = 'mexa64'
@@ -19,7 +18,7 @@ def get_messenger_dir():
                 raise ValueError("pymatbridge does not work on win32")
 
         # We further need to differniate 32 from 64 bit:
-        maxint = sys.maxint()
+        maxint = sys.maxsize
         if maxint == 9223372036854775807:
             messenger_dir = 'mexw64'
         elif maxint == 2147483647:
