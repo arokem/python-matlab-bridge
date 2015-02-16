@@ -31,9 +31,9 @@ if sys.platform == "win32":
 for copy_this in ["./messenger/mexmaci64/messenger.mexmaci64",
                   "./messenger/mexa64/messenger.mexa64",
                   "./messenger/mexw64/messenger.mexw64",
-                  "./messenger/octave/messenger.mex"]:
+                  "./messenger/mexw64/messenger.oct"]:
     copy_bin(copy_this)
-        
+
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
 exec(open(ver_file).read())
