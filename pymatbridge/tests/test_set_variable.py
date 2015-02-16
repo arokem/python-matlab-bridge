@@ -31,4 +31,19 @@ class TestArray:
         test_array = np.asfortranarray(test_array)
         self.mlab.set_variable('test', test_array)
         npt.assert_equal(self.mlab.get_variable('test'), test_array)
-        
+        # force non-contiguous
+        test_array = test_array[::-1]
+        self.mlab.set_variable('test', test_array)
+        npt.assert_equal(self.mlab.get_variable('test'), test_array)
+
+    def test_object_array(self):
+        test_array = np.array(['hello', 1])
+        self.mlab.set_variable('test', test_array)
+        npt.assert_equal(self.mlab.get_variable('test'), test_array)
+
+    def test_others(self):
+        self.mlab.set_variable('test', np.float(1.5))
+        npt.assert_equal(self.mlab.get_variable('test'), 1.5)
+        self.mlab.set_variable('test', 'hello')
+        npt.assert_equal(self.mlab.get_variable('test'), 'hello')
+

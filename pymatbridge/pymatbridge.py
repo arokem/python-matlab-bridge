@@ -21,6 +21,7 @@ True
 
 """
 
+import atexit
 import os
 import time
 import base64
@@ -30,12 +31,7 @@ import sys
 import json
 from uuid import uuid4
 
-try:
-    from numpy import ndarray, generic, float64, frombuffer, asfortranarray
-except ImportError:
-    class ndarray:
-        pass
-    generic = ndarray
+from numpy import ndarray, generic, float64, frombuffer, asfortranarray
 
 try:
     from scipy.sparse import spmatrix
@@ -52,7 +48,7 @@ def encode_ndarray(obj):
     if obj.flags.c_contiguous:
         obj = obj.T
     elif not obj.flags.f_contiguous:
-        obj = asfortranarray(obj)
+        obj = asfortranarray(obj.T)
     else:
         obj = obj.T
     try:
@@ -169,8 +165,9 @@ class _Session(object):
 
         self.context = None
         self.socket = None
+        atexit.register(self.stop)
 
-    def _program_name(self):
+    def _program_name(self):  # pragma: no cover
         raise NotImplemented
 
     def _preamble_code(self):
@@ -182,7 +179,7 @@ class _Session(object):
                 "warning(old_warning_state)",
                 "clear old_warning_state"]
 
-    def _execute_flag(self):
+    def _execute_flag(self):  # pragma: no cover
         raise NotImplemented
 
     def _run_server(self):
@@ -227,6 +224,9 @@ class _Session(object):
 
     # Stop the Matlab server
     def stop(self):
+        if not self.started:
+            return True
+
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
             print("%s closed" % self._program_name())
