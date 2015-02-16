@@ -96,3 +96,6 @@ class TestMagic:
         npt.assert_equal(self.ip.user_ns['obj']['num'], self.ip.user_ns['num'])
         npt.assert_equal(self.ip.user_ns['obj']['num_array'].squeeze(), self.ip.user_ns['num_array'])
         npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
+
+    def test_failed_attempt(self):
+        

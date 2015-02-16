@@ -35,7 +35,14 @@ try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
-	evalin('base', code);
+	try
+	    evalin('base', code);
+	catch
+		diary('off');
+		response.message = lasterr;
+		json_response = json_dump(response);
+		return;
+	end
 	diary('off');
 
 	datadir = fullfile(tempdir(),'MatlabData');
