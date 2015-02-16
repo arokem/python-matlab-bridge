@@ -4,6 +4,9 @@ import json
 import os
 
 
+MFILE = os.path.join(os.path.dirname(__file__), 'test_publish.m')
+
+
 def test_format_line():
     """
     Test that lines get formatted properly
@@ -38,18 +41,20 @@ def test_lines_to_notebook():
 
 
 def test_convert_mfile():
-    publish.convert_mfile('test_publish.m')
+    publish.convert_mfile(MFILE)
     with open('test_publish.ipynb') as fid:
         nb = json.load(fid)
     npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' Experimenting with conversion from matlab to ipynb\n\n')
-    os.remove('test_publish.ipynb')
+    os.remove(MFILE.replace('.m', '.ipynb')
 
 
 def test_mfile_to_lines():
-    lines = publish.mfile_to_lines('test_publish.m')
+    lines = publish.mfile_to_lines(MFILE)
 
     nb = publish.lines_to_notebook(lines)
 
     npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' Experimenting with conversion from matlab to ipynb\n\n')
+
+    os.remove(MFILE.replace('.m', '.ipynb'))
