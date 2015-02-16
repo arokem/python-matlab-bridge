@@ -46,7 +46,7 @@ def test_convert_mfile():
         nb = json.load(fid)
     npt.assert_equal(nb['worksheets'][0]['cells'][1]['source'][0],
                      ' Experimenting with conversion from matlab to ipynb\n\n')
-    os.remove(MFILE.replace('.m', '.ipynb')
+    os.remove(MFILE.replace('.m', '.ipynb'))
 
 
 def test_mfile_to_lines():
