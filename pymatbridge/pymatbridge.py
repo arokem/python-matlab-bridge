@@ -21,6 +21,7 @@ True
 
 """
 
+import atexit
 import os
 import time
 import base64
@@ -164,6 +165,7 @@ class _Session(object):
 
         self.context = None
         self.socket = None
+        atexit.register(self.stop)
 
     def _program_name(self):  # pramga: no cover
         raise NotImplemented
@@ -222,6 +224,9 @@ class _Session(object):
 
     # Stop the Matlab server
     def stop(self):
+        if not self.started:
+            return True
+
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
             print("%s closed" % self._program_name())

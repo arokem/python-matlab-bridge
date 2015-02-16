@@ -22,8 +22,6 @@ from IPython.utils.py3compat import unicode_to_str, PY3
 import pymatbridge as pymat
 from .compat import text_type
 
-ipython_version = int(IPython.__version__[0])
-
 
 class MatlabInterperterError(RuntimeError):
     """
@@ -88,16 +86,6 @@ class MatlabMagics(Magics):
             self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
         self.Matlab.start()
         self.pyconverter = pyconverter
-
-    def __del__(self):
-        """shut down the Matlab server when the object dies.
-
-        2FIX: this seems to not be called when ipython terminates. bleah.
-        """
-        try:
-            self.Matlab.stop()
-        except:
-            raise
 
     def eval(self, line):
         """
@@ -192,11 +180,8 @@ class MatlabMagics(Magics):
 
         display_data = []
         if text_output and not args.silent:
-            if ipython_version < 3:
-                display_data.append(('MatlabMagic.matlab',
-                                     {'text/plain':text_output}))
-            else:
-                display_data.append({'text/plain':text_output})
+            display_data.append(('MatlabMagic.matlab',
+                                 {'text/plain': text_output}))
 
         for imgf in imgfiles:
             if len(imgf):
@@ -204,17 +189,11 @@ class MatlabMagics(Magics):
                 # later on:
                 with open(imgf, 'rb') as fid:
                     image = fid.read()
-                if ipython_version < 3:
-                    display_data.append(('MatlabMagic.matlab',
-                                         {'image/png':image}))
-                else:
-                    display_data.append({'image/png': image})
+                display_data.append(('MatlabMagic.matlab',
+                                     {'image/png': image}))
 
         for disp_d in display_data:
-            if ipython_version < 3:
-                publish_display_data(disp_d[0], disp_d[1])
-            else:
-                publish_display_data(disp_d)
+            publish_display_data(source=disp_d[0], data=disp_d[1])
 
         # Delete the temporary data files created by matlab:
         if len(data_dir):
