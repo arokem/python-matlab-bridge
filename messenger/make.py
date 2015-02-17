@@ -54,7 +54,11 @@ def do_build(make_cmd, messenger_exe):
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
     shutil.move(messenger_exe, messenger_loc)
-    os.remove('messenger.o')
+
+    try:
+        os.remove('messenger.o')
+    except OSError:
+        os.remove('src/messenger.o')
 
 
 def build_octave():
@@ -83,7 +87,7 @@ def build_matlab():
     else:
         mex = matlab_bin + "/mex"
     paths = "-L%(zmq_lib)s -I%(zmq_inc)s" % cfg
-    make_cmd = '"%s" -O %s -lzmq ./src/messenger.c' % (mex, paths)
+    make_cmd = '%s -O %s -lzmq ./src/messenger.c' % (mex, paths)
     do_build(make_cmd, 'messenger.%s' % extension)
 
 
