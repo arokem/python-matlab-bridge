@@ -29,6 +29,8 @@ import zmq
 import subprocess
 import sys
 import json
+import types
+import weakref
 from uuid import uuid4
 
 from numpy import ndarray, generic, float64, frombuffer, asfortranarray
@@ -263,25 +265,31 @@ class _Session(object):
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
-    def run_func(self, func_path, func_args=None, nargout=1):
+    def run_func(self, func_path, *args, nargout=1, **kwargs):
         """Run a function in Matlab and return the result.
 
         Parameters
         ----------
         func_path: str
             Name of function to run or a path to an m-file.
-        func_args: object
+        args: object
             Function args to send to the function.
         nargout: int
             Desired number of return arguments.
+        kwargs:
+            Keyword arguments are passed to Matlab in the form [key, val] so
+            that matlab.plot(x, y, '--', LineWidth=2) would be translated into
+            plot(x, y, '--', 'LineWidth', 2)
 
         Returns
         -------
         Result dictionary with keys: 'message', 'result', and 'success'
         """
+        args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
+                      for item in pair)
         return self._json_response(cmd='run_function',
                                    func_path=func_path,
-                                   func_args=func_args,
+                                   func_args=args,
                                    nargout=nargout)
 
     def run_code(self, code):
@@ -322,6 +330,64 @@ class _Session(object):
         result = self.run_code(cmd.format(prefix, varname))
         self.run_code('clear {0}keys {0}values'.format(prefix))
         return result
+
+    def __getattr__(self, name):
+        """If an attribute is not found, try to create a bound method"""
+        return self._bind_method(name)
+
+    def _bind_method(self, name, unconditionally=False):
+        """Generate a Matlab function and bind it to the instance
+
+        This is where the magic happens. When an unknown attribute of the
+        Matlab class is requested, it is assumed to be a call to a
+        Matlab function, and is generated and bound to the instance.
+
+        This works because getattr() falls back to __getattr__ only if no
+        attributes of the requested name can be found through normal
+        routes (__getattribute__, __dict__, class tree).
+
+        bind_method first checks whether the requested name is a callable
+        Matlab function before generating a binding.
+
+        Parameters
+        ----------
+        name : str
+            The name of the Matlab function to call
+                e.g. 'sqrt', 'sum', 'svd', etc
+        unconditionally : bool, optional
+            Bind the method without performing
+                checks. Used to bootstrap methods that are required and
+                know to exist
+
+        Returns
+        -------
+        Method
+            A reference to a newly bound Method instance if the
+                requested name is determined to be a callable function
+
+        Raises
+        ------
+        AttributeError: if the requested name is not a callable
+                Matlab function
+
+        """
+        # TODO: This does not work if the function is a mex function inside a folder of the same name
+        exists = self.run_func('exist', name)['result']
+        if not unconditionally and not exists:
+            raise AttributeError("'Matlab' object has no attribute '%s'" % name)
+
+        # create a new method instance
+        method_instance = Method(weakref.ref(self), name)
+        method_instance.__name__ = name
+
+        # bind to the Matlab instance with a weakref (to avoid circular references)
+        if sys.version.startswith('3'):
+            method = types.MethodType(method_instance, weakref.ref(self))
+        else:
+            method = types.MethodType(method_instance, weakref.ref(self),
+                                      _Session)
+        setattr(self, name, method)
+        return getattr(self, name)
 
 
 class Matlab(_Session):
@@ -433,3 +499,62 @@ class Octave(_Session):
 
     def _execute_flag(self):
         return '--eval'
+
+
+# ----------------------------------------------------------------------------
+# MATLAB METHOD
+# ----------------------------------------------------------------------------
+class Method(object):
+
+    def __init__(self, parent, name):
+        """An object representing a Matlab function
+
+        Methods are dynamically bound to instances of Matlab objects and
+        represent a callable function in the Matlab subprocess.
+
+        Args:
+            parent: A reference to the parent (Matlab instance) to which the
+                Method is being bound
+            name: The name of the Matlab function this represents
+
+        """
+        self.name = name
+        self._parent = parent
+        self.doc = None
+
+    def __call__(self, unused_parent_weakref, *args, nargout=1, **kwargs):
+        """Call a function with the supplied arguments in the Matlab subprocess
+
+        Passes parameters to `run_func`.
+
+        """
+        resp = self.parent.run_func(self.name, *args, **kwargs)
+        # return the result
+        return resp.get('result', None)
+
+    @property
+    def parent(self):
+        """Get the actual parent from the stored weakref
+
+        The parent (Matlab instance) is stored as a weak reference
+        to eliminate circular references from dynamically binding Methods
+        to Matlab.
+
+        """
+        parent = self._parent()
+        if parent is None:
+            raise AttributeError('Stale reference to attribute of non-existent Matlab object')
+        return parent
+
+    @property
+    def __doc__(self):
+        """Fetch the docstring from Matlab
+
+        Get the documentation for a Matlab function by calling Matlab's builtin
+        help() then returning it as the Python docstring. The result is cached
+        so Matlab is only ever polled on the first request
+
+        """
+        if self.doc is None:
+            self.doc = self.parent.help(self.name)
+        return self.doc
