@@ -1,11 +1,9 @@
-import pymatbridge as pymat
-import random as rd
 import numpy as np
 import numpy.testing as npt
 import test_utils as tu
 
 
-class TestPrecision:
+class TestFunctions(object):
 
     # Start a Matlab session before running any tests
     @classmethod
