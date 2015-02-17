@@ -530,6 +530,8 @@ class Method(object):
 
         """
         resp = self.parent.run_func(self.name, *args, **kwargs)
+        if not resp['success'] == 'true':
+            raise ValueError(resp['message'])
         # return the result
         return resp.get('result', None)
 
