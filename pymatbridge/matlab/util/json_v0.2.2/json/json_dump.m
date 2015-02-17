@@ -157,7 +157,11 @@ function obj = dump_data_(value, options)
     obj = javaObject('org.json.JSONObject');
     keys = fieldnames(value);
     for i = 1:length(keys)
-      obj.put(keys{i},dump_data_(value.(keys{i}), options));
+      try
+          obj.put(keys{i},dump_data_(value.(keys{i}), options));
+      catch ME
+          obj.put(keys{i}, dump_data_(ME.message, options))
+      end
     end
   else
     error('json:typeError', 'Unsupported data type: %s', class(value));
