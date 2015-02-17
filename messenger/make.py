@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import platform
 import sys
+import shlex
 import shutil
 import subprocess
 
@@ -49,7 +50,7 @@ def do_build(make_cmd, messenger_exe):
     print('Building %s...' % messenger_exe)
     print(make_cmd)
     messenger_dir = get_messenger_dir()
-    subprocess.check_output(make_cmd.split())
+    subprocess.check_output(shlex.split(make_cmd))
 
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
@@ -60,7 +61,7 @@ def do_build(make_cmd, messenger_exe):
     except OSError:
         os.remove('src/messenger.o')
 
-
+ 
 def build_octave():
     paths = "-L%(octave_lib)s -I%(octave_inc)s -L%(zmq_lib)s -I%(zmq_inc)s"
     paths = paths % get_config()
