@@ -46,7 +46,7 @@ class TestFunctions(object):
 
     def test_create_func(self):
         test = self.mlab.ones(3)
-        npt.assert_array_equal(test, np.ones((3, 3)))
+        npt.assert_array_equal(test['result'], np.ones((3, 3)))
         doc = self.mlab.zeros.__doc__
         assert 'zeros' in doc
 
@@ -54,4 +54,4 @@ class TestFunctions(object):
         resp = self.mlab.run_func('plot', [1, 2, 3], Linewidth=3)
         assert resp['success'] == 'true'
         resp = self.mlab.plot([1, 2, 3], Linewidth=3)
-        assert resp is not None
+        assert resp['result'] is not None

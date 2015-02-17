@@ -528,11 +528,7 @@ class MatlabFunction(object):
         Passes parameters to `run_func`.
 
         """
-        resp = self.parent.run_func(self.name, *args, **kwargs)
-        if not resp['success'] == 'true':
-            raise ValueError(resp['message'])
-        # return the result
-        return resp.get('result', None)
+        return self.parent.run_func(self.name, *args, **kwargs)
 
     @property
     def parent(self):
@@ -558,5 +554,5 @@ class MatlabFunction(object):
 
         """
         if self.doc is None:
-            self.doc = self.parent.help(self.name)
+            self.doc = self.parent.help(self.name)['result']
         return self.doc
