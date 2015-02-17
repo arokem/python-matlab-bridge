@@ -17,8 +17,8 @@ from distutils.core import setup
 
 
 # Find the messenger binary file(s) and copy it to /matlab folder.
-from messenger.get_messenger_dir import get_messenger_dir
-messenger_dir, splatform = get_messenger_dir()
+from messenger.make import get_messenger_dir
+messenger_dir = get_messenger_dir()
 
 for f in glob.glob("./messenger/%s/messenger.*" % messenger_dir):
     shutil.copy(f, "./pymatbridge/matlab")
