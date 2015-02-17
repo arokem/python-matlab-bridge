@@ -265,7 +265,7 @@ class _Session(object):
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
 
-    def run_func(self, func_path, *args, nargout=1, **kwargs):
+    def run_func(self, func_path, *args, **kwargs):
         """Run a function in Matlab and return the result.
 
         Parameters
@@ -285,6 +285,7 @@ class _Session(object):
         -------
         Result dictionary with keys: 'message', 'result', and 'success'
         """
+        nargout = kwargs.pop('nargout', 1)
         args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                       for item in pair)
         return self._json_response(cmd='run_function',
@@ -522,7 +523,7 @@ class Method(object):
         self._parent = parent
         self.doc = None
 
-    def __call__(self, unused_parent_weakref, *args, nargout=1, **kwargs):
+    def __call__(self, unused_parent_weakref, *args, **kwargs):
         """Call a function with the supplied arguments in the Matlab subprocess
 
         Passes parameters to `run_func`.
