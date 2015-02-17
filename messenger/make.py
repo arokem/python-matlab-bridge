@@ -56,12 +56,10 @@ def do_build(make_cmd, messenger_exe):
 
     shutil.move(messenger_exe, messenger_loc)
 
-    try:
+    if os.path.exists('messenger.o'):
         os.remove('messenger.o')
-    except OSError:
-        os.remove('src/messenger.o')
 
- 
+
 def build_octave():
     paths = "-L%(octave_lib)s -I%(octave_inc)s -L%(zmq_lib)s -I%(zmq_inc)s"
     paths = paths % get_config()
