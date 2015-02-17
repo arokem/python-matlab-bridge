@@ -362,8 +362,8 @@ class _Session(object):
 
         Returns
         -------
-        Method
-            A reference to a newly bound Method instance if the
+        MatlabFunction
+            A reference to a newly bound MatlabFunction instance if the
                 requested name is determined to be a callable function
 
         Raises
@@ -373,12 +373,12 @@ class _Session(object):
 
         """
         # TODO: This does not work if the function is a mex function inside a folder of the same name
-        exists = self.run_func('exist', name)['result']
+        exists = self.run_func('exist', name)['result'] in [2, 3, 5]
         if not unconditionally and not exists:
             raise AttributeError("'Matlab' object has no attribute '%s'" % name)
 
         # create a new method instance
-        method_instance = Method(weakref.ref(self), name)
+        method_instance = MatlabFunction(weakref.ref(self), name)
         method_instance.__name__ = name
 
         # bind to the Matlab instance with a weakref (to avoid circular references)
@@ -502,10 +502,7 @@ class Octave(_Session):
         return '--eval'
 
 
-# ----------------------------------------------------------------------------
-# MATLAB METHOD
-# ----------------------------------------------------------------------------
-class Method(object):
+class MatlabFunction(object):
 
     def __init__(self, parent, name):
         """An object representing a Matlab function
@@ -513,11 +510,13 @@ class Method(object):
         Methods are dynamically bound to instances of Matlab objects and
         represent a callable function in the Matlab subprocess.
 
-        Args:
-            parent: A reference to the parent (Matlab instance) to which the
-                Method is being bound
-            name: The name of the Matlab function this represents
-
+        Parameters
+        ----------
+        parent: Matlab instance
+            A reference to the parent (Matlab instance) to which the
+                MatlabFunction is being bound
+        name: str
+            The name of the Matlab function this represents
         """
         self.name = name
         self._parent = parent
