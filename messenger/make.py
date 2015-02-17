@@ -89,7 +89,7 @@ def build_matlab():
 
 if __name__ == '__main__':
     usage = 'Please specify a valid make target (Matlab or Octave)'
-    if len(sys.argv) < 1:
+    if len(sys.argv) < 2:
         print(usage)
     elif sys.argv[1].lower() == 'matlab':
         build_matlab()
