@@ -18,10 +18,10 @@ try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
-	if strcmp(req.type, 'eval')
+	if strcmp(req.cmd, 'eval')
 		response.content.code = req.code;
 		evalin('base', req.code);
-	elseif strcmp(req.type, 'feval')
+	elseif strcmp(req.cmd, 'feval')
 		response.result = '';
 		[resp{1:req.nargout}] = run_dot_m(req.func_path, req.func_args, ...
 			                              req.nargout);

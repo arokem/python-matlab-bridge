@@ -288,11 +288,10 @@ class _Session(object):
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
-        return self._json_response(cmd='run',
+        return self._json_response(cmd='feval',
                                    func_path=func_path,
                                    func_args=func_args or '',
-                                   nargout=nargout,
-                                   type='feval')
+                                   nargout=nargout)
 
     def run_code(self, code):
         """Run some code in Matlab command line provide by a string
@@ -302,7 +301,7 @@ class _Session(object):
         code : str
             Code to send for evaluation.
         """
-        return self._json_response(cmd='run', code=code, type='eval')
+        return self._json_response(cmd='eval', code=code)
 
     def get_variable(self, varname, default=None):
         response = self._json_response(cmd='get_var', varname=varname)
