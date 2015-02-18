@@ -19,7 +19,7 @@ while(1)
             clear mex;
             break;
 
-        case {'eval', 'feval'}
+        case {'eval'}
             resp = pymat_eval(req);
             messenger('respond', resp);
 

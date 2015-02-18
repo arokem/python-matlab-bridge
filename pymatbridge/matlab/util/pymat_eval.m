@@ -13,24 +13,30 @@ function json_response = pymat_eval(req);
 
 response.success = true;
 response.content = '';
+response.result = '';
 
 try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
-	if strcmp(req.cmd, 'eval')
-		response.content.code = req.code;
-		evalin('base', req.code);
-	elseif strcmp(req.cmd, 'feval')
-		response.result = '';
-		[resp{1:req.nargout}] = run_dot_m(req.func_path, req.func_args, ...
-			                              req.nargout);
-	    if req.nargout == 1
-	        response.result = resp{1};
-	    else
-	        response.result = resp;
-	    end
-	end
+		
+	% Add function path to current path
+	if req.dname
+        addpath(req.dname);
+    end
+
+    if iscell(req.func_args)
+        [resp{1:req.nargout}] = feval(req.func_name, req.func_args{:});
+    else
+    	[resp{1:req.nargout}] = feval(req.func_name, req.func_args);
+    end
+
+    if req.nargout == 1
+        response.result = resp{1};
+    else
+        response.result = resp;
+    end
+
 	diary('off');
 
 	datadir = fullfile(tempdir(),'MatlabData');

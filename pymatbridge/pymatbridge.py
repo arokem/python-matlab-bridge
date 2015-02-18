@@ -288,9 +288,15 @@ class _Session(object):
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
-        return self._json_response(cmd='feval',
-                                   func_path=func_path,
+        dname = os.path.dirname(func_path)
+        fname = os.path.basename(func_path)
+        func_name, ext = os.path.splitext(fname)
+        if ext and not ext == '.m':
+            raise TypeError('Need to give path to .m file')
+        return self._json_response(cmd='eval',
+                                   func_name=func_name,
                                    func_args=func_args or '',
+                                   dname=dname,
                                    nargout=nargout)
 
     def run_code(self, code):
@@ -301,7 +307,7 @@ class _Session(object):
         code : str
             Code to send for evaluation.
         """
-        return self._json_response(cmd='eval', code=code)
+        return self.run_func('evalin', 'base', code, nargout=0)
 
     def get_variable(self, varname, default=None):
         resp = self.run_func('evalin', 'base', varname)
