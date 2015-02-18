@@ -288,11 +288,9 @@ class _Session(object):
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
-        if not func_args:
-            func_args = ''
         return self._json_response(cmd='run',
                                    func_path=func_path,
-                                   func_args=func_args,
+                                   func_args=func_args or '',
                                    nargout=nargout,
                                    type='feval')
 
