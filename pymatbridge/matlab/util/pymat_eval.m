@@ -12,30 +12,24 @@ function json_response = pymat_eval(req);
 % Based on Max Jaderberg's web_feval
 
 response.success = 'false';
-field_names = fieldnames(req);
-
 response.content = '';
-
-code_check = false;
-if size(field_names)
-	if isfield(req, 'code')
-		code_check = true;
-	end
-end
-
-if ~code_check
-	response.message = 'No code provided as POST parameter';
-	json_response = json_dump(response);
-	return;
-end
-
-code = req.code;
 
 try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
-	evalin('base', code);
+	if strcmp(req.type, 'eval')
+		evalin('base', req.code);
+		response.content.code = code;
+	elseif strcmp(req.type, 'feval')
+		[resp{1:req.nargout}] = run_dot_m(req.func_path, req.func_args, ...
+			                              req.nargout);
+	    if req.nargout == 1
+	        response.result = resp{1};
+	    else
+	        response.result = resp;
+	    end
+	end
 	diary('off');
 
 	datadir = fullfile(tempdir(),'MatlabData');
@@ -67,8 +61,6 @@ catch ME
 	response.success = 'false';
 	response.content.stdout = ME.message;
 end
-
-response.content.code = code;
 
 json_response = json_dump(response);
 
