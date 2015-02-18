@@ -23,10 +23,6 @@ while(1)
             resp = pymat_eval(req);
             messenger('respond', resp);
 
-        case {'get_var'}
-            resp = pymat_get_variable(req);
-            messenger('respond', resp);
-
         otherwise
             messenger('respond', 'i dont know what you want');
     end

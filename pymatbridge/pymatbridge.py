@@ -304,8 +304,10 @@ class _Session(object):
         return self._json_response(cmd='eval', code=code)
 
     def get_variable(self, varname, default=None):
-        response = self._json_response(cmd='get_var', varname=varname)
-        return response['var'] if response['exists'] else default
+        response = self._json_response(cmd='feval', func_path='evalin',
+                                       func_args=('base', varname),
+                                       nargout=1)
+        return response['result'] if response['success'] == 'true' else default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
