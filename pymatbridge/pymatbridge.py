@@ -304,16 +304,13 @@ class _Session(object):
         return self._json_response(cmd='eval', code=code)
 
     def get_variable(self, varname, default=None):
-        response = self._json_response(cmd='feval', func_path='evalin',
-                                       func_args=('base', varname),
-                                       nargout=1)
-        return response['result'] if response['success'] == 'true' else default
+        resp = self.run_func('evalin', 'base', varname)
+        return resp['result'] if resp['success'] == 'true' else default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
             return self._set_sparse_variable(varname, value)
-        return self.run_func('pymat_set_variable.m',
-                             {'name': varname, 'value': value})
+        return self.run_func('assignin', 'base', varname, value, nargout=0)
 
     def set_default_plot_size(self, width=512, height=384):
         code = "set(0, 'defaultfigurepaperunits', 'inches');\n"
