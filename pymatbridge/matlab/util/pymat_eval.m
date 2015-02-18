@@ -19,9 +19,10 @@ try
 	diary_file = [tempname() '_diary.txt'];
 	diary(diary_file);
 	if strcmp(req.type, 'eval')
+		response.content.code = req.code;
 		evalin('base', req.code);
-		response.content.code = code;
 	elseif strcmp(req.type, 'feval')
+		response.result = '';
 		[resp{1:req.nargout}] = run_dot_m(req.func_path, req.func_args, ...
 			                              req.nargout);
 	    if req.nargout == 1
