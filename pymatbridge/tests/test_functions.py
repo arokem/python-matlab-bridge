@@ -52,7 +52,7 @@ class TestFunctions(object):
 
     def test_pass_kwargs(self):
         resp = self.mlab.run_func('plot', [1, 2, 3], Linewidth=3)
-        assert resp['success'] == 'true'
+        assert resp['success']
         assert len(resp['content']['figures'])
         resp = self.mlab.plot([1, 2, 3], Linewidth=3)
         assert resp['result'] is not None

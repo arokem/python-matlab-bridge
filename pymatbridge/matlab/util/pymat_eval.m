@@ -11,7 +11,7 @@ function json_response = pymat_eval(req);
 %
 % Based on Max Jaderberg's web_feval
 
-response.success = 'false';
+response.success = true;
 response.content = '';
 
 try
@@ -40,8 +40,6 @@ try
     end
 
 	fig_files = make_figs(datadir);
-
-	response.success = 'true';
 	response.content.figures = fig_files;
 
 	% this will not work on Windows:
@@ -53,13 +51,13 @@ try
 		fclose(FID);
 		response.content.stdout = stdout;
 	else
-		response.success = 'false';
+		response.success = false;
 		response.content.stdout = sprintf('could not open %s for read',diary_file);
 	end
 	delete(diary_file)
 catch ME
 	diary('off');
-	response.success = 'false';
+	response.success = false;
 	response.content.stdout = ME.message;
 end
 

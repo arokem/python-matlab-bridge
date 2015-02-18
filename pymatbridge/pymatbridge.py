@@ -15,7 +15,7 @@ Send 'exit' command to kill the server
 .MATLAB started and connected!
 True
 >>> m.run_code('a=1;')
-{'content': {'stdout': '', 'datadir': '/private/tmp/MatlabData/', 'code': 'a=1;', 'figures': []}, 'success': 'true'}
+{'content': {'stdout': '', 'datadir': '/private/tmp/MatlabData/', 'code': 'a=1;', 'figures': []}, 'success': True}
 >>> m.get_variable('a')
 1
 
@@ -260,7 +260,7 @@ class _Session(object):
     def is_function_processor_working(self):
         result = self.run_func('%s/usrprog/test_sum.m' % MATLAB_FOLDER,
                 {'echo': '%s: Function processor is working!' % self._program_name()})
-        return result['success'] == 'true'
+        return result['success']
 
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
@@ -305,7 +305,7 @@ class _Session(object):
 
     def get_variable(self, varname, default=None):
         resp = self.run_func('evalin', 'base', varname)
-        return resp['result'] if resp['success'] == 'true' else default
+        return resp['result'] if resp['success'] else default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
