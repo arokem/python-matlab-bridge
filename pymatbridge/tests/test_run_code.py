@@ -59,7 +59,7 @@ class TestRunCode:
         success = self.mlab.run_code("this_is_nonsense")['success']
         message = self.mlab.run_code("this_is_nonsense")['content']['stdout']
 
-        npt.assert_equal(success, "false")
+        assert not success
         if tu.on_octave():
             npt.assert_equal(message, "'this_is_nonsense' undefined near line 1 column 1")
         else:

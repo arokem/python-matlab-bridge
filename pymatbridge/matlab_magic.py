@@ -93,7 +93,7 @@ class MatlabMagics(Magics):
         """
         run_dict = self.Matlab.run_code(line)
 
-        if run_dict['success'] == 'false':
+        if not run_dict['success']:
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
 
         # This is the matlab stdout:
@@ -105,7 +105,7 @@ class MatlabMagics(Magics):
         """
         run_dict = self.Matlab.set_variable(name, value)
 
-        if run_dict['success'] == 'false':
+        if not run_dict['success']:
             raise MatlabInterperterError(line, run_dict['content']['stdout'])
 
 
