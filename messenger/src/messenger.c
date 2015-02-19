@@ -111,8 +111,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
         int byte_recvd = listen_zmq(recv_buffer, BUFLEN);
 
         while (byte_recvd == -1 && errno == EAGAIN) {
-        	byte_recvd = listen_zmq(recv_buffer, BUFLEN);
         	mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
+        	byte_recvd = listen_zmq(recv_buffer, BUFLEN);
        	}
 
         /* Check if the received data is complete and correct */
@@ -121,7 +121,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
         } else if (byte_recvd > BUFLEN){
             mexErrMsgTxt("Receiver buffer overflow. Message truncated");
         } else {
-            mexErrMsgTxt("Failed to receive a message due to ZMQ error");
+        	sprintf(recv_buffer, "Failed to receive a message due to ZMQ error %s", strerror(errno));
+            mexErrMsgTxt(recv_buffer);
         }
 
         return;
