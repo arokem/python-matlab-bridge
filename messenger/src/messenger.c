@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "mex.h"
 #include "zmq.h"
 
@@ -33,7 +34,7 @@ int listen_zmq(char *buffer, int buflen) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
     }
 
-    return zmq_recv(socket_ptr, buffer, buflen, 0);
+    return zmq_recv(socket_ptr, buffer, buflen, ZMQ_NOBLOCK);
 }
 
 /* Sending out a message */
@@ -107,6 +108,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
         char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
 
         int byte_recvd = listen_zmq(recv_buffer, BUFLEN);
+
+        while (byte_recvd == -1 && errno == EAGAIN) {
+        	byte_recvd = listen_zmq(recv_buffer, BUFLEN);
+        	mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
+       	}
 
         /* Check if the received data is complete and correct */
         if ((byte_recvd > -1) && (byte_recvd <= BUFLEN)) {
