@@ -131,6 +131,11 @@ class MatlabMagics(Magics):
     )
 
     @argument(
+        '-g', '--gui', action='store_true',
+        help='Show plots in a graphical user interface'
+    )
+
+    @argument(
         'code',
         nargs='*',
         )
@@ -148,7 +153,7 @@ class MatlabMagics(Magics):
             local_ns = {}
 
         width, height = args.size.split(',')
-        self.Matlab.set_default_plot_size(width, height)
+        self.Matlab.set_plot_settings(width, height, not args.gui)
 
         if args.input:
             for input in ','.join(args.input).split(','):

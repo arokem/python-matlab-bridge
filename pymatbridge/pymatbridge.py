@@ -212,7 +212,7 @@ class _Session(object):
         # Test if connection is established
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
-            self.set_default_plot_size()
+            self.set_plot_settings()
             return True
         else:
             print("%s failed to start" % self._program_name())
@@ -318,12 +318,16 @@ class _Session(object):
             return self._set_sparse_variable(varname, value)
         return self.run_func('assignin', 'base', varname, value, nargout=0)
 
-    def set_default_plot_size(self, width=512, height=384):
-        code = "set(0, 'defaultfigurepaperunits', 'inches');\n"
-        code += "set(0, 'defaultfigureunits', 'inches');\n"
-        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])\n;"
-        code += size % (int(width) / 150., int(height) / 150.)
-        self.run_code(code)
+    def set_plot_settings(self, width=512, height=384, inline=True):
+        if inline:
+            code = ["set(0, 'defaultfigurevisible', 'off')"]
+        else:
+            code = ["set(0, 'defaultfigurevisible', 'on')"]
+        size = "set(0, 'defaultfigurepaperposition', [0 0 %s %s])"
+        code += ["set(0, 'defaultfigurepaperunits', 'inches')",
+                 "set(0, 'defaultfigureunits', 'inches')",
+                 size % (int(width) / 150., int(height) / 150.)]
+        self.run_code(';'.join(code))
 
     def _set_sparse_variable(self, varname, value):
         value = value.todok()
@@ -436,9 +440,9 @@ class Matlab(_Session):
             platform = sys.platform
         if startup_options is None:
             if platform == 'win32':
-                startup_options = ' -automation -noFigureWindows'
+                startup_options = ' -automation'
             else:
-                startup_options = ' -nodesktop -nodisplay'
+                startup_options = ' -nodesktop'
         if log:
             startup_options += ' -logfile ./pymatbridge/logs/matlablog_%s.txt' % id
         super(Matlab, self).__init__(executable, socket_addr, id, log, maxtime,
@@ -499,7 +503,6 @@ class Octave(_Session):
         code = super(Octave, self)._preamble_code()
         if self.log:
             code.append("diary('./pymatbridge/logs/octavelog_%s.txt')" % self.id)
-        code.append("set(0, 'defaultfigurevisible', 'off');")
         code.append("graphics_toolkit('gnuplot')")
         return code
 
