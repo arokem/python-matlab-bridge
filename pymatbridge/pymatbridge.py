@@ -15,7 +15,7 @@ Send 'exit' command to kill the server
 .MATLAB started and connected!
 True
 >>> m.run_code('a=1;')
-{'content': {'stdout': '', 'datadir': '/private/tmp/MatlabData/', 'code': 'a=1;', 'figures': []}, 'success': 'true'}
+{'content': {'stdout': '', 'datadir': '/private/tmp/MatlabData/', 'code': 'a=1;', 'figures': []}, 'success': True}
 >>> m.get_variable('a')
 1
 
@@ -260,7 +260,7 @@ class _Session(object):
     def is_function_processor_working(self):
         result = self.run_func('%s/usrprog/test_sum.m' % MATLAB_FOLDER,
                 {'echo': '%s: Function processor is working!' % self._program_name()})
-        return result['success'] == 'true'
+        return result['success']
 
     def _json_response(self, **kwargs):
         return json.loads(self._response(**kwargs), object_hook=decode_pymat)
@@ -288,9 +288,15 @@ class _Session(object):
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
-        return self._json_response(cmd='run_function',
-                                   func_path=func_path,
-                                   func_args=func_args,
+        dname = os.path.dirname(func_path)
+        fname = os.path.basename(func_path)
+        func_name, ext = os.path.splitext(fname)
+        if ext and not ext == '.m':
+            raise TypeError('Need to give path to .m file')
+        return self._json_response(cmd='eval',
+                                   func_name=func_name,
+                                   func_args=func_args or '',
+                                   dname=dname,
                                    nargout=nargout)
 
     def run_code(self, code):
@@ -301,17 +307,16 @@ class _Session(object):
         code : str
             Code to send for evaluation.
         """
-        return self._json_response(cmd='run_code', code=code)
+        return self.run_func('evalin', 'base', code, nargout=0)
 
     def get_variable(self, varname, default=None):
-        response = self._json_response(cmd='get_var', varname=varname)
-        return response['var'] if response['exists'] else default
+        resp = self.run_func('evalin', 'base', varname)
+        return resp['result'] if resp['success'] else default
 
     def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
             return self._set_sparse_variable(varname, value)
-        return self.run_func('pymat_set_variable.m',
-                             {'name': varname, 'value': value})
+        return self.run_func('assignin', 'base', varname, value, nargout=0)
 
     def set_default_plot_size(self, width=512, height=384):
         code = "set(0, 'defaultfigurepaperunits', 'inches');\n"

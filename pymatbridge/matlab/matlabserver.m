@@ -19,16 +19,8 @@ while(1)
             clear mex;
             break;
 
-        case {'run_function'}
-            resp = pymat_feval(req);
-            messenger('respond', resp);
-
-        case {'run_code'}
+        case {'eval'}
             resp = pymat_eval(req);
-            messenger('respond', resp);
-
-        case {'get_var'}
-            resp = pymat_get_variable(req);
             messenger('respond', resp);
 
         otherwise
