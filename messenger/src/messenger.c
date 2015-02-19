@@ -13,6 +13,7 @@ static int initialized = 0;
 /* Initialize a ZMQ server */
 int initialize(char *socket_addr) {
     int rc;
+    mexLock();
     ctx = zmq_ctx_new();
     socket_ptr = zmq_socket(ctx, ZMQ_REP);
     rc = zmq_bind(socket_ptr, socket_addr);
