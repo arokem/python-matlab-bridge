@@ -14,7 +14,9 @@ for fig=1:length(figHandles)
     saveas(h, [filename, '.png']);
     % Once you've saved it, close it, so it doesn't get dragged into the
     % scope of other cells
-    close(h);
+    if (strcmp(get(h, 'visible'), 'off'))
+        close(h);
+    end
     fig_files{fig} = [filename '.png'];
 end
 
