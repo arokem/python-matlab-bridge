@@ -440,9 +440,9 @@ class Matlab(_Session):
             platform = sys.platform
         if startup_options is None:
             if platform == 'win32':
-                startup_options = ' -automation'
+                startup_options = ' -automation -nosplash'
             else:
-                startup_options = ' -nodesktop'
+                startup_options = ' -nodesktop -nosplash'
         if log:
             startup_options += ' -logfile ./pymatbridge/logs/matlablog_%s.txt' % id
         super(Matlab, self).__init__(executable, socket_addr, id, log, maxtime,
