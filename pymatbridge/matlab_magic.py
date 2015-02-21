@@ -52,8 +52,7 @@ class MatlabMagics(Magics):
     def __init__(self, shell,
                  matlab='matlab',
                  maxtime=60,
-                 pyconverter=np.asarray,
-                 cache_display_data=False):
+                 pyconverter=np.asarray):
         """
         Parameters
         ----------
@@ -71,14 +70,8 @@ class MatlabMagics(Magics):
         pyconverter : callable
             To be called on matlab variables returning into the ipython
             namespace
-
-        cache_display_data : bool
-            If True, the published results of the final call to R are
-            cached in the variable 'display_cache'.
-
         """
         super(MatlabMagics, self).__init__(shell)
-        self.cache_display_data = cache_display_data
 
         if 'octave' in matlab.lower():
             self.Matlab = pymat.Octave(matlab, maxtime=maxtime)
