@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "mex.h"
 #include "zmq.h"
 
@@ -12,6 +13,7 @@ static int initialized = 0;
 /* Initialize a ZMQ server */
 int initialize(char *socket_addr) {
     int rc;
+    mexLock();
     ctx = zmq_ctx_new();
     socket_ptr = zmq_socket(ctx, ZMQ_REP);
     rc = zmq_bind(socket_ptr, socket_addr);
@@ -33,7 +35,7 @@ int listen_zmq(char *buffer, int buflen) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
     }
 
-    return zmq_recv(socket_ptr, buffer, buflen, 0);
+    return zmq_recv(socket_ptr, buffer, buflen, ZMQ_NOBLOCK);
 }
 
 /* Sending out a message */
@@ -108,13 +110,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         int byte_recvd = listen_zmq(recv_buffer, BUFLEN);
 
+        while (byte_recvd == -1 && errno == EAGAIN) {
+        	mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
+        	byte_recvd = listen_zmq(recv_buffer, BUFLEN);
+       	}
+
         /* Check if the received data is complete and correct */
         if ((byte_recvd > -1) && (byte_recvd <= BUFLEN)) {
             plhs[0] = mxCreateString(recv_buffer);
         } else if (byte_recvd > BUFLEN){
             mexErrMsgTxt("Receiver buffer overflow. Message truncated");
         } else {
-            mexErrMsgTxt("Failed to receive a message due to ZMQ error");
+        	sprintf(recv_buffer, "Failed to receive a message due to ZMQ error %s", strerror(errno));
+            mexErrMsgTxt(recv_buffer);
         }
 
         return;

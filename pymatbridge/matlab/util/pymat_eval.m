@@ -15,6 +15,8 @@ response.success = true;
 response.content = '';
 response.result = '';
 
+close all hidden;
+
 try
 	% tempname is less likely to get bonked by another process.
 	diary_file = [tempname() '_diary.txt'];
