@@ -1,5 +1,9 @@
-import IPython.nbformat.current as nbformat
+try:
+    from IPython.nbformat import current_nbformat as nbformat
+except ImportError:
+    import IPython.nbformat.current as nbformat
 import numpy as np
+
 
 def format_line(line):
     """
