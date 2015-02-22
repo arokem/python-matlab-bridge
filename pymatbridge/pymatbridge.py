@@ -285,6 +285,8 @@ class _Session(object):
         -------
         Result dictionary with keys: 'message', 'result', and 'success'
         """
+        if not self.started:
+            self.start()
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
