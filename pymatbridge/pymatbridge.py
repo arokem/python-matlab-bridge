@@ -168,7 +168,6 @@ class _Session(object):
         self.context = None
         self.socket = None
         atexit.register(self.stop)
-        return self
 
     def _program_name(self):  # pragma: no cover
         raise NotImplemented
@@ -214,10 +213,9 @@ class _Session(object):
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
             self.set_plot_settings()
-            return True
+            return self
         else:
-            print("%s failed to start" % self._program_name())
-            return False
+            raise ValueError("%s failed to start" % self._program_name())
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
