@@ -168,6 +168,7 @@ class _Session(object):
         self.context = None
         self.socket = None
         atexit.register(self.stop)
+        return self
 
     def _program_name(self):  # pragma: no cover
         raise NotImplemented
@@ -286,7 +287,8 @@ class _Session(object):
         Result dictionary with keys: 'message', 'result', and 'success'
         """
         if not self.started:
-            self.start()
+            raise ValueError('Session not started, use start()')
+
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
