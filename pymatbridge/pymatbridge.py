@@ -213,10 +213,9 @@ class _Session(object):
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
             self.set_plot_settings()
-            return True
+            return self
         else:
-            print("%s failed to start" % self._program_name())
-            return False
+            raise ValueError("%s failed to start" % self._program_name())
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
@@ -285,6 +284,9 @@ class _Session(object):
         -------
         Result dictionary with keys: 'message', 'result', and 'success'
         """
+        if not self.started:
+            raise ValueError('Session not started, use start()')
+
         nargout = kwargs.pop('nargout', 1)
         func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
                            for item in pair)
