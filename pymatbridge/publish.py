@@ -1,7 +1,5 @@
-try:
-    from IPython.nbformat import current_nbformat as nbformat
-except ImportError:
-    import IPython.nbformat.current as nbformat
+import IPython.nbformat.v4 as nbformat
+from IPython.nbformat import write as nbwrite
 import numpy as np
 
 
@@ -97,18 +95,17 @@ def lines_to_notebook(lines, name=None):
     # Append the notebook with loading matlab magic extension
     notebook_head = "import pymatbridge as pymat\n" + "ip = get_ipython()\n" \
                     + "pymat.load_ipython_extension(ip)"
-    cells.append(nbformat.new_code_cell(notebook_head, language='python'))
+    cells.append(nbformat.new_code_cell(notebook_head))#, language='python'))
 
     for cell_idx, cell_s in enumerate(cell_source):
         if cell_md[cell_idx]:
-            cells.append(nbformat.new_text_cell('markdown', cell_s))
+            cells.append(nbformat.new_markdown_cell(cell_s))
         else:
             cell_s.insert(0, '%%matlab\n')
-            cells.append(nbformat.new_code_cell(cell_s, language='matlab'))
+            cells.append(nbformat.new_code_cell(cell_s))#, language='matlab'))
 
-    ws = nbformat.new_worksheet(cells=cells)
-    notebook = nbformat.new_notebook(metadata=nbformat.new_metadata(),
-                                 worksheets=[ws])
+    #ws = nbformat.new_worksheet(cells=cells)
+    notebook = nbformat.new_notebook(cells=cells)
     return notebook
 
 
@@ -130,4 +127,4 @@ def convert_mfile(mfile, outfile=None):
     if outfile is None:
         outfile = mfile.split('.m')[0] + '.ipynb'
     with open(outfile, 'w') as fid:
-        nbformat.write(nb, fid, format='ipynb')
+        nbwrite(nb, fid)
