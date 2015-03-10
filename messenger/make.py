@@ -50,7 +50,7 @@ def do_build(make_cmd, messenger_exe):
     print('Building %s...' % messenger_exe)
     print(make_cmd)
     messenger_dir = get_messenger_dir()
-    subprocess.check_output(shlex.split(make_cmd))
+    subprocess.check_output(shlex.split(make_cmd), shell=True)
 
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
@@ -67,36 +67,46 @@ def build_octave():
     do_build(make_cmd, 'messenger.mex')
 
 
-def build_matlab():
+def build_matlab(static=False):
+    """build the messenger mex for MATLAB
+    
+    static : bool
+        Determines if the zmq library has been statically linked.
+        If so, it will append the command line option -DZMQ_STATIC
+        when compiling the mex so it matches libzmq.
+    """
     cfg = get_config()
-    matlab_bin = cfg['matlab_bin']
+    # To deal with spaces, remove quotes now, and add
+    # to the full commands themselves.
+    matlab_bin = cfg['matlab_bin'].strip('"')
     # Get the extension
-    if sys.platform == 'win32':
-        extcmd = '"%s\\mexext.bat"' % matlab_bin
-    else:
-        extcmd = matlab_bin + "/mexext"
-
-    check_extension = subprocess.Popen(extcmd, stdout=subprocess.PIPE)
-    extension = check_extension.stdout.read()
+    extcmd = '"' + os.path.join(matlab_bin, "mexext") + '"'
+    extension = subprocess.check_output(extcmd, shell=True)
     extension = extension.decode('utf-8').rstrip('\r\n')
 
     # Build the mex file
-    if sys.platform == 'win32':
-        mex = matlab_bin + "\\mex.bat"
-    else:
-        mex = matlab_bin + "/mex"
+    mex = '"' + os.path.join(matlab_bin, "mex") + '"'
     paths = "-L%(zmq_lib)s -I%(zmq_inc)s" % cfg
     make_cmd = '%s -O %s -lzmq ./src/messenger.c' % (mex, paths)
+    if static:
+        make_cmd += ' -DZMQ_STATIC'
     do_build(make_cmd, 'messenger.%s' % extension)
 
 
 if __name__ == '__main__':
-    usage = 'Please specify a valid make target (Matlab or Octave)'
-    if len(sys.argv) < 2:
-        print(usage)
-    elif sys.argv[1].lower() == 'matlab':
-        build_matlab()
-    elif sys.argv[1].lower() == 'octave':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "target",
+        choices=["matlab", "octave"],
+        type=str.lower,
+        help="target to be built")
+    parser.add_argument("--static", action="store_true",
+                        help="staticly link libzmq")
+    args = parser.parse_args()
+    if args.target == "matlab":
+        build_matlab(static=args.static)
+    elif args.target == "octave":
         build_octave()
     else:
-        print(usage)
+        raise ValueError()
