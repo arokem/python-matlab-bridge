@@ -48,12 +48,12 @@ def get_config():
 def do_build(make_cmd, messenger_exe):
     print('Building %s...' % messenger_exe)
     print(make_cmd)
-    messenger_dir = 'messenger' + '/' + get_messenger_dir()
+    messenger_dir = get_messenger_dir()
     subprocess.call(shlex.split(make_cmd), stderr=subprocess.STDOUT)
 
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
-    # shutil.move(messenger_exe, messenger_loc)
+    shutil.move(messenger_exe, os.path.join('messenger', messenger_loc))
 
     if os.path.isfile('messenger.o'):
         os.remove('messenger.o')
@@ -87,7 +87,7 @@ def build_matlab(static=False):
 
     extcmd     = '%s' % os.path.join(matlab_bin, "mexext")
     extension  = subprocess.check_output(extcmd, shell=True)
-    extension  = os.path.join('messenger', extension.decode('utf-8').rstrip())
+    extension  = extension.decode('utf-8').rstrip()
 
     # Build the mex file
     mex = '"' + os.path.join(matlab_bin, "mex") + '"'
