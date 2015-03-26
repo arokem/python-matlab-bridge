@@ -1,5 +1,6 @@
 import os
 import platform
+import subprocess
 
 from glob import glob
 
@@ -8,7 +9,7 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
-__all__= ['get_matlab_bin']
+__all__= ['get_matlab_bin', 'matlab_env']
 
 def get_matlab_bin(config='config.ini'):
     """
@@ -49,3 +50,25 @@ def get_matlab_bin(config='config.ini'):
 
     return os.path.normpath(matlab)
 
+def get_matlab_env(matlab='matlab'):
+    """
+    Get's the underlying enviornement variables set for a matlab installation.
+
+    Parameters
+    ==========
+    matlab: string
+        Path to the matlab binary executable.
+        If matlab is in the users $PATH, just pass 'matlab'
+
+    Returns
+    =======
+    enviornment: dictionary
+        Mapping of enviornment variable[s]
+    """
+    command = ' '.join([matlab, '-e']),
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+
+    envs    = (line.decode('utf-8').strip() for line in process.stdout)
+    mapping = (env.split('=', maxsplit=1)   for env  in envs)
+
+    return {key:value for key, value in mapping}
