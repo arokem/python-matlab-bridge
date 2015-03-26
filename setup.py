@@ -2,18 +2,18 @@
 """Setup file for python-matlab-bridge"""
 
 import os
-import sys
 import shutil
 import glob
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
 # update it when the contents of directories change.
-if os.path.exists('MANIFEST'):
-    os.remove('MANIFEST')
+if os.path.exists('MANIFEST'): os.remove('MANIFEST')
 
-
-from distutils.core import setup
+try:
+    from setuptools import  setup
+except ImportError:
+    from distutils.core import setup
 
 
 # Find the messenger binary file(s) and copy it to /matlab folder.

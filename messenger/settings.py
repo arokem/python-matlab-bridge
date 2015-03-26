@@ -2,17 +2,18 @@ import os
 import platform
 import subprocess
 import logging
+import tarfile
 
 from glob import glob
 
 try:
-    from urllib.request import urlopen
+    from urllib.request import urlretrieve
     from configparser import ConfigParser
 except ImportError:
-    from urllib2 import urlopen
+    from urllib2 import urlretrieve 
     from ConfigParser import ConfigParser
 
-__all__= ['get_matlab_bin', 'matlab_env']
+__all__= ['get_matlab_bin', 'get_matlab_env', 'fetch_zmq']
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ def get_matlab_bin(config='config.ini'):
 
 def get_matlab_env(matlab='matlab'):
     """
-    Get's the underlying enviornement variables set for a matlab installation.
+    Get the underlying environment variables set for a matlab installation.
 
     Parameters
     ==========
@@ -68,8 +69,8 @@ def get_matlab_env(matlab='matlab'):
 
     Returns
     =======
-    enviornment: dictionary
-        Mapping of enviornment variable[s]
+    environment: dictionary
+        Mapping of environment variable[s]
     """
     command = ' '.join([matlab, '-e']),
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
@@ -90,15 +91,13 @@ def fetch_zmq(prefix, version=(4,0,5)):
     version: tuple
         ZMQ Version Number
     """
-    logging.info('Downloading ZMQ Version %i.%i.%i' % version)
+    logger.info('Downloading ZMQ Source Version %i.%i.%i'     % version)
+    url = ("http://download.zeromq.org/zeromq-%i.%i.%i.tar.gz" % version)
+    name = urlretrieve(url, url.rsplit('/')[-1])[0]
 
-    url = "http://download.zeromq.org/zeromq-%i.%i.%i.tar.gz" % version
-
-    name, msg = urlretrieve(url, url.rsplit('/')[-1])
-
-    logging.info('Extracting into prefix %s' % prefix)
+    logger.info('Extracting into prefix %s' % prefix)
     with tarfile.open(name) as tar:
         tar.extractall(prefix)
 
-    os.remove(name)
     logging.info('Download Complete')
+    os.remove(name)
