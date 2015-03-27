@@ -2,7 +2,6 @@
 """
 Pymatbridge: A python interface to call out to Matlab(R)
 """
-
 import os
 import shutil
 import glob
@@ -12,6 +11,9 @@ import glob
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
+# Set Version Info
+exec(open('pymatbridge/__version__.py').read())
+
 try:
     from setuptools import  setup
 except ImportError:
@@ -19,10 +21,9 @@ except ImportError:
 
 # Find the messenger binary file(s) and copy it to /matlab folder.
 from messenger.make import get_messenger_dir
-from version import __version__, __build__
 
-for f in glob.glob("./messenger/%s/messenger.*" % get_messenger_dir()):
-    shutil.copy(f, "./pymatbridge/matlab")
+for f in glob.glob("messenger/%s/messenger.*" % get_messenger_dir()):
+    shutil.copy(f, 'pymatbridge/matlab/')
 
 # Now call the actual setup function
 if __name__ == '__main__':
@@ -39,7 +40,10 @@ if __name__ == '__main__':
         author_email="arokem@gmail.com",
         platforms="OS Independent",
         version='.'.join([__version__, __build__]),
-        packages=['pymatbridge'],
+        packages=['pymatbridge', 'messenger'],
+        data_files=[
+            ('pymatbridge/matlab', ['messenger/mexmaci64/messenger.mex'])
+        ],
         package_data={
             "pymatbridge": [
                 "matlab/matlabserver.m", "matlab/messenger.*",
