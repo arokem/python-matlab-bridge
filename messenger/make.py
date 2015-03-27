@@ -17,7 +17,7 @@ from . import settings
 
 __all__ = [
     'get_messenger_dir',
-    'get_matlab_bin'
+    'get_matlab_bin',
     'get_config',
     'do_build',
     'build_octave',
