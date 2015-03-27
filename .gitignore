@@ -75,4 +75,5 @@ env/**
 # Repository specific files {{{
 texts/**
 .idea/**
+dist/**
 # }}}
