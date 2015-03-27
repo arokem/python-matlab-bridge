@@ -6,8 +6,7 @@ import shlex
 import shutil
 import subprocess
 import platform
-
-from glob import glob
+import glob
 
 try:
     from ConfigParser import ConfigParser
@@ -18,6 +17,7 @@ from . import settings
 
 __all__ = [
     'get_messenger_dir',
+    'get_matlab_bin',
     'get_config',
     'do_build',
     'build_octave',
@@ -37,12 +37,12 @@ def get_messenger_dir():
     return ostype[host] if is_64bit else 'mexw32'
 
 
-def get_config():
-    config = os.path.join(os.path.realpath(__file__), 'config.ini')
-    print(config)
+def get_config(host, config='config.ini'):
+
     cfg = ConfigParser()
-    config.read(config)
-    return cfg
+    cfg.read(config)
+
+    return dict(cfg.items(host))
 
 
 def do_build(make_cmd, messenger_exe):
@@ -59,9 +59,9 @@ def do_build(make_cmd, messenger_exe):
         os.remove('messenger.o')
 
 
-def build_octave():
+def build_octave(static=False):
     paths = "-L%(octave_lib)s -I%(octave_inc)s -L%(zmq_lib)s -I%(zmq_inc)s"
-    paths = paths % get_config()
+    paths = paths % get_config(platform.system())
     make_cmd = "mkoctfile --mex %s -lzmq ./src/messenger.c" % paths
     do_build(make_cmd, 'messenger.mex')
 
@@ -77,13 +77,7 @@ def build_matlab(static=False):
         If so, it will append the command line option -DZMQ_STATIC
         when compiling the mex so it matches libzmq.
     """
-    matlab_bin = settings.get_matlab_bin()
-    cfg, host = ConfigParser(), platform.system()
-    cfg.read('config.ini')
-    libzmq = {
-        'zmq_lib': os.path.normpath(cfg.get(host, 'ZMQ_LIB')),
-        'zmq_inc': os.path.normpath(cfg.get(host, 'ZMQ_INC')),
-    }
+    matlab_bin, cfg = settings.get_matlab_bin(), get_config(platform.system())
 
     extcmd     = '%s' % os.path.join(matlab_bin, "mexext")
     extension  = subprocess.check_output(extcmd, shell=True)
@@ -91,10 +85,49 @@ def build_matlab(static=False):
 
     # Build the mex file
     mex = '"' + os.path.join(matlab_bin, "mex") + '"'
-    paths    = "-L'%(zmq_lib)s' -I'%(zmq_inc)s'" % libzmq
+    paths    = "-L'%(zmq_lib)s' -I'%(zmq_inc)s'" % cfg
     make_cmd = '%s -O %s -lzmq messenger/src/messenger.c' % (mex, paths)
 
     if static:
         make_cmd += ' -DZMQ_STATIC'
 
     do_build(make_cmd, 'messenger.%s' % extension)
+
+
+def get_matlab_bin(config='config.ini'):
+    """
+    Tries to find the MATLAB bin directory independent on host platform.
+    The operation of this function can be overridden by setting the MATLAB_BIN
+    variable within the configuration file specified.
+
+    Parameters
+    -=========
+    config:
+        Relative path to configuration file
+
+    Returns
+    =======
+    matlab:
+        Absolute path to matlab bin directory
+    """
+    host = platform.system()
+    cfg  = get_config(host)
+    programs = {
+        'Darwin' : r'/Applications',
+        'Windows': r'C:/Program Files',
+        'Linux'  : r'/usr/local',
+        }
+
+    if cfg.get('MATLAB_BIN', None):
+        matlab = cfg['MATLAB_BIN']
+    else:
+        # Searches for Matlab bin if it's not set
+        _root    = glob.glob(r'%s/MATLAB*' % programs[host])[0]
+        _version = [p for p in os.listdir(_root) if p.startswith('R20')]
+        if _version:
+            _root = r'%s/%s' % (_root, _version.pop())
+        matlab   = r'%s/%s' % (_root, 'bin')
+
+    assert os.path.isdir(matlab)
+
+    return os.path.normpath(matlab)
