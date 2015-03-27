@@ -10,7 +10,7 @@ try:
     from urllib.request import urlretrieve
     from configparser import ConfigParser
 except ImportError:
-    from urllib2 import urlretrieve 
+    from urllib import urlretrieve
     from ConfigParser import ConfigParser
 
 __all__= ['get_matlab_bin', 'get_matlab_env', 'fetch_zmq']
