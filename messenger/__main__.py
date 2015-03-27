@@ -1,3 +1,5 @@
+import sys
+
 from argparse import ArgumentParser
 
 from .make import *
@@ -10,8 +12,8 @@ def command_line():
     =======
     Namespace containing parsed arguments
     """
+    parser = ArgumentParser(prog='messenger')
 
-    parser = ArgumentParser()
     parser.add_argument(
         "target",
         choices=["matlab", "octave"],
@@ -21,20 +23,19 @@ def command_line():
     parser.add_argument(
         "--static",
         action="store_true",
-        help="staticly link libzmq"
+        help="statically link libzmq"
     )
     return parser.parse_args()
 
-
-
 def main():
-    args = command_line()
-    if args.target == "matlab":
-        build_matlab(static=args.static)
-    elif args.target == "octave":
-        build_octave()
-    else:
-        raise ValueError()
+    args   = command_line()
+    build  = {
+        'matlab': build_matlab,
+        'octave': build_octave,
+    }
+    target = build[args.target]
+
+    return target(static=args.static)
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
