@@ -43,6 +43,7 @@ opts = dict(name=NAME,
             version=VERSION,
             packages=PACKAGES,
             package_data=PACKAGE_DATA,
+            zip_safe=False,
             requires=REQUIRES,
             #extras_require=EXTRAS_REQUIRE,
             scripts=BIN
