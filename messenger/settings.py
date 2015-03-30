@@ -7,7 +7,7 @@ try:
 except ImportError:
     from urllib import urlretrieve
 
-__all__= ['get_matlab_bin', 'get_matlab_env', 'fetch_zmq']
+__all__= ['get_matlab_env', 'fetch_zmq']
 
 
 def get_matlab_env(matlab='matlab'):

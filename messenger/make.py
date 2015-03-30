@@ -131,4 +131,3 @@ def get_matlab_bin(config='config.ini'):
     assert os.path.isdir(matlab)
 
     return os.path.normpath(matlab)
-
