@@ -9,7 +9,7 @@ def command_line():
     Manages command line arguments.
 
     Returns
-    =======
+    -------
     Namespace containing parsed arguments
     """
     parser = ArgumentParser(prog='messenger')
