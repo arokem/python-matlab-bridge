@@ -38,4 +38,4 @@ rebuildTags.sh
 # caused py setup.py develop
 pymatbridge.egg-info
 
-.idea/**
+.idea/scopes/scope_settings.xml
