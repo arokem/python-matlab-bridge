@@ -71,7 +71,7 @@ def build_matlab(static=False):
     Build the messenger mex for MATLAB
 
     Parameters
-    ============
+    ----------
     static : bool
         Determines if the zmq library has been statically linked.
         If so, it will append the command line option -DZMQ_STATIC
@@ -101,13 +101,13 @@ def get_matlab_bin(config='config.ini'):
     variable within the configuration file specified.
 
     Parameters
-    -=========
-    config:
+    ----------
+    config: str
         Relative path to configuration file
 
     Returns
-    =======
-    matlab:
+    -------
+    matlab: str
         Absolute path to matlab bin directory
     """
     host = platform.system()
@@ -131,3 +131,4 @@ def get_matlab_bin(config='config.ini'):
     assert os.path.isdir(matlab)
 
     return os.path.normpath(matlab)
+
