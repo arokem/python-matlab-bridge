@@ -111,7 +111,7 @@ def get_matlab_bin(config='config.ini'):
         Absolute path to matlab bin directory
     """
     host = platform.system()
-    cfg  = get_config(host)
+    cfg  = get_config(host,config=config)
     programs = {
         'Darwin' : r'/Applications',
         'Windows': r'C:/Program Files',
