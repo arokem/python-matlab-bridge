@@ -111,7 +111,7 @@ def get_matlab_bin(config='config.ini'):
         Absolute path to matlab bin directory
     """
     host = platform.system()
-    cfg  = get_config(host,config=config)
+    cfg  = get_config(host, config=config)
     programs = {
         'Darwin' : r'/Applications',
         'Windows': r'C:/Program Files',
@@ -122,7 +122,7 @@ def get_matlab_bin(config='config.ini'):
         matlab = cfg['MATLAB_BIN']
     else:
         # Searches for Matlab bin if it's not set
-        _root    = glob.glob(r'%s/MATLAB*' % programs[host])[0]
+        _root    = [os.path.join(programs[host], p) for p in os.listdir(programs[host]) if p.startswith('MATLAB')][0]
         _version = [p for p in os.listdir(_root) if p.startswith('R20')]
         if _version:
             _root = r'%s/%s' % (_root, _version.pop())
