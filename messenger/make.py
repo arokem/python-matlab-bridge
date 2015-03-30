@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 def get_messenger_dir():
-    host, is_64bit = platform.system(), sys.maxsize > 2**32
+    host, is_64bit = platform.system(), platform.machine().endswith('64')
     ostype = {
         'Darwin':  'mexmaci64',
         'Linux':   'mexa64',
