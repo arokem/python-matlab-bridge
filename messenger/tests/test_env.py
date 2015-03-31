@@ -9,21 +9,25 @@ sys.path.append(ROOT)
 
 import messenger
 
-def test_matlab_bin():
-    config = os.path.join(ROOT, 'config.ini')
-    npt.assert_equal(os.path.isfile(config), True)
-    bin = messenger.get_matlab_bin(config=config)
-    npt.assert_equal(os.path.isdir(bin), True)
+CONFIG = os.path.join(ROOT, 'config.ini')
+BIN    = messenger.get_matlab_bin(config=CONFIG)
 
-    mexext = any(m for m in os.listdir(bin) if m == 'mexext' or m == 'mexext.exe')
-    mex    = any(m for m in os.listdir(bin) if m == 'mex' or m == 'mex.exe')
+def test_config():
+    npt.assert_equal(os.path.isfile(CONFIG), True)
+
+@npt.decorators.skipif(BIN==None, 'No Matlab Installed')
+def test_matlab_bin():
+    npt.assert_equal(os.path.isdir(BIN), True)
+
+    mexext = any(m for m in os.listdir(BIN) if m == 'mexext' or m == 'mexext.exe')
+    mex    = any(m for m in os.listdir(BIN) if m == 'mex' or m == 'mex.exe')
 
     npt.assert_equal(mexext, True)
     npt.assert_equal(mex, True)
 
+@npt.decorators.skipif(BIN==None, 'No Matlab Installed')
 def test_matlab_env():
-    config = os.path.join(ROOT, 'config.ini')
-    matlab    = os.path.join(messenger.get_matlab_bin(config=config), 'matlab')
+    matlab    = os.path.join(messenger.get_matlab_bin(config=CONFIG), 'matlab')
     env       = messenger.get_matlab_env(matlab=matlab)
     arch = env['ARCH']
 
