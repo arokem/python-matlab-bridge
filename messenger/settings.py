@@ -1,6 +1,7 @@
 import os
 import subprocess
 import tarfile
+import string
 
 try:
     from urllib.request import urlretrieve
@@ -30,7 +31,7 @@ def get_matlab_env(matlab='matlab'):
 
     envs    = (line.decode('utf-8').strip() for line in process.stdout)
 
-    return dict(env.split('=', maxsplit=1) for env in envs)
+    return dict(string.split(env, '=', maxsplit=1) for env in envs)
 
 
 def fetch_zmq(prefix, version=(4,0,5)):
