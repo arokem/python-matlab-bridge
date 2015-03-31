@@ -1,12 +1,13 @@
 import os
 import subprocess
 import tarfile
-import string
 
-try:
+try: # Python 3 Compat
     from urllib.request import urlretrieve
+    string = str
 except ImportError:
     from urllib import urlretrieve
+    import string
 
 __all__= ['get_matlab_bin', 'get_matlab_env', 'fetch_zmq']
 
