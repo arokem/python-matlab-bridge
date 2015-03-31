@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import platform
 import glob
+import operator
 
 try:
     from ConfigParser import ConfigParser
@@ -128,11 +129,10 @@ def get_matlab_bin(config='config.ini'):
         if not matlab:
             return None
 
-        _version = [p for p in os.listdir(os.path.join(programs[host], *matlab)) if p.startswith('R20')]
+        for p in os.listdir(os.path.join(programs[host], *matlab)):
+            if p.startswith('R20'):
+                matlab.append(p)
 
-        if _version:
-            matlab = r'%s/%s' % (matlab, _version.pop())
+        matlab.append('bin')
 
-        matlab   = r'%s/%s' % (matlab, 'bin')
-
-    return os.path.normpath(matlab)
+    return os.path.normpath(os.path.join(programs[host], *matlab))
