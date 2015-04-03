@@ -20,7 +20,7 @@ def test_matlab_bin():
     npt.assert_equal(os.path.isdir(BIN), True)
 
     mexext = any(m for m in os.listdir(BIN) if m == 'mexext' or m == 'mexext.exe')
-    mex    = any(m for m in os.listdir(BIN) if m == 'mex' or m == 'mex.exe')
+    mex    = any(m for m in os.listdir(BIN) if m == 'mex'    or m == 'mex.exe')
 
     npt.assert_equal(mexext, True)
     npt.assert_equal(mex, True)

@@ -40,10 +40,7 @@ if __name__ == '__main__':
         author_email="arokem@gmail.com",
         platforms="OS Independent",
         version='.'.join([__version__, __build__]),
-        packages=['pymatbridge', 'messenger'],
-        data_files=[
-            ('pymatbridge/matlab', ['messenger/mexmaci64/messenger.mex'])
-        ],
+        packages=['pymatbridge'],
         package_data={
             "pymatbridge": [
                 "matlab/matlabserver.m", "matlab/messenger.*",
