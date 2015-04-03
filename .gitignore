@@ -37,3 +37,6 @@ rebuildTags.sh
 
 # caused py setup.py develop
 pymatbridge.egg-info
+
+.idea/**
+dist/**
