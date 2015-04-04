@@ -7,6 +7,7 @@
 /* Set a 200MB receiver buffer size */
 #define BUFLEN 200000000
 
+/* The variable cannot be named socket on windows */
 void *ctx, *socket_ptr;
 static int initialized = 0;
 
@@ -26,27 +27,17 @@ int initialize(char *socket_addr) {
     }
 }
 
-/* Listen over an existing socket
- * Now the receiver buffer is pre-allocated
- * In the future we can possibly use multi-part messaging
- */
-int listen_zmq(char *buffer, int buflen) {
+/* Check if the ZMQ server is intialized and print an error if not */
+int checkInitialized(void) {
     if (!initialized) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
+        return 0;
     }
-
-    return zmq_recv(socket_ptr, buffer, buflen, ZMQ_NOBLOCK);
+    else {
+        return 1;
+    }
 }
 
-/* Sending out a message */
-int respond(char *msg_out, int len) {
-    if (!initialized) {
-        mexErrMsgTxt("Error: ZMQ session not initialized");
-    }
-
-    return zmq_send(socket_ptr, msg_out, len, 0);
-
-}
 
 /* Cleaning up after session finished */
 void cleanup (void) {
@@ -106,14 +97,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Listen over an existing socket */
     } else if (strcmp(cmd, "listen") == 0) {
+        int byte_recvd;
         char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
+        zmq_pollitem_t polls[] = {{socket_ptr, 0, ZMQ_POLLIN, 0}};
+        
+        if (!checkInitialized()) return;
+        
+        /* allow MATLAB to draw its graphics every 20ms */
+        while (zmq_poll(polls, 1, 20000) == 0) {
+            mexEvalString("drawnow");
+        }
 
-        int byte_recvd = listen_zmq(recv_buffer, BUFLEN);
-
-        while (byte_recvd == -1 && errno == EAGAIN) {
-        	mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
-        	byte_recvd = listen_zmq(recv_buffer, BUFLEN);
-       	}
+        byte_recvd = zmq_recv(socket_ptr, recv_buffer, BUFLEN, 0);
 
         /* Check if the received data is complete and correct */
         if ((byte_recvd > -1) && (byte_recvd <= BUFLEN)) {
@@ -138,13 +133,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
             mexErrMsgTxt("Please provide the message to send");
         }
 
+        if (!checkInitialized()) return;
+
         msglen = mxGetNumberOfElements(prhs[1]);
         msg_out = mxArrayToString(prhs[1]);
 
         plhs[0] = mxCreateLogicalMatrix(1, 1);
         p = mxGetLogicals(plhs[0]);
 
-        if (msglen == respond(msg_out, msglen)) {
+        if (msglen == zmq_send(socket_ptr, msg_out, msglen, 0)) {
             p[0] = 1;
         } else {
             p[0] = 0;
