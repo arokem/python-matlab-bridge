@@ -7,6 +7,15 @@ import shlex
 import shutil
 import subprocess
 
+use_shell = True if sys.platform.startswith("win32") else False
+
+
+def esc(path):
+    if ' ' in path:
+        return '"' + path + '"'
+    else:
+        return path
+
 
 def get_messenger_dir():
     # Check the system platform first
@@ -50,7 +59,7 @@ def do_build(make_cmd, messenger_exe):
     print('Building %s...' % messenger_exe)
     print(make_cmd)
     messenger_dir = get_messenger_dir()
-    subprocess.check_output(shlex.split(make_cmd), shell=True)
+    subprocess.check_output(shlex.split(make_cmd), shell=use_shell)
 
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
@@ -67,9 +76,55 @@ def build_octave():
     do_build(make_cmd, 'messenger.mex')
 
 
+def which_matlab():
+    try:
+        matlab_path = subprocess.check_output(['which', 'matlab']).strip()
+        return os.path.dirname(os.path.realpath(matlab_path))
+    except (OSError, subprocess.CalledProcessError):
+        def ensure_path(path, extension=''):
+            return os.path.isdir(path) and \
+                os.path.isfile(os.path.join(path, "matlab" + extension))
+
+        # need to guess the location of MATLAB
+        if sys.platform.startswith("darwin"):
+            MATLABs = [os.path.join("/Applications", i, "bin")
+                       for i in os.listdir("/Applications")
+                       if i.startswith("MATLAB_R")]
+            # only want ones with MATLAB executables
+            # sort so we can get the latest
+            MATLABs = list(sorted(filter(ensure_path, MATLABs)))
+            return MATLABs[-1] if len(MATLABs) > 0 else None
+        elif sys.platform.startswith("win32"):
+            MATLAB_loc = "C:\\Program Files\\MATLAB"
+            print(MATLAB_loc)
+            if not os.path.isdir(MATLAB_loc):
+                return None
+            MATLABs = [os.path.join(MATLAB_loc, i, "bin")
+                       for i in os.listdir(MATLAB_loc)]
+            print(MATLABs)
+            print(i)
+            # only want ones with MATLAB executables
+            # sort so we can get the latest
+            MATLABs = list(sorted(filter(lambda x: ensure_path(x, ".exe"),
+                                         MATLABs)))
+            print(MATLABs)
+            return MATLABs[-1] if len(MATLABs) > 0 else None
+        elif sys.platform.startswith("linux"):
+            MATLAB_loc = "/usr/local/MATLAB/"
+            if not os.path.isdir(MATLAB_loc):
+                return None
+            MATLABs = [os.path.join(MATLAB_loc, i, "bin")
+                       for i in os.listdir(MATLAB_loc)
+                       if i.startswith("R")]
+            # only want ones with MATLAB executables
+            # sort so we can get the latest
+            MATLABs = list(sorted(filter(ensure_path, MATLABs)))
+            return MATLABs[-1] if len(MATLABs) > 0 else None
+
+
 def build_matlab(static=False):
     """build the messenger mex for MATLAB
-    
+
     static : bool
         Determines if the zmq library has been statically linked.
         If so, it will append the command line option -DZMQ_STATIC
@@ -78,14 +133,19 @@ def build_matlab(static=False):
     cfg = get_config()
     # To deal with spaces, remove quotes now, and add
     # to the full commands themselves.
-    matlab_bin = cfg['matlab_bin'].strip('"')
+    if 'matlab_bin' in cfg and cfg['matlab_bin'] != '.':
+        matlab_bin = cfg['matlab_bin'].strip('"')
+    else:  # attempt to autodetect MATLAB filepath
+        matlab_bin = which_matlab()
+        if matlab_bin is None:
+            raise ValueError("specify 'matlab_bin' in cfg file")
     # Get the extension
-    extcmd = '"' + os.path.join(matlab_bin, "mexext") + '"'
-    extension = subprocess.check_output(extcmd, shell=True)
+    extcmd = esc(os.path.join(matlab_bin, "mexext"))
+    extension = subprocess.check_output(extcmd, shell=use_shell)
     extension = extension.decode('utf-8').rstrip('\r\n')
 
     # Build the mex file
-    mex = '"' + os.path.join(matlab_bin, "mex") + '"'
+    mex = esc(os.path.join(matlab_bin, "mex"))
     paths = "-L%(zmq_lib)s -I%(zmq_inc)s" % cfg
     make_cmd = '%s -O %s -lzmq ./src/messenger.c' % (mex, paths)
     if static:
@@ -107,6 +167,8 @@ if __name__ == '__main__':
     if args.target == "matlab":
         build_matlab(static=args.static)
     elif args.target == "octave":
+        if args.static:
+            raise ValueError("static building not yet supported for octave")
         build_octave()
     else:
         raise ValueError()
