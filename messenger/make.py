@@ -22,8 +22,69 @@ __all__ = [
     'get_config',
     'do_build',
     'build_octave',
-    'build_matlab'
+    'build_matlab',
+    'split_command_line',
 ]
+
+def split_command_line(command_line):
+
+    '''This splits a command line into a list of arguments. It splits arguments
+    on spaces, but handles embedded quotes, doublequotes, and escaped
+    characters. It's impossible to do this with a regular expression, so I
+    wrote a little state machine to parse the command line. '''
+
+    arg_list = []
+    arg = ''
+
+    # Constants to name the states we can be in.
+    state_basic = 0
+    state_esc = 1
+    state_singlequote = 2
+    state_doublequote = 3
+    # The state when consuming whitespace between commands.
+    state_whitespace = 4
+    state = state_basic
+
+    for c in command_line:
+        if state == state_basic or state == state_whitespace:
+            if c == '\\':
+                # Escape the next character
+                state = state_esc
+            elif c == r"'":
+                # Handle single quote
+                state = state_singlequote
+            elif c == r'"':
+                # Handle double quote
+                state = state_doublequote
+            elif c.isspace():
+                # Add arg to arg_list if we aren't in the middle of whitespace.
+                if state == state_whitespace:
+                    # Do nothing.
+                    None
+                else:
+                    arg_list.append(arg)
+                    arg = ''
+                    state = state_whitespace
+            else:
+                arg = arg + c
+                state = state_basic
+        elif state == state_esc:
+            arg = arg + c
+            state = state_basic
+        elif state == state_singlequote:
+            if c == r"'":
+                state = state_basic
+            else:
+                arg = arg + c
+        elif state == state_doublequote:
+            if c == r'"':
+                state = state_basic
+            else:
+                arg = arg + c
+
+    if arg != '':
+        arg_list.append(arg)
+    return arg_list
 
 def get_messenger_dir():
     host, is_64bit = platform.system(), platform.machine().endswith('64')
@@ -47,10 +108,14 @@ def get_config(host, config='config.ini'):
 
 
 def do_build(make_cmd, messenger_exe):
+
+    messenger_dir = get_messenger_dir()
+    use_shell     = sys.platform.startswith('win32')
+
     print('Building %s...' % messenger_exe)
     print(make_cmd)
-    messenger_dir = get_messenger_dir()
-    subprocess.call(shlex.split(make_cmd), stderr=subprocess.STDOUT)
+
+    subprocess.check_output(make_cmd, shell=use_shell)
 
     messenger_loc = os.path.join(messenger_dir, messenger_exe)
 
@@ -61,10 +126,12 @@ def do_build(make_cmd, messenger_exe):
 
 
 def build_octave(static=False):
+
     paths = "-L%(octave_lib)s -I%(octave_inc)s -L%(zmq_lib)s -I%(zmq_inc)s"
     paths = paths % get_config(platform.system())
-    make_cmd = "mkoctfile --mex %s -lzmq ./src/messenger.c" % paths
-    do_build(make_cmd, 'messenger.mex')
+    make_cmd = "mkoctfile --mex %s -lzmq messenger/src/messenger.c" % paths
+
+    do_build(split_command_line(make_cmd), 'messenger.mex')
 
 
 def build_matlab(static=False):
@@ -78,21 +145,22 @@ def build_matlab(static=False):
         If so, it will append the command line option -DZMQ_STATIC
         when compiling the mex so it matches libzmq.
     """
-    matlab_bin, cfg = settings.get_matlab_bin(), get_config(platform.system())
+    matlab_bin, cfg = get_matlab_bin(), get_config(platform.system())
 
-    extcmd     = '%s' % os.path.join(matlab_bin, "mexext")
-    extension  = subprocess.check_output(extcmd, shell=True)
+    use_shell  = sys.platform.startswith('win32')
+    extcmd     = split_command_line(os.path.join(matlab_bin, "mexext"))
+    extension  = subprocess.check_output(extcmd, shell=use_shell)
     extension  = extension.decode('utf-8').rstrip()
 
     # Build the mex file
-    mex = '"' + os.path.join(matlab_bin, "mex") + '"'
+    mex = os.path.join(matlab_bin, "mex")
     paths    = "-L'%(zmq_lib)s' -I'%(zmq_inc)s'" % cfg
     make_cmd = '%s -O %s -lzmq messenger/src/messenger.c' % (mex, paths)
 
     if static:
         make_cmd += ' -DZMQ_STATIC'
 
-    do_build(make_cmd, 'messenger.%s' % extension)
+    do_build(split_command_line(make_cmd), 'messenger.%s' % extension)
 
 
 def get_matlab_bin(config='config.ini'):
