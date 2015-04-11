@@ -1,4 +1,28 @@
 #!/usr/bin/python
+
+"""
+Make : building messenger mex file.
+
+Some functions have been taken from the pexpect module (https://pexpect.readthedocs.org/en/latest/)
+
+The license for pexpect is below:
+
+    This license is approved by the OSI and FSF as GPL-compatible.
+        http://opensource.org/licenses/isc-license.txt
+
+    Copyright (c) 2012, Noah Spurrier <noah@noah.org>
+    PERMISSION TO USE, COPY, MODIFY, AND/OR DISTRIBUTE THIS SOFTWARE FOR ANY
+    PURPOSE WITH OR WITHOUT FEE IS HEREBY GRANTED, PROVIDED THAT THE ABOVE
+    COPYRIGHT NOTICE AND THIS PERMISSION NOTICE APPEAR IN ALL COPIES.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""
+
 from __future__ import print_function
 import os
 import platform
@@ -6,6 +30,93 @@ import sys
 import shlex
 import shutil
 import subprocess
+import stat
+
+try:
+    import pty
+except ImportError:
+    pty = None
+
+def is_executable_file(path):
+    """Checks that path is an executable regular file (or a symlink to a file).
+
+    This is roughly ``os.path isfile(path) and os.access(path, os.X_OK)``, but
+    on some platforms :func:`os.access` gives us the wrong answer, so this
+    checks permission bits directly.
+
+    Note
+    ----
+    This function is taken from the pexpect module, see module doc-string for
+    license.
+    """
+    # follow symlinks,
+    fpath = os.path.realpath(path)
+
+    # return False for non-files (directories, fifo, etc.)
+    if not os.path.isfile(fpath):
+        return False
+
+    # On Solaris, etc., "If the process has appropriate privileges, an
+    # implementation may indicate success for X_OK even if none of the
+    # execute file permission bits are set."
+    #
+    # For this reason, it is necessary to explicitly check st_mode
+
+    # get file mode using os.stat, and check if `other',
+    # that is anybody, may read and execute.
+    mode = os.stat(fpath).st_mode
+    if mode & stat.S_IROTH and mode & stat.S_IXOTH:
+        return True
+
+    # get current user's group ids, and check if `group',
+    # when matching ours, may read and execute.
+    user_gids = os.getgroups() + [os.getgid()]
+    if (os.stat(fpath).st_gid in user_gids and
+            mode & stat.S_IRGRP and mode & stat.S_IXGRP):
+        return True
+
+    # finally, if file owner matches our effective userid,
+    # check if `user', may read and execute.
+    user_gids = os.getgroups() + [os.getgid()]
+    if (os.stat(fpath).st_uid == os.geteuid() and
+            mode & stat.S_IRUSR and mode & stat.S_IXUSR):
+        return True
+
+    return False
+
+
+def which(filename):
+    '''This takes a given filename; tries to find it in the environment path;
+    then checks if it is executable. This returns the full path to the filename
+    if found and executable. Otherwise this returns None.
+
+    Note
+    ----
+    This function is taken from the pexpect module, see module doc-string for
+    license.
+    '''
+
+    # Special case where filename contains an explicit path.
+    if os.path.dirname(filename) != '' and is_executable_file(filename):
+        return filename
+    if 'PATH' not in os.environ or os.environ['PATH'] == '':
+        p = os.defpath
+    else:
+        p = os.environ['PATH']
+    pathlist = p.split(os.pathsep)
+    for path in pathlist:
+        ff = os.path.join(path, filename)
+        if pty:
+            if is_executable_file(ff):
+                return ff
+        else:
+            pathext = os.environ.get('Pathext', '.exe;.com;.bat;.cmd')
+            pathext = pathext.split(os.pathsep) + ['']
+            for ext in pathext:
+                if os.access(ff + ext, os.X_OK):
+                    return ff + ext
+    return None
+
 
 use_shell = True if sys.platform.startswith("win32") else False
 
@@ -83,7 +194,7 @@ def build_octave():
 
 def which_matlab():
     try:
-        matlab_path = subprocess.check_output(['which', 'matlab']).strip()
+        matlab_path = which('matlab').strip()
         matlab_path = make_str(matlab_path)
         return os.path.dirname(os.path.realpath(matlab_path))
     except (OSError, subprocess.CalledProcessError):
