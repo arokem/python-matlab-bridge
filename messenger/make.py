@@ -10,6 +10,11 @@ import subprocess
 use_shell = True if sys.platform.startswith("win32") else False
 
 
+def make_str(byte_or_str):
+    return byte_or_str if isinstance(byte_or_str, str) \
+        else str(byte_or_str.decode("UTF-8"))
+
+
 def esc(path):
     if ' ' in path:
         return '"' + path + '"'
@@ -79,6 +84,7 @@ def build_octave():
 def which_matlab():
     try:
         matlab_path = subprocess.check_output(['which', 'matlab']).strip()
+        matlab_path = make_str(matlab_path)
         return os.path.dirname(os.path.realpath(matlab_path))
     except (OSError, subprocess.CalledProcessError):
         def ensure_path(path, extension=''):
