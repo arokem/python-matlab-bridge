@@ -27,12 +27,12 @@ __all__ = [
 ]
 
 def split_command_line(command_line):
-
-    '''This splits a command line into a list of arguments. It splits arguments
-    on spaces, but handles embedded quotes, doublequotes, and escaped
+    """
+    This splits a command line into a list of arguments. It splits arguments
+    on spaces, but handles embedded quotes, double quotes, and escaped
     characters. It's impossible to do this with a regular expression, so I
-    wrote a little state machine to parse the command line. '''
-
+    wrote a little state machine to parse the command line.
+    """
     arg_list = []
     arg = ''
 
