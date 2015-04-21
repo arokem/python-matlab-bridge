@@ -160,7 +160,7 @@ class _Session(object):
         self.startup_options = startup_options
 
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/pymatbridge"
+            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/%s"%str(uuid4())
 
         if self.log:
             startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
