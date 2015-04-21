@@ -226,7 +226,7 @@ For Matlab:
 
 	cd messenger
     # edit local.cfg in the directory for your platform
-	python make.py
+	python make.py matlab
 	cd ..
 	python setup.py install
 
@@ -235,7 +235,7 @@ For Octave:
 
     cd messenger/octave
     # edit local_octave.cfg in the directory for your platform
-    python make_octave.py
+    python make.py octave
     cd ..
     python setup.py
 
