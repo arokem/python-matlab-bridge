@@ -130,7 +130,8 @@ class _Session(object):
 
         socket_addr : str
             A string that represents a valid ZMQ socket address, such as
-            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
+            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc. Default is
+            to choose a random IPC file name, or a random socket (for TCP).
 
         id : str
             An identifier for this instance of the pymatbridge.
@@ -160,7 +161,7 @@ class _Session(object):
         self.startup_options = startup_options
 
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/%s"%str(uuid4())
+            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
 
         if self.log:
             startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
