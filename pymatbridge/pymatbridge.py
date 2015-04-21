@@ -160,7 +160,7 @@ class _Session(object):
         self.startup_options = startup_options
 
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/%s"%str(uuid4())
+            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/%s"%str(uuid4())
 
         if self.log:
             startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
@@ -205,6 +205,10 @@ class _Session(object):
         # Start the client
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
+        if self.platform == "win32":
+            port = self.socket.bind_to_random_port(self.socket_addr)
+            self.socket_addr = self.socket_addr + ":%s"%port
+        
         self.socket.connect(self.socket_addr)
 
         self.started = True
