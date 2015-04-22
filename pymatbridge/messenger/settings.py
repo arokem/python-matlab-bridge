@@ -9,7 +9,7 @@ except ImportError:
     from urllib import urlretrieve
     import string
 
-__all__= ['get_matlab_env', 'fetch_zmq']
+__all__= ['get_matlab_env']
 
 
 def get_matlab_env(matlab='matlab'):
@@ -34,25 +34,3 @@ def get_matlab_env(matlab='matlab'):
 
     return dict(string.split(env, '=', maxsplit=1) for env in envs)
 
-
-def fetch_zmq(prefix, version=(4,0,5)):
-    """
-    Download and extract libzmq into `prefix`
-
-    Parameters
-    ----------
-    save: str
-        File Save Location
-    version: 3-tuple
-        ZMQ Version Number
-    """
-    print('Downloading ZMQ Source Version %i.%i.%i' % version)
-    url = ("http://download.zeromq.org/zeromq-%i.%i.%i.tar.gz" % version)
-    name = urlretrieve(url, url.rsplit('/')[-1])[0]
-
-    print('Extracting into prefix %s' % prefix)
-    with tarfile.open(name) as tar:
-        tar.extractall(prefix)
-
-    print('Download Complete')
-    os.remove(name)

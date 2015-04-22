@@ -134,7 +134,7 @@ def build_octave(static=False):
     do_build(split_command_line(make_cmd), 'messenger.mex')
 
 
-def build_matlab(static=False):
+def build_matlab(static=False, messenger='messenger.c'):
     """
     Build the messenger mex for MATLAB
 
@@ -155,12 +155,13 @@ def build_matlab(static=False):
     # Build the mex file
     mex = os.path.join(matlab_bin, "mex")
     paths    = "-L'%(zmq_lib)s' -I'%(zmq_inc)s'" % cfg
-    make_cmd = '%s -O %s -lzmq messenger/src/messenger.c' % (mex, paths)
+    make_cmd = '%s -O %s -lzmq %s' % (mex, paths, messenger)
 
     if static:
         make_cmd += ' -DZMQ_STATIC'
 
-    do_build(split_command_line(make_cmd), 'messenger.%s' % extension)
+    print(make_cmd)
+    subprocess.check_output(split_command_line(make_cmd), shell=use_shell)
 
 
 def get_matlab_bin(config='config.ini'):

@@ -7,6 +7,7 @@ import os
 import sys
 import filecmp
 import itertools
+import platform
 
 try:
     import pkg_resources
@@ -17,8 +18,9 @@ except ImportError:
 from setuptools import  setup, find_packages
 from setuptools.command.test import test as TestCommand
 from distutils import file_util
-from distutils.extension import Extension
-from pymatbridge.messenger import get_messenger_dir
+from setuptools.command.build_ext import build_ext
+
+from pymatbridge.messenger import build_matlab, get_messenger_dir
 
 from version import __version__, __build__, __release__
 
@@ -30,14 +32,6 @@ for binary in itertools.chain(*newfiles):
     cmd = (os.path.join(messenger, binary), os.path.join(matlab, binary))
     print('Copying %s' % binary)
     file_util.copy_file(*cmd, update=True)
-
-extension = Extension(
-    name='messenger.mexmaci',
-    sources=['messenger/src/messenger.c'],
-    include_dirs=['/usr/local/include'],
-    library_dirs=['/usr/local/lib/'],
-    libraries=['zmq'],
-)
 
 class NoseTestCommand(TestCommand):
 
@@ -53,6 +47,13 @@ class NoseTestCommand(TestCommand):
             args += '--cover-package pymatbridge'
         nose.run_exit(argv=args.split())
 
+class CompileMEX(build_ext):
+    def run(self):
+        return build_matlab(messenger='pymatbridge/messenger/src/messenger.c')
+
+
+
+
 setup(
     name="pymatbridge",
     maintainer="Ariel Rokem",
@@ -60,21 +61,12 @@ setup(
     description=__doc__,
     tests_require=['nose', 'coverage'],
     setup_requires=['wheel'],
-    cmdclass={'test': NoseTestCommand},
+    cmdclass={
+        'test': NoseTestCommand,
+        'messenger': CompileMEX,
+    },
     version=__release__,
     packages=find_packages(exclude=['tests*']),
     zip_safe = False,
     requires=['numpy', 'pyzmq'],
-    package_data={
-        "pymatbridge": [
-            "matlab/matlabserver.m", "matlab/messenger.*",
-            "matlab/usrprog/*", "matlab/util/*.m",
-            "matlab/util/json_v0.2.2/LICENSE",
-            "matlab/util/json_v0.2.2/README.md",
-            "matlab/util/json_v0.2.2/test/*",
-            "matlab/util/json_v0.2.2/json/*.m",
-            "matlab/util/json_v0.2.2/json/java/*",
-            "tests/*.py", "examples/*.ipynb"
-        ],
-    },
 )
