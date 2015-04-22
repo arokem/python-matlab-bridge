@@ -1,15 +1,13 @@
 import numpy.testing as npt
 import sys
 import os
+import pkg_resources
 
-ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+from pymatbridge import messenger
 
-# Necessary since messenger is not installed with pymatbridge
-sys.path.append(ROOT)
-
-import messenger
-
-CONFIG = os.path.join(ROOT, 'config.ini')
+ROOT = __file__
+CONFIG = os.path.realpath(os.path.join(ROOT, '../../../../config.ini'))
+print(CONFIG)
 BIN    = messenger.get_matlab_bin(config=CONFIG)
 
 def test_config():
