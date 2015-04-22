@@ -1,0 +1,9 @@
+recursive-include pymatbridge *
+
+include *.md
+include *.py
+include *.txt
+include LICENSE
+include config.ini
+recursive-include pymatbridge *.py
+recursive-include tools *.py
