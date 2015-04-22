@@ -2,71 +2,79 @@
 """
 Pymatbridge: A python interface to call out to Matlab(R)
 """
+
 import os
-import shutil
-import glob
-
-# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
-# update it when the contents of directories change.
-if os.path.exists('MANIFEST'):
-    os.remove('MANIFEST')
-
-# Set Version Info
-exec(open('pymatbridge/__version__.py').read())
+import sys
+import filecmp
+import itertools
 
 try:
-    from setuptools import  setup
+    import pkg_resources
 except ImportError:
-    from distutils.core import setup
+    import ez_setup
+    ez_setup.use_setuptools()
 
-# Find the messenger binary file(s) and copy it to /matlab folder.
-from messenger.make import get_messenger_dir
+from setuptools import  setup, find_packages
+from setuptools.command.test import test as TestCommand
+from distutils import file_util
+from distutils.extension import Extension
+from pymatbridge.messenger import get_messenger_dir
 
-for f in glob.glob("messenger/%s/messenger.*" % get_messenger_dir()):
-    shutil.copy(f, 'pymatbridge/matlab/')
+from version import __version__, __build__, __release__
 
-# Now call the actual setup function
-if __name__ == '__main__':
-    setup(
-        name="pymatbridge",
-        maintainer="Ariel Rokem",
-        maintainer_email="arokem@gmail.com",
-        description=__doc__,
-        long_description=open('LICENSE').read(),
-        url="https://github.com/arokem/python-matlab-bridge",
-        download_url="https://github.com/arokem/python-matlab-bridge/archive/master.tar.gz",
-        license='BSD',
-        author="https://github.com/arokem/python-matlab-bridge/contributors",
-        author_email="arokem@gmail.com",
-        platforms="OS Independent",
-        version='.'.join([__version__, __build__]),
-        packages=['pymatbridge', 'messenger'],
-        data_files=[
-            ('pymatbridge/matlab', ['messenger/mexmaci64/messenger.mex'])
+messenger = pkg_resources.resource_filename('pymatbridge.messenger', get_messenger_dir())
+matlab    = pkg_resources.resource_filename('pymatbridge', 'matlab')
+newfiles = filecmp.cmpfiles(messenger, matlab, os.listdir(messenger), shallow=False)[1:]
+
+for binary in itertools.chain(*newfiles):
+    cmd = (os.path.join(messenger, binary), os.path.join(matlab, binary))
+    print('Copying %s' % binary)
+    file_util.copy_file(*cmd, update=True)
+
+extension = Extension(
+    name='messenger.mexmaci',
+    sources=['messenger/src/messenger.c'],
+    include_dirs=['/usr/local/include'],
+    library_dirs=['/usr/local/lib/'],
+    libraries=['zmq'],
+)
+
+class NoseTestCommand(TestCommand):
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import nose
+        args = 'nosetests -v --exe --with-cov '
+        if sys.version_info == (2, 7):
+            args += '--cover-package pymatbridge'
+        nose.run_exit(argv=args.split())
+
+setup(
+    name="pymatbridge",
+    maintainer="Ariel Rokem",
+    maintainer_email="arokem@gmail.com",
+    description=__doc__,
+    tests_require=['nose', 'coverage'],
+    setup_requires=['wheel'],
+    cmdclass={'test': NoseTestCommand},
+    version=__release__,
+    packages=find_packages(exclude=['tests*']),
+    zip_safe = False,
+    requires=['numpy', 'pyzmq'],
+    package_data={
+        "pymatbridge": [
+            "matlab/matlabserver.m", "matlab/messenger.*",
+            "matlab/usrprog/*", "matlab/util/*.m",
+            "matlab/util/json_v0.2.2/LICENSE",
+            "matlab/util/json_v0.2.2/README.md",
+            "matlab/util/json_v0.2.2/test/*",
+            "matlab/util/json_v0.2.2/json/*.m",
+            "matlab/util/json_v0.2.2/json/java/*",
+            "tests/*.py", "examples/*.ipynb"
         ],
-        package_data={
-            "pymatbridge": [
-                "matlab/matlabserver.m", "matlab/messenger.*",
-                "matlab/usrprog/*", "matlab/util/*.m",
-                "matlab/util/json_v0.2.2/LICENSE",
-                "matlab/util/json_v0.2.2/README.md",
-                "matlab/util/json_v0.2.2/test/*",
-                "matlab/util/json_v0.2.2/json/*.m",
-                "matlab/util/json_v0.2.2/json/java/*",
-                "tests/*.py", "examples/*.ipynb"
-            ]
-        },
-        zip_safe=False,
-        requires=['pyzmq'],
-        scripts=['scripts/publish-notebook'],
-        classifiers=[
-            "Development Status :: 3 - Alpha",
-            "Environment :: Console",
-            "Intended Audience :: Science/Research",
-            "License :: OSI Approved :: BSD License",
-            "Operating System :: OS Independent",
-            "Programming Language :: Python",
-            "Topic :: Scientific/Engineering",
-        ],
-        #extras_require=['numpy', 'scipy', 'ipython']
-    )
+    },
+)
