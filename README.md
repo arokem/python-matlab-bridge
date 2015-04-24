@@ -33,16 +33,24 @@ machine. These can be installed using
 ```
 $ pip install pyzmq
 ```
+You will also need  [Numpy](http://www.numpy.org/), which can be installed
+using:
+
+```
+$ pip install numpy
+```
 
 If you intend to use the Matlab magic extension, you'll also need
-[IPython](http://ipython.org/install.html), as well as
-[Scipy](http://scipy.org/) and [Numpy](http://www.numpy.org/). These can be
-installed from PyPI, or using distributions such as
-[Anaconda](https://store.continuum.io/cshop/anaconda/) or [Enthought
-Canopy](https://store.enthought.com/downloads/)
+[IPython](http://ipython.org/install.html).
 
 Note thatIPython notebooks also depend on `pyzmq` so if you have IPython notebooks
 installed, you likely have `pyzmq` already.
+
+Finally, if you want to handle sparse arrays, you will need to install
+[Scipy](http://scipy.org/). This can also be installed from PyPI, or using
+distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
+[Enthought Canopy](https://store.enthought.com/downloads/)
+
 
 ## Usage
 
@@ -226,7 +234,7 @@ For Matlab:
 
 	cd messenger
     # edit local.cfg in the directory for your platform
-	python make.py
+	python make.py matlab
 	cd ..
 	python setup.py install
 
@@ -235,7 +243,7 @@ For Octave:
 
     cd messenger/octave
     # edit local_octave.cfg in the directory for your platform
-    python make_octave.py
+    python make.py octave
     cd ..
     python setup.py
 
