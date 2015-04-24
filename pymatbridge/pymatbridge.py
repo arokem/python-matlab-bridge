@@ -187,8 +187,7 @@ class _Session(object):
     def _run_server(self):
         code = self._preamble_code()
         code.extend([
-            "matlabserver('%s')" % self.socket_addr,
-            'exit'
+            "matlabserver('%s')" % self.socket_addr
         ])
         command = '%s %s %s "%s"' % (self.executable, self.startup_options,
                                      self._execute_flag(), ','.join(code))

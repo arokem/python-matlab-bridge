@@ -6,6 +6,8 @@ function matlabserver(socket_address)
 json_startup
 messenger('init', socket_address);
 
+c=onCleanup(@()exit);
+
 while(1)
     msg_in = messenger('listen');
     req = json_load(msg_in);
@@ -16,7 +18,6 @@ while(1)
 
         case {'exit'}
             messenger('exit');
-            clear mex;
             break;
 
         case {'eval'}
