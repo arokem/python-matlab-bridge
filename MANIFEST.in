@@ -1,5 +1,3 @@
-exclude messenger.*
-
 include LICENSE
 include config.ini
 include README.md
@@ -9,10 +7,10 @@ include scripts/publish-notebook
 
 include pymatbridge/messenger/src/messenger.c
 
-include pymatbridge/messenger/mexa64/
-include pymatbridge/messenger/mexmaci64/
-include pymatbridge/messenger/mexw64/
-include pymatbridge/messenger/mexa64/
+include pymatbridge/messenger/mexa64/*
+include pymatbridge/messenger/mexmaci64/*
+include pymatbridge/messenger/mexw64/*
+include pymatbridge/messenger/mexa64/*
 
 include pymatbridge/matlab/messenger.mex
 include pymatbridge/matlab/messenger.mex.zmq3
@@ -21,6 +19,6 @@ include pymatbridge/matlab/messenger.mexmaci64.zmq3
 include pymatbridge/matlab/util/json_v0.2.2/json/java/json.jar
 include pymatbridge/matlab/util/json_v0.2.2/LICENSE
 
-include *.ipynb
-include *.m
-include *.py
+recursive-include pymatbridge *.py *.ipynb *.m
+recursive-include scripts *
+recursive-include tools *
