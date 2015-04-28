@@ -9,7 +9,7 @@ import filecmp
 import itertools
 import platform
 
-# if setupools setuptools doesnt exist install it
+# if setuptools doesnt exist install it
 try:
     import pkg_resources
 except ImportError:
@@ -22,7 +22,7 @@ from setuptools.command.test import test as TestCommand
 from setuptools.command.build_ext import build_ext
 from distutils import file_util
 
-# from pymatbridge.messenger import build_matlab, get_messenger_dir
+from pymatbridge.messenger import build_matlab, get_messenger_dir
 
 from version import __version__, __build__, __release__
 
@@ -35,6 +35,14 @@ from version import __version__, __build__, __release__
 #     print('Copying %s' % binary)
 #     file_util.copy_file(*cmd, update=True)
 
+def read(*files):
+    """
+    Takes an arbitrary number of file names based from the package root
+    returns their contents concatenated with two newlines.
+    """
+    return '\n\n'.join([open(f, 'rt').read() for f in files if os.path.isfile(f)])
+
+
 class NoseTestCommand(TestCommand):
 
     def finalize_options(self):
@@ -46,7 +54,8 @@ class NoseTestCommand(TestCommand):
         import nose
         args = 'nosetests -v --exe'
         if sys.version_info[0:2] == (2, 7):
-            args += ' --with-cov --cover-package pymatbridge'
+            args += ' '
+            args += '--with-cov --cover-package pymatbridge'
         nose.run_exit(argv=args.split())
 
 class CompileMEX(build_ext):
@@ -58,14 +67,38 @@ setup(
     maintainer="Ariel Rokem",
     maintainer_email="arokem@gmail.com",
     description=__doc__,
-    tests_require=['wheel', 'nose', 'coverage', 'ipython[all]', 'numpy', 'pyzmq'],
+    long_description=read('README.md', 'LICENSE'),
+    tests_require=['ipython', 'nose', 'coverage', 'numpy', 'pyzmq'],
     setup_requires=['wheel'],
     cmdclass={
         'test': NoseTestCommand,
         'messenger': CompileMEX,
     },
+    license=read('LICENSE'),
+    scripts='scripts/publish-notebook',
     version=__release__,
     packages=find_packages(exclude=['tests*']),
-    zip_safe = False,
-    requires=['numpy', 'pyzmq'],
+    zip_safe=False,
+    requires=['pyzmq', 'numpy'],
+    keywords='matlab python packaging',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: BSD License',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development :: Build Tools',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Other Scripting Engines',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: OS Independent',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+    ],
 )
