@@ -41,7 +41,6 @@ except ImportError:
     class spmatrix:
         pass
 
-
 def encode_ndarray(obj):
     """Write a numpy array and its shape to base64 buffers"""
     shape = obj.shape
@@ -402,6 +401,7 @@ class _Session(object):
 
 
 class Matlab(_Session):
+
     def __init__(self, executable='matlab', socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
                  platform=None, startup_options=None):

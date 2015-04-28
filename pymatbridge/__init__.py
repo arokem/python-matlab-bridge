@@ -1,5 +1,6 @@
 from .pymatbridge import *
-from .version import __version__
+from .__version__ import __version__
+from .__version__ import __build__
 
 try:
     from .publish import *
@@ -10,3 +11,4 @@ try:
     from .matlab_magic import *
 except ImportError:
     pass
+

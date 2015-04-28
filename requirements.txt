@@ -1,2 +1,2 @@
 pyzmq
-numpy>=1.7
+numpy
