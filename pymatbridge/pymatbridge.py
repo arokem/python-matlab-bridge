@@ -130,7 +130,8 @@ class _Session(object):
 
         socket_addr : str
             A string that represents a valid ZMQ socket address, such as
-            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
+            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc. Default is
+            to choose a random IPC file name, or a random socket (for TCP).
 
         id : str
             An identifier for this instance of the pymatbridge.
@@ -160,7 +161,7 @@ class _Session(object):
         self.startup_options = startup_options
 
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1:55555" if self.platform == "win32" else "ipc:///tmp/pymatbridge"
+            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
 
         if self.log:
             startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
@@ -197,14 +198,20 @@ class _Session(object):
 
     # Start server/client session and make the connection
     def start(self):
+        # Setup socket
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REQ)
+        if self.platform == "win32":
+            port = self.socket.bind_to_random_port(self.socket_addr)
+            self.socket_addr = self.socket_addr + ":%s"%port
+            self.socket.unbind(self.socket_addr)
+
         # Start the MATLAB server in a new process
         print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
         print("Send 'exit' command to kill the server")
         self._run_server()
 
         # Start the client
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(self.socket_addr)
 
         self.started = True
