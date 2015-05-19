@@ -3,7 +3,7 @@
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
 _version_minor = 5
-_version_micro = 0 #''  # use '' for first of series, number for 1 and above
+_version_micro = 1 #''  # use '' for first of series, number for 1 and above
 #_version_extra = 'dev'
 _version_extra = ''  # Uncomment this for full releases
 
@@ -74,7 +74,7 @@ MAJOR = _version_major
 MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
-PACKAGES = ['pymatbridge']
+PACKAGES = ['pymatbridge', 'messenger']
 PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/usrprog/*", "matlab/util/*.m",
                                 "matlab/util/json_v0.2.2/LICENSE",
