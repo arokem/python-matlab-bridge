@@ -148,7 +148,7 @@ def get_messenger_dir():
             if not platform.machine().endswith('64'):
                 raise ValueError("pymatbridge does not work on win32")
 
-        # We further need to differniate 32 from 64 bit:
+        # We further need to differentiate 32 from 64 bit:
         maxint = sys.maxsize
         if maxint == 9223372036854775807:
             messenger_dir = 'mexw64'
