@@ -100,9 +100,8 @@ def report(issues, show_urls=False):
     # titles may have unicode in them, so we must encode everything below
     if show_urls:
         for i in issues:
-            role = 'ghpull' if 'merged_at' in i else 'ghissue'
-            print(u'* :%s:`%d`: %s' % (role, i['number'],
-                                        i['title'].replace(u'`', u'``')))
+            print(u'#%d: %s' % (i['number'],
+                                      i['title'].replace(u'`', u'``')))
     else:
         for i in issues:
             print(u'* %d: %s' % (i['number'], i['title'].replace(u'`', u'``')))
