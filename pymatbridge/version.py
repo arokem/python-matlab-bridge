@@ -74,7 +74,7 @@ MAJOR = _version_major
 MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
-PACKAGES = ['pymatbridge', 'messenger']
+PACKAGES = ['pymatbridge', 'pymatbridge.messenger']
 PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/usrprog/*", "matlab/util/*.m",
                                 "matlab/util/json_v0.2.2/LICENSE",
@@ -82,7 +82,10 @@ PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/util/json_v0.2.2/test/*",
                                 "matlab/util/json_v0.2.2/json/*.m",
                                 "matlab/util/json_v0.2.2/json/java/*",
-                                "tests/*.py", "tests/*.m", "examples/*.ipynb"]}
+                                "tests/*.py", "tests/*.m", "examples/*.ipynb"],
+                 "pymatbridge.messenger": ["pymatbridge/messenger/mexmaci64/*",
+                                           "pymatbridge/messenger/mexw64/*",
+                                           "pymatbridge/messenger/mexa64/*"]}
 
 REQUIRES = ['pyzmq']
 #EXTRAS_REQUIRE = ['numpy', 'scipy', 'ipython']
