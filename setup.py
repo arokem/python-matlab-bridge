@@ -15,15 +15,16 @@ if os.path.exists('MANIFEST'):
 
 from distutils.core import setup
 
+# Find the messenger binary files and copy them all to the matlab folder.
+# We include all of these, so that when releases are built on travis, they
+# include the compiled mex files for all three platforms.
+msgrs = ['./messenger/mexa64/messenger.mexa64',
+         './messenger/mexmaci64/messenger.mexmaci64',
+         './messenger/mexw64/messenger.mexw64']
 
-# Find the messenger binary file(s) and copy it to /matlab folder.
-from messenger.make import get_messenger_dir
-messenger_dir = get_messenger_dir()
-
-for f in glob.glob("./messenger/%s/messenger.*" % messenger_dir):
+for f in msgrs:
     shutil.copy(f, "./pymatbridge/matlab")
-
-
+    
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
 exec(open(ver_file).read())
