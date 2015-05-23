@@ -200,7 +200,7 @@ file for your shell):
 
 On Linux, add the following line to your .bash_profile (or similar file for your shell):
 
-	export LD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<Path to your zmq lib directory>
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<Path to your zmq lib directory>
 
 On Windows, add the install location of libzmq.dll to the PATH environment variable.
 On Windows 7+, typing "environment variables" into the start menu will bring up the
