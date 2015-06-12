@@ -19,7 +19,10 @@ messenger_dir = get_messenger_dir()
 for f in glob.glob("./pymatbridge/messenger/%s/messenger.*" % messenger_dir):
     shutil.copy(f, "./pymatbridge/matlab")
     
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 # Get version and release info, which is all stored in pymatbridge/version.py
 ver_file = os.path.join('pymatbridge', 'version.py')
