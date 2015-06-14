@@ -1,3 +1,5 @@
+import os
+
 import pymatbridge as pymat
 from pymatbridge.compat import text_type
 import numpy as np
@@ -64,3 +66,19 @@ class TestRunCode:
             npt.assert_equal(message, "'this_is_nonsense' undefined near line 1 column 1")
         else:
             npt.assert_equal(message, "Undefined function or variable 'this_is_nonsense'.")
+
+    def test_stack_traces(self):
+        this_dir = os.path.abspath(os.path.dirname(__file__))
+        test_file = os.path.join(this_dir, 'test_stack_trace.m')
+
+        self.mlab.run_code("addpath('%s')" % this_dir)
+        response = self.mlab.run_code('test_stack_trace(10)')
+        npt.assert_equal(response['stack'], [
+            {'name': 'baz', 'line': 14, 'file': test_file},
+            {'name': 'bar', 'line': 10, 'file': test_file},
+            {'name': 'foo', 'line': 6, 'file': test_file},
+            {'name': 'test_stack_trace', 'line': 2, 'file': test_file}
+        ])
+
+        response = self.mlab.run_code('x = 2')
+        npt.assert_equal(response['stack'], [])
