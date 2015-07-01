@@ -94,7 +94,9 @@ def decode_arr(data):
 def decode_pymat(dct):
     if 'ndarray' in dct and 'data' in dct:
         value = decode_arr(dct['data'])
-        shape = decode_arr(dct['shape']).astype(int)
+        shape = dct['shape']
+        if type(dct['shape']) is unicode:
+            shape = decode_arr(dct['shape']).astype(int)
         return value.reshape(shape, order='F')
     elif 'ndarray' in dct and 'imag' in dct:
         real = decode_arr(dct['real'])
