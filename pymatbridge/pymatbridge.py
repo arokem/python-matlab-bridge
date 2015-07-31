@@ -31,6 +31,7 @@ import sys
 import json
 import types
 import weakref
+import random
 from uuid import uuid4
 
 from numpy import ndarray, generic, float64, frombuffer, asfortranarray
