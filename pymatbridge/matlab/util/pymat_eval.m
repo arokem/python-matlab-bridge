@@ -31,6 +31,9 @@ try
         addpath(req.dname);
     end
 
+    % force a rehash of user functions
+    rehash
+
     if iscell(req.func_args)
         [resp{1:req.nargout}] = feval(req.func_name, req.func_args{:});
     else
