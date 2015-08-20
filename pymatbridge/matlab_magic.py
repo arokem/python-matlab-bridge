@@ -23,7 +23,7 @@ import pymatbridge as pymat
 from .compat import text_type
 
 
-class MatlabInterperterError(RuntimeError):
+class MatlabInterpreterError(RuntimeError):
     """
     Some error occurs while matlab is running
     """
@@ -87,7 +87,7 @@ class MatlabMagics(Magics):
         run_dict = self.Matlab.run_code(line)
 
         if not run_dict['success']:
-            raise MatlabInterperterError(line, run_dict['content']['stdout'])
+            raise MatlabInterpreterError(line, run_dict['content']['stdout'])
 
         # This is the matlab stdout:
         return run_dict
@@ -99,7 +99,7 @@ class MatlabMagics(Magics):
         run_dict = self.Matlab.set_variable(name, value)
 
         if not run_dict['success']:
-            raise MatlabInterperterError(line, run_dict['content']['stdout'])
+            raise MatlabInterpreterError(line, run_dict['content']['stdout'])
 
 
     @magic_arguments()
@@ -161,7 +161,7 @@ class MatlabMagics(Magics):
 
         try:
             result_dict = self.eval(code)
-        except MatlabInterperterError:
+        except MatlabInterpreterError:
             raise
         except:
             raise RuntimeError('\n'.join([
