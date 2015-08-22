@@ -31,6 +31,7 @@ import sys
 import json
 import types
 import weakref
+import random
 from uuid import uuid4
 
 from numpy import ndarray, generic, float64, frombuffer, asfortranarray
@@ -204,9 +205,8 @@ class _Session(object):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         if self.platform == "win32":
-            port = self.socket.bind_to_random_port(self.socket_addr)
-            self.socket_addr = self.socket_addr + ":%s"%port
-            self.socket.unbind(self.socket_addr)
+            rndport = random.randrange(49152, 65536)
+            self.socket_addr = self.socket_addr + ":%s"%rndport
 
         # Start the MATLAB server in a new process
         print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
