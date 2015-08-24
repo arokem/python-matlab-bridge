@@ -32,6 +32,7 @@ import json
 import types
 import weakref
 import random
+import logging
 from uuid import uuid4
 
 from numpy import ndarray, generic, float64, frombuffer, asfortranarray
@@ -121,7 +122,8 @@ class _Session(object):
 
     def __init__(self, executable, socket_addr=None,
                  id='python-matlab-bridge', log=False, maxtime=60,
-                 platform=None, startup_options=None):
+                 platform=None, startup_options=None,
+                 loglevel=logging.WARNING):
         """
         Initialize this thing.
 
@@ -139,8 +141,8 @@ class _Session(object):
         id : str
             An identifier for this instance of the pymatbridge.
 
-        log : bool
-            Whether to save a log file in some known location.
+        log : str | None
+            Location to log to, defaults to sys.stdout
 
         maxtime : float
            The maximal time to wait for a response from the session (optional,
@@ -162,15 +164,25 @@ class _Session(object):
         self.maxtime = maxtime
         self.platform = platform if platform is not None else sys.platform
         self.startup_options = startup_options
-
+        self.loglevel = loglevel
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
-
-        if self.log:
-            startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
-
+            if self.platform == "win32":
+                self.socket_addr = "tcp://127.0.0.1"
+            else:
+                self.socket_addr = "ipc:///tmp/pymatbridge-%s" % str(uuid4())
+        else:
+            self.socket_addr = socket_addr
         self.context = None
         self.socket = None
+        self.logger = logging.getLogger("pymatbridge")
+        self.logger.setLevel(self.loglevel)
+        if self.log:
+            self.loghandler = logging.FileHandler(self.log)
+        else:
+            self.loghandler = logging.StreamHandler(stream=sys.stdout)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.loghandler.setFormatter(formatter)
+        self.logger.addHandler(self.loghandler)
         atexit.register(self.stop)
 
     def _program_name(self):  # pragma: no cover
@@ -209,8 +221,9 @@ class _Session(object):
             self.socket_addr = self.socket_addr + ":%s"%rndport
 
         # Start the MATLAB server in a new process
-        print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
-        print("Send 'exit' command to kill the server")
+        self.logger.info("Starting %s on ZMQ socket %s" \
+                % (self._program_name(), self.socket_addr))
+        self.logger.info("Send 'exit' command to kill the server")
         self._run_server()
 
         # Start the client
@@ -219,12 +232,12 @@ class _Session(object):
         self.started = True
 
         # Test if connection is established
-        if self.is_connected():
-            print("%s started and connected!" % self._program_name())
-            self.set_plot_settings()
-            return self
-        else:
+        if not self.is_connected():
             raise ValueError("%s failed to start" % self._program_name())
+
+        self.logger.info("%s started and connected!" % self._program_name())
+        self.set_plot_settings()
+        return self
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
@@ -239,7 +252,7 @@ class _Session(object):
 
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
-            print("%s closed" % self._program_name())
+            self.logger.info("%s closed" % self._program_name())
 
         self.started = False
         return True
@@ -247,7 +260,6 @@ class _Session(object):
     # To test if the client can talk to the server
     def is_connected(self):
         if not self.started:
-            time.sleep(2)
             return False
 
         req = json.dumps(dict(cmd="connect"), cls=PymatEncoder)
@@ -259,10 +271,11 @@ class _Session(object):
                 resp = self.socket.recv_string(flags=zmq.NOBLOCK)
                 return resp == "connected"
             except zmq.ZMQError:
-                sys.stdout.write('.')
                 time.sleep(1)
                 if time.time() - start_time > self.maxtime:
-                    print("%s session timed out after %d seconds" % (self._program_name(), self.maxtime))
+                    timed_out_str = "%s session timed out after %d seconds" \
+                            % (self._program_name(), self.maxtime)
+                    self.logger.warn(timed_out_str)
                     return False
 
     def is_function_processor_working(self):
