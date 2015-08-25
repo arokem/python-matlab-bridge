@@ -120,8 +120,8 @@ class _Session(object):
     this directly; rather, use the Matlab or Octave subclasses.
     """
 
-    def __init__(self, executable, socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=60,
+    def __init__(self, executable=None, socket_addr=None,
+                 id='python-matlab-bridge', log=False, maxtime=15,
                  platform=None, startup_options=None,
                  loglevel=logging.WARNING):
         """
@@ -146,7 +146,7 @@ class _Session(object):
 
         maxtime : float
            The maximal time to wait for a response from the session (optional,
-           Default is 10 sec)
+           Default is 15 sec)
 
         platform : string
            The OS of the machine on which this is running. Per default this
@@ -186,7 +186,7 @@ class _Session(object):
         atexit.register(self.stop)
 
     def _program_name(self):  # pragma: no cover
-        raise NotImplemented
+        raise NotImplementedError
 
     def _preamble_code(self):
         # suppress warnings while loading the path, in the case of
@@ -199,7 +199,7 @@ class _Session(object):
                 "cd('%s');" % os.getcwd()]
 
     def _execute_flag(self):  # pragma: no cover
-        raise NotImplemented
+        raise NotImplementedError
 
     def _run_server(self):
         code = self._preamble_code()
@@ -221,10 +221,14 @@ class _Session(object):
             self.socket_addr = self.socket_addr + ":%s"%rndport
 
         # Start the MATLAB server in a new process
-        self.logger.info("Starting %s on ZMQ socket %s" \
-                % (self._program_name(), self.socket_addr))
+        self.logger.info("Starting ZMQ socket %s" \
+                % (self.socket_addr, ))
         self.logger.info("Send 'exit' command to kill the server")
-        self._run_server()
+
+        if self.executable is not None:
+            self.logger.info("Launching %s, sending ZMQ 'exit' will kill it." \
+                    % (self._program_name(), ))
+            self._run_server()
 
         # Start the client
         self.socket.connect(self.socket_addr)
@@ -426,8 +430,9 @@ class _Session(object):
 
 class Matlab(_Session):
     def __init__(self, executable='matlab', socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=60,
-                 platform=None, startup_options=None):
+                 id='python-matlab-bridge', log=False, maxtime=15,
+                 platform=None, startup_options=None,
+                 loglevel=logging.WARNING):
         """
         Initialize this thing.
 
@@ -436,7 +441,7 @@ class Matlab(_Session):
 
         executable : str
             A string that would start Matlab at the terminal. Per default, this
-            is set to 'matlab', so that you can alias in your bash setup
+            is set to 'matlab'.
 
         socket_addr : str
             A string that represents a valid ZMQ socket address, such as
@@ -450,7 +455,7 @@ class Matlab(_Session):
 
         maxtime : float
            The maximal time to wait for a response from matlab (optional,
-           Default is 10 sec)
+           Default is 15 sec)
 
         platform : string
            The OS of the machine on which this is running. Per default this
@@ -470,7 +475,7 @@ class Matlab(_Session):
         if log:
             startup_options += ' -logfile ./pymatbridge/logs/matlablog_%s.txt' % id
         super(Matlab, self).__init__(executable, socket_addr, id, log, maxtime,
-                                     platform, startup_options)
+                                     platform, startup_options, loglevel)
 
     def _program_name(self):
         return 'MATLAB'
@@ -481,8 +486,9 @@ class Matlab(_Session):
 
 class Octave(_Session):
     def __init__(self, executable='octave', socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=60,
-                 platform=None, startup_options=None):
+                 id='python-matlab-bridge', log=False, maxtime=15,
+                 platform=None, startup_options=None,
+                 loglevel=logging.WARNING):
         """
         Initialize this thing.
 
@@ -505,7 +511,7 @@ class Octave(_Session):
 
         maxtime : float
            The maximal time to wait for a response from octave (optional,
-           Default is 10 sec)
+           Default is 15 sec)
 
         platform : string
            The OS of the machine on which this is running. Per default this

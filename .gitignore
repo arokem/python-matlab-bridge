@@ -37,3 +37,6 @@ rebuildTags.sh
 
 # caused py setup.py develop
 pymatbridge.egg-info
+
+# so vim-ers can use "YouCompleteMe"
+.ycm_extra_conf.py
