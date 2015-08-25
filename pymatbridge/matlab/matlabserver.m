@@ -12,11 +12,7 @@ initialize_environment;
 json_startup;
 messenger('init', socket_address);
 
-if nargin > 1 && exit_when_done
-    c = onCleanup(@stop_messenger_and_exit);
-else
-    c = onCleanup(@stop_messenger);
-end
+c = onCleanup(@stop_messenger);
 
 while(1)
     msg_in = messenger('listen');
@@ -35,21 +31,20 @@ while(1)
 
         case {'separate'}
             desktop; %no-op if desktop is already up
-            c = onCleanup(@stop_messenger);
             break;
 
         otherwise
-            messenger('respond', 'i dont know what you want');
+            messenger('respond', 'Unknown command recieved by matlabserver via ZMQ.');
 
     end
 end
 
-end %matlabserver
-
-function stop_messenger_and_exit()
-    messenger('exit');
+if nargin > 1 && exit_when_done
+    c.task();
     exit;
 end
+
+end %matlabserver
 
 function stop_messenger()
     messenger('exit');

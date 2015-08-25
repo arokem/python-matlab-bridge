@@ -143,8 +143,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
     /* Close the socket and context */
     } else if (strcmp(cmd, "exit") == 0) {
-        cleanup();
-        p[0] = 1;
+        if (initialized) {
+            cleanup();
+            p[0] = 1;
+        } else {
+            mexErrMsgTxt("No open socket to exit.");
+        }
     } else if (strcmp(cmd, "check") == 0) {
         if (initialized) {
             p[0] = 1;
