@@ -121,7 +121,7 @@ class _Session(object):
     """
 
     def __init__(self, executable=None, socket_addr=None,
-                 id='python-matlab-bridge', log=False, maxtime=15,
+                 id='python-matlab-bridge', log="", maxtime=15,
                  platform=None, startup_options=None,
                  loglevel=logging.WARNING):
         """
@@ -141,7 +141,7 @@ class _Session(object):
         id : str
             An identifier for this instance of the pymatbridge.
 
-        log : str | None
+        log : str
             Location to log to, defaults to sys.stdout
 
         maxtime : float
@@ -174,7 +174,7 @@ class _Session(object):
             self.socket_addr = socket_addr
         self.context = None
         self.socket = None
-        self.logger = logging.getLogger("pymatbridge")
+        self.logger = logging.getLogger(self.id)
         self.logger.setLevel(self.loglevel)
         if self.log:
             self.loghandler = logging.FileHandler(self.log)
@@ -188,26 +188,15 @@ class _Session(object):
     def _program_name(self):  # pragma: no cover
         raise NotImplementedError
 
-    def _preamble_code(self):
-        # suppress warnings while loading the path, in the case of
-        # overshadowing a built-in function on a newer version of
-        # Matlab (e.g. isrow)
-        return ["old_warning_state = warning('off','all');",
-                "addpath(genpath('%s'));" % MATLAB_FOLDER,
-                "warning(old_warning_state);",
-                "clear('old_warning_state');",
-                "cd('%s');" % os.getcwd()]
-
     def _execute_flag(self):  # pragma: no cover
         raise NotImplementedError
 
     def _run_server(self):
-        code = self._preamble_code()
-        code.extend([
-            "matlabserver('%s')" % self.socket_addr
-        ])
+        code = "cd('{}'); matlabserver('{}', true);".format(
+            MATLAB_FOLDER, self.socket_addr)
         command = '%s %s %s "%s"' % (self.executable, self.startup_options,
-                                     self._execute_flag(), ','.join(code))
+                                     self._execute_flag(), code)
+        self.logger.info("Running: %s", command)
         subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE)
 
@@ -221,13 +210,12 @@ class _Session(object):
             self.socket_addr = self.socket_addr + ":%s"%rndport
 
         # Start the MATLAB server in a new process
-        self.logger.info("Starting ZMQ socket %s" \
-                % (self.socket_addr, ))
-        self.logger.info("Send 'exit' command to kill the server")
+        self.logger.info("Starting ZMQ socket %s", self.socket_addr)
+        #self.logger.info("Run _Session.stop/separate to kill the server.")
 
         if self.executable is not None:
-            self.logger.info("Launching %s, sending ZMQ 'exit' will kill it." \
-                    % (self._program_name(), ))
+            self.logger.info("Launching %s, sending ZMQ 'exit' will kill it.", \
+                    self._program_name())
             self._run_server()
 
         # Start the client
@@ -239,7 +227,7 @@ class _Session(object):
         if not self.is_connected():
             raise ValueError("%s failed to start" % self._program_name())
 
-        self.logger.info("%s started and connected!" % self._program_name())
+        self.logger.info("%s started and connected!", self._program_name())
         self.set_plot_settings()
         return self
 
@@ -249,6 +237,15 @@ class _Session(object):
         resp = self.socket.recv_string()
         return resp
 
+    # open desktop matlab and disconnect
+    def separate(self):
+        if not self.started:
+            raise ValueError('Session not started, use start()')
+        if self._response(cmd='separate') == 'exit':
+            self.logger.info("%s split off", self._program_name())
+        self.started = False
+        return True
+
     # Stop the Matlab server
     def stop(self):
         if not self.started:
@@ -256,7 +253,7 @@ class _Session(object):
 
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
-            self.logger.info("%s closed" % self._program_name())
+            self.logger.info("%s closed", self._program_name())
 
         self.started = False
         return True
@@ -336,6 +333,12 @@ class _Session(object):
             Code to send for evaluation.
         """
         return self.run_func('evalin', 'base', code, nargout=0)
+
+    def _init_run_code(self):
+        """Code to run at start of headless session to ensure sane
+        environment."""
+        code = "cd('%s')" % os.getcwd()
+        return self.run_code(code)
 
     def get_variable(self, varname, default=None):
         resp = self.run_func('evalin', 'base', varname)
@@ -445,13 +448,14 @@ class Matlab(_Session):
 
         socket_addr : str
             A string that represents a valid ZMQ socket address, such as
-            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc.
+            "ipc:///tmp/pymatbridge", "tcp://127.0.0.1:55555", etc. Default is
+            to choose a random IPC file name, or a random socket (for TCP).
 
         id : str
             An identifier for this instance of the pymatbridge.
 
-        log : bool
-            Whether to save a log file in some known location.
+        log : str
+            Location to log to, defaults to sys.stdout
 
         maxtime : float
            The maximal time to wait for a response from matlab (optional,
@@ -473,7 +477,7 @@ class Matlab(_Session):
             else:
                 startup_options = ' -nodesktop -nosplash'
         if log:
-            startup_options += ' -logfile ./pymatbridge/logs/matlablog_%s.txt' % id
+            startup_options += ' -logfile "{}"'.format(log)
         super(Matlab, self).__init__(executable, socket_addr, id, log, maxtime,
                                      platform, startup_options, loglevel)
 
@@ -497,7 +501,7 @@ class Octave(_Session):
 
         executable : str
             A string that would start Octave at the terminal. Per default, this
-            is set to 'octave', so that you can alias in your bash setup
+            is set to 'octave'.
 
         socket_addr : str
             A string that represents a valid ZMQ socket address, such as
@@ -529,12 +533,12 @@ class Octave(_Session):
     def _program_name(self):
         return 'Octave'
 
-    def _preamble_code(self):
-        code = super(Octave, self)._preamble_code()
-        if self.log:
-            code.append("diary('./pymatbridge/logs/octavelog_%s.txt')" % self.id)
+    def _init_run_code(self):
+        code = super(Octave, self)._init_run_code()
         code.append("graphics_toolkit('gnuplot')")
-        return code
+        if self.log:
+            code.append("diary('{}')".format(self.id))
+        self.run_code(code)
 
     def _execute_flag(self):
         return '--eval'
