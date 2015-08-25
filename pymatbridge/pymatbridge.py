@@ -241,8 +241,11 @@ class _Session(object):
     def separate(self):
         if not self.started:
             raise ValueError('Session not started, use start()')
-        if self._response(cmd='separate') == 'exit':
-            self.logger.info("%s split off", self._program_name())
+        if self._response(cmd='separate') != 'exit':
+            raise ValueError('Failed to separate from {}'.format(self._program_name))
+        self.socket.close()
+        self.context.term()
+        self.logger.info("%s split off", self._program_name())
         self.started = False
         return True
 
@@ -252,9 +255,11 @@ class _Session(object):
             return True
 
         # Matlab should respond with "exit" if successful
-        if self._response(cmd='exit') == "exit":
-            self.logger.info("%s closed", self._program_name())
-
+        if self._response(cmd='exit') != "exit":
+            raise ValueError("Failed to stop {}".format(self._program_name))
+        self.socket.close()
+        self.context.term()
+        self.logger.info("%s closed", self._program_name())
         self.started = False
         return True
 
