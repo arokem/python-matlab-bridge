@@ -172,7 +172,7 @@ def get_config():
 
 
 def do_build(make_cmd, messenger_exe):
-    print('Building %s...' % messenger_exe)
+    print('Building {}...'.format(messenger_exe))
     print(make_cmd)
     messenger_dir = get_messenger_dir()
     subprocess.check_output(shlex.split(make_cmd), shell=use_shell)
@@ -188,7 +188,7 @@ def do_build(make_cmd, messenger_exe):
 def build_octave():
     paths = "-L%(octave_lib)s -I%(octave_inc)s -L%(zmq_lib)s -I%(zmq_inc)s"
     paths = paths % get_config()
-    make_cmd = "mkoctfile --mex %s -lzmq ./src/messenger.c" % paths
+    make_cmd = "mkoctfile --mex {} -lzmq ./src/messenger.c".format(paths)
     do_build(make_cmd, 'messenger.mex')
 
 
@@ -264,10 +264,10 @@ def build_matlab(static=False):
     # Build the mex file
     mex = esc(os.path.join(matlab_bin, "mex"))
     paths = "-L%(zmq_lib)s -I%(zmq_inc)s" % cfg
-    make_cmd = '%s -O %s -lzmq ./src/messenger.c' % (mex, paths)
+    make_cmd = '{} -O {} -lzmq ./src/messenger.c'.format(mex, paths)
     if static:
         make_cmd += ' -DZMQ_STATIC'
-    do_build(make_cmd, 'messenger.%s' % extension)
+    do_build(make_cmd, 'messenger.{}'.format(extension))
 
 
 if __name__ == '__main__':
