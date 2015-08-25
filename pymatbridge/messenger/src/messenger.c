@@ -71,7 +71,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* we'll return true on completion of valid command, else false */
     plhs[0] = mxCreateLogicalMatrix(1, 1);
     p = mxGetLogicals(plhs[0]);
-    p[0] = 0;
+    p[0] = false;
     /* Initialize a new server session */
     if (strcmp(cmd, "init") == 0) {
         char *socket_addr;
@@ -84,7 +84,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
         if (!initialized) {
             if (!initialize(socket_addr)) {
-                p[0] = 1;
+                p[0] = true;
                 mexPrintf("Socket created at: %s\n", socket_addr);
             } else {
                 mexErrMsgTxt("Socket creation failed.");
@@ -116,12 +116,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
             sprintf(recv_buffer, "Failed to receive a message due to ZMQ error %s", strerror(errno));
             mexErrMsgTxt(recv_buffer);
         }
-        p[0] = 1;
+        p[0] = true;
     /* Send a message out */
     } else if (strcmp(cmd, "respond") == 0) {
         size_t msglen;
         char *msg_out;
-        mxLogical *p;
 
         /* Check if the input format is valid */
         if (nrhs != 2) {
@@ -133,11 +132,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
         msglen = mxGetNumberOfElements(prhs[1]);
         msg_out = mxArrayToString(prhs[1]);
 
-        plhs[0] = mxCreateLogicalMatrix(1, 1);
-        p = mxGetLogicals(plhs[0]);
-
         if (msglen == (size_t) zmq_send(socket_ptr, msg_out, msglen, 0)) {
-            p[0] = 1;
+            p[0] = true;
         } else {
             mexErrMsgTxt("Failed to send message due to ZMQ error");
         }
@@ -145,13 +141,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
     } else if (strcmp(cmd, "exit") == 0) {
         if (initialized) {
             cleanup();
-            p[0] = 1;
+            p[0] = true;
+            initialized = 0;
         } else {
             mexErrMsgTxt("No open socket to exit.");
         }
     } else if (strcmp(cmd, "check") == 0) {
         if (initialized) {
-            p[0] = 1;
+            p[0] = true;
         }
     } else {
         mexErrMsgTxt("Unidentified command");

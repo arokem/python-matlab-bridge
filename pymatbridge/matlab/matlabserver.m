@@ -31,6 +31,7 @@ while(1)
 
         case {'separate'}
             desktop; %no-op if desktop is already up
+            exit_when_done = false;
             break;
 
         otherwise
@@ -40,14 +41,16 @@ while(1)
 end
 
 if nargin > 1 && exit_when_done
-    c.task();
+    %c.task(); % already executed by "finish"
     exit;
 end
 
 end %matlabserver
 
 function stop_messenger()
-    messenger('exit');
+    if messenger('check')
+        messenger('exit');
+    end
 end
 
 function initialize_environment()
