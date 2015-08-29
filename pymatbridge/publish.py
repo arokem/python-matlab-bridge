@@ -1,5 +1,5 @@
-import IPython.nbformat.v4 as nbformat
-from IPython.nbformat import write as nbwrite
+import nbformat.v4 as nbformat
+from nbformat import write as nbwrite
 import numpy as np
 
 
