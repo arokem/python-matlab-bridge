@@ -1,7 +1,7 @@
 try:
     import nbformat.v4 as nbformat
     from nbformat import write as nbwrite
-except:
+except ImportError:
     import IPython.nbformat.v4 as nbformat
     from IPython.nbformat import write as nbwrite
 
