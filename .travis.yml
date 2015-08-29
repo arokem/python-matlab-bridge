@@ -12,7 +12,7 @@ deploy:
 env:
     - CONDA="python=2.7 numpy=1.7"
     - CONDA="python=3.3 numpy"
-    - CONDA_Jupyter="python=3.4 numpy"
+    - CONDA="python=3.4 numpy"
 before_install:
   - sudo apt-add-repository -y ppa:octave/stable;
   - sudo apt-get update -qq;
@@ -24,8 +24,7 @@ before_install:
   - conda config --set always_yes yes
   - conda update conda
   - conda info -a
-  - travis_retry conda create -n test $CONDA IPython pip nose pyzmq jsonschema
-  - travis_retry conda create -n test $CONDA_Jupyter IPython pip nose pyzmq jsonschema nbformat
+  - travis_retry conda create -n test $CONDA IPython pip nose pyzmq jsonschema nbformat
   - source activate test
   - travis_retry pip install coveralls
 
