@@ -1,5 +1,10 @@
-import nbformat.v4 as nbformat
-from nbformat import write as nbwrite
+try:
+    import nbformat.v4 as nbformat
+    from nbformat import write as nbwrite
+except:
+    import IPython.nbformat.v4 as nbformat
+    from IPython.nbformat import write as nbwrite
+
 import numpy as np
 
 
