@@ -14,10 +14,13 @@ env:
     - CONDA="python=2.7 numpy=1.7"
     - CONDA="python=3.3 numpy"
     - CONDA="python=3.4 numpy"
+addons:
+  apt:
+    sources:
+    - ppa:octave/stable;
+    packages:
+    - octave liboctave-dev default-jdk
 before_install:
-  - apt-add-repository -y ppa:octave/stable;
-  - apt-get update -qq;
-  - apt-get install -qq octave liboctave-dev default-jdk;
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
