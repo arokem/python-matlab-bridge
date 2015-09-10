@@ -213,7 +213,7 @@ class _Session(object):
         self.logger.info("Starting ZMQ socket %s", self.socket_addr)
         #self.logger.info("Run _Session.stop/separate to kill the server.")
 
-        if self.executable is not None:
+        if self.executable:
             self.logger.info("Launching %s, sending ZMQ 'exit' will kill it.", \
                     self._program_name())
             self._run_server()
