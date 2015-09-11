@@ -22,29 +22,11 @@ Matlab code together (requires ipython > 0.13).
 `pymatbridge` can be installed from [PyPI][1]:
 
 ```
-$ pip install pymatbridge  # sudo may be needed
-```
-
-`pymatbridge` communicates with Matlab using zeromq. So before installing
-pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
-library and [pyzmq](http://zeromq.org/bindings:python) installed on your
-machine. These can be installed using
-
-```
-$ pip install pyzmq
-```
-You will also need  [Numpy](http://www.numpy.org/), which can be installed
-using:
-
-```
-$ pip install numpy
+$ pip install pymatbridge
 ```
 
 If you intend to use the Matlab magic extension, you'll also need
 [IPython](http://ipython.org/install.html).
-
-Note thatIPython notebooks also depend on `pyzmq` so if you have IPython notebooks
-installed, you likely have `pyzmq` already.
 
 Finally, if you want to handle sparse arrays, you will need to install
 [Scipy](http://scipy.org/). This can also be installed from PyPI, or using
@@ -161,6 +143,7 @@ The installation of `pymatbridge` includes a binary of a mex function to communi
 Python and Matlab using the [0MQ](http://zeromq.org/) messaging library. This should work
 without any need for compilation on most computers. However, in some cases, you might want
 to build the pymatbridge messenger from source. To do so, you will need to follow the instructions below:
+
 
 ### Install zmq library
 Please refer to the [official guide](http://zeromq.org/intro:get-the-software) on how to
