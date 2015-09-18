@@ -1,4 +1,4 @@
-function json_response = pymat_eval(req);
+function json_response = pymat_eval(req)
 % PYMAT_EVAL: Returns a json object of the result of calling the function
 %
 % json_response = pymat_eval(req);

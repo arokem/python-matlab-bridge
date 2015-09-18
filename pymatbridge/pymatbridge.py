@@ -108,6 +108,8 @@ def decode_pymat(dct):
         return data.reshape(shape, order='F')
     elif 'real' in dct and 'imag' in dct:
         return complex(dct['real'], dct['imag'])
+    elif 'json_non_finite' in dct:
+        return float(dct['json_non_finite'])
     return dct
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
