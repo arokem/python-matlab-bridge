@@ -25,7 +25,7 @@ before_install:
   - conda update conda
   - conda info -a
   - travis_retry conda create -n test $CONDA IPython pip nose pyzmq jsonschema
-  - pip install nbformat
+  - travis_retry pip install nbformat
   - source activate test
   - travis_retry pip install coveralls
 
