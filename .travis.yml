@@ -25,12 +25,12 @@ before_install:
   - conda update conda
   - conda info -a
   - travis_retry conda create -n test $CONDA IPython pip nose pyzmq jsonschema
+  - source activate test
   - if [[ $CONDA == python=3.3* ]]; then
       pip install nbformat;
     else
       travis_retry conda install nbformat;
     fi
-  - source activate test
   - travis_retry pip install coveralls
 
 install:
