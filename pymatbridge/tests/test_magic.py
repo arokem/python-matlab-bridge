@@ -1,4 +1,6 @@
+import sys
 import os
+from uuid import uuid4
 
 import pymatbridge as pymat
 from pymatbridge.matlab_magic import MatlabInterperterError
@@ -19,7 +21,12 @@ class TestMagic:
             matlab = 'octave'
         else:
             matlab = 'matlab'
-        pymat.load_ipython_extension(cls.ip, matlab=matlab)
+
+        # We will test the passing of kwargs through to the Matlab or Octave
+        # objects, by assigning the socket address out here:
+        socket_addr = "tcp://127.0.0.1" if sys.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
+        pymat.load_ipython_extension(cls.ip, matlab=matlab,
+                                     socket_addr=socket_addr)
 
     # Unload the magic
     @classmethod
