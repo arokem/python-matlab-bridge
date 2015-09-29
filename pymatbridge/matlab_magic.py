@@ -51,8 +51,8 @@ class MatlabMagics(Magics):
     """
     def __init__(self, shell,
                  matlab='matlab',
-                 maxtime=60,
-                 pyconverter=np.asarray):
+                 pyconverter=np.asarray,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -63,20 +63,19 @@ class MatlabMagics(Magics):
             The system call to start a matlab session. Allows you to choose a
             particular version of matlab if you want
 
-        maxtime : float
-           The maximal time to wait for responses for matlab (in seconds).
-           Default: 10 seconds.
-
         pyconverter : callable
             To be called on matlab variables returning into the ipython
             namespace
+
+        kwargs: additional key-word arguments to pass to initialization of
+            the Matlab/Octave process
         """
         super(MatlabMagics, self).__init__(shell)
 
         if 'octave' in matlab.lower():
-            self.Matlab = pymat.Octave(matlab, maxtime=maxtime)
+            self.Matlab = pymat.Octave(matlab, **kwargs)
         else:
-            self.Matlab = pymat.Matlab(matlab, maxtime=maxtime)
+            self.Matlab = pymat.Matlab(matlab, **kwargs)
         self.Matlab.start()
         self.pyconverter = pyconverter
 
@@ -216,4 +215,3 @@ def unload_ipython_extension(ip):
         magic = ip.magics_manager.registry.pop('MatlabMagics')
         magic.Matlab.stop()
         _loaded = False
-
