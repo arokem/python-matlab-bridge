@@ -343,10 +343,10 @@ class _Session(object):
     def _set_sparse_variable(self, varname, value):
         value = value.todok()
         prefix = 'pymatbridge_temp_sparse_%s_' % uuid4().hex
-        self.set_variable(prefix + 'keys', value.keys())
+        self.set_variable(prefix + 'keys', list(value.keys()))
         # correct for 1-indexing in MATLAB
         self.run_code('{0}keys = {0}keys + 1;'.format(prefix))
-        self.set_variable(prefix + 'values', value.values())
+        self.set_variable(prefix + 'values', list(value.values()))
         cmd = "{1} = sparse({0}keys(:, 1), {0}keys(:, 2), {0}values');"
         result = self.run_code(cmd.format(prefix, varname))
         self.run_code('clear {0}keys {0}values'.format(prefix))
