@@ -1,0 +1,16 @@
+package:
+    name: pymatbridge
+    version: 0.3
+
+build:
+    number: 0
+    string: condatest
+
+requirements:
+    build:
+      - python
+      - zeromq
+    run:
+      - python
+      - pyzmq
+
