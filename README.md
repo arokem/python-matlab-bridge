@@ -57,7 +57,7 @@ and create the connection between your Python interpreter and this session:
 
 which will return True once connected.
 
-    results = mlab.run_code('a=1;')
+    results = mlab.run_code('a=1')
 
 Should now run that line of code and return a `results` dict into your Python
 namespace. The `results` dict contains the following fields:
