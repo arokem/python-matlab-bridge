@@ -3,7 +3,7 @@ import os
 from uuid import uuid4
 
 import pymatbridge as pymat
-from pymatbridge.matlab_magic import MatlabInterperterError
+from pymatbridge.matlab_magic import MatlabInterpreterError
 from IPython.testing.globalipapp import get_ipython
 
 import numpy.testing as npt
@@ -106,5 +106,5 @@ class TestMagic:
         npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
 
     def test_faulty(self):
-        npt.assert_raises(MatlabInterperterError,
+        npt.assert_raises(MatlabInterpreterError,
                           lambda: self.ip.run_line_magic('matlab', '1 = 2'))

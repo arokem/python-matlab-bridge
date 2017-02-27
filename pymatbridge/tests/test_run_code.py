@@ -71,7 +71,7 @@ class TestRunCode:
         this_dir = os.path.abspath(os.path.dirname(__file__))
         test_file = os.path.join(this_dir, 'test_stack_trace.m')
 
-        self.mlab.run_code("addpath('%s')" % this_dir)
+        self.mlab.run_code("addpath('{}')".format(this_dir))
         response = self.mlab.run_code('test_stack_trace(10)')
         npt.assert_equal(response['stack'], [
             {'name': 'baz', 'line': 14, 'file': test_file},
