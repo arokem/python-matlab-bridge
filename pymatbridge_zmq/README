@@ -1,0 +1,10 @@
+pymatbridge_zmq v1.0
+
+How to use:
+1. Go to /src and "make". This will generate the mex file and move it to /matlab. 
+2. Use the Ipython notebook to see the example
+
+This work is incomplete. The current version only supports session start, stop and 
+running function. In the future all the system files would be moved to /util. All 
+user scripts will be stored under /usrprog. 
+

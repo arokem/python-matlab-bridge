@@ -1,0 +1,6 @@
+How to use:
+1. Put "echoserver.m" and the mexfile into the same folder
+2. Run "echoserver.m". This would start the server
+3. Run "client_p.py". This client sends 10 different messages to the server
+and prints the response
+
