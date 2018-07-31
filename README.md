@@ -135,6 +135,12 @@ write matlab code:
     hold on
     plot(cos(a),'r')
 
+If `%load_ext pymatbridge` doesn't work for you use:
+```
+import pymatbridge as pymat
+pymat.load_ipython_extension(get_ipython(), matlab='/your_matlab_installation_dir/bin/matlab')
+```
+
 More examples are provided in the `examples` directory
 
 ## Building the pymatbridge messenger from source
