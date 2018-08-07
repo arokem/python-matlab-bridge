@@ -106,7 +106,7 @@ function obj = dump_data_(value, options)
         double_struct = struct;
         double_struct.ndarray = 1;
         value = double(value);
-        if isreal(value) 
+        if isreal(value)
           double_struct.data = base64encode(typecast(value(:), 'uint8'));
         else
           double_struct.real = base64encode(typecast(real(value(:)), 'uint8'));
@@ -142,9 +142,13 @@ function obj = dump_data_(value, options)
       obj.put(dump_data_(value{i}, options));
     end
   elseif isnumeric(value)
-    if isreal(value)
+    if ~isfinite(value)
+      json_non_finite = struct;
+      json_non_finite.json_non_finite = lower(num2str(value));
+      obj = dump_data_(json_non_finite, options);
+    elseif isreal(value)
       obj = value;
-    % Encode complex number as a struct
+    % Encode finite complex number as a struct
     else
       complex_struct = struct;
       complex_struct.real = real(value);
@@ -158,7 +162,7 @@ function obj = dump_data_(value, options)
     keys = fieldnames(value);
     for i = 1:length(keys)
       try
-          obj.put(keys{i},dump_data_(value.(keys{i}), options));
+          obj.put(keys{i}, dump_data_(value.(keys{i}), options));
       catch ME
           obj.put(keys{i}, dump_data_(ME.message, options))
       end
