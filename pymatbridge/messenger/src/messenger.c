@@ -27,7 +27,7 @@ int initialize(char *socket_addr) {
     }
 }
 
-/* Check if the ZMQ server is intialized and print an error if not */
+/* Check if the ZMQ server is initialized and print an error if not */
 int checkInitialized(void) {
     if (!initialized) {
         mexErrMsgTxt("Error: ZMQ session not initialized");

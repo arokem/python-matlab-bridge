@@ -193,7 +193,7 @@ On Linux, add the following line to your .bash_profile (or similar file for your
 
 On Windows, add the install location of libzmq.dll to the PATH environment variable.
 On Windows 7+, typing "environment variables" into the start menu will bring up the
-apporpriate Control Panel links.
+appropriate Control Panel links.
 
 #### Pointing the binary at the right place
 
