@@ -35,10 +35,13 @@ try
     rehash
 
     if iscell(req.func_args)
-        [resp{1:req.nargout}] = feval(req.func_name, req.func_args{:});
+      func_args = req.func_args;
     else
-    	[resp{1:req.nargout}] = feval(req.func_name, req.func_args);
+      % If we don't have a cell, the JSON decoder has managed to merge
+      % everything into an array, which we don't want
+      func_args = num2cell(req.func_args, 1);
     end
+    [resp{1:req.nargout}] = feval(req.func_name, func_args{:});
 
     if req.nargout == 1
         response.result = resp{1};
