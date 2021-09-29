@@ -3,9 +3,6 @@
 
 import os
 import sys
-import shutil
-import glob
-
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
 # update it when the contents of directories change.
@@ -19,13 +16,6 @@ if sys.version_info[0] >= 3:
 else:
     import __builtin__ as builtins
 builtins.__PYMATBRIDGE_SETUP__ = True
-# Find the messenger binary file(s) and copy it to /matlab folder.
-from pymatbridge.messenger.make import get_messenger_dir
-messenger_dir = get_messenger_dir()
-
-for f in glob.glob("./pymatbridge/messenger/%s/messenger.*" % messenger_dir):
-    shutil.copy(f, "./pymatbridge/matlab")
-
 try:
     from setuptools import setup
 except ImportError:

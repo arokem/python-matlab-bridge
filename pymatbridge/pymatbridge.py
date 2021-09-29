@@ -36,6 +36,8 @@ from uuid import uuid4
 
 from numpy import ndarray, generic, float64, frombuffer, asfortranarray
 
+from pymatbridge.messenger.make import get_messenger_dir
+
 try:
     from scipy.sparse import spmatrix
 except ImportError:
@@ -110,6 +112,7 @@ def decode_pymat(dct):
     return dct
 
 MATLAB_FOLDER = '%s/matlab' % os.path.realpath(os.path.dirname(__file__))
+MESSENGER_FOLDER = '%s/messenger/%s' % (os.path.realpath(os.path.dirname(__file__)), get_messenger_dir())
 
 
 class _Session(object):
@@ -182,6 +185,7 @@ class _Session(object):
         # Matlab (e.g. isrow)
         return ["old_warning_state = warning('off','all');",
                 "addpath(genpath('%s'));" % MATLAB_FOLDER,
+                "addpath('%s');" % MESSENGER_FOLDER,
                 "warning(old_warning_state);",
                 "clear('old_warning_state');",
                 "cd('%s');" % os.getcwd()]
