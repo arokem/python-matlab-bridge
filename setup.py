@@ -2,20 +2,7 @@
 """Setup file for python-matlab-bridge"""
 
 import os
-import sys
 
-# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
-# update it when the contents of directories change.
-if os.path.exists('MANIFEST'):
-    os.remove('MANIFEST')
-
-# we need some code from inside the package to build it. use the same hack as
-# numpy to selectively import even if we don't have dependencies installed
-if sys.version_info[0] >= 3:
-    import builtins
-else:
-    import __builtin__ as builtins
-builtins.__PYMATBRIDGE_SETUP__ = True
 try:
     from setuptools import setup
 except ImportError:
