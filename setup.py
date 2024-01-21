@@ -29,7 +29,8 @@ opts = dict(name=NAME,
             package_data=PACKAGE_DATA,
             requires=REQUIRES,
             extras_require=EXTRAS_REQUIRE,
-            scripts=BIN
+            scripts=BIN,
+	        install_requires=['pyzmq', 'numpy']
             )
 
 
