@@ -106,5 +106,10 @@ class TestMagic:
         npt.assert_equal(self.ip.user_ns['obj']['str'], self.ip.user_ns['str'])
 
     def test_faulty(self):
+        # Test that an error is raised for wrong matlab code:
         npt.assert_raises(MatlabInterperterError,
                           lambda: self.ip.run_line_magic('matlab', '1 = 2'))
+
+        # Test that an error is raised for non-existent inputs
+        npt.assert_raises(MatlabInterperterError,
+                          lambda: self.ip.run_cell_magic('matlab', '-i no_such_thing -o out_array', 'a = 1;'))
